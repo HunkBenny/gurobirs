@@ -3,8 +3,7 @@ use std::ffi::CStr;
 pub trait Attribute {
     fn get(attribute: Self) -> &'static CStr;
 }
-// TODO: define enum and then use `match` map manually!!
-#[allow(clippy::upper_case_acronyms)]
+#[allow(clippy::upper_case_acronyms, non_camel_case_types)]
 enum GRBIntAttr {
     //* number of MIP starts
     NUMSTART,
@@ -188,7 +187,7 @@ impl Attribute for GRBIntAttr {
     }
 }
 
-#[allow(clippy::upper_case_acronyms)]
+#[allow(clippy::upper_case_acronyms, non_camel_case_types)]
 enum GRBDblAttr {
     //* Deprecated since v13 - use POOLNX instead
     Xn,
@@ -436,7 +435,7 @@ impl Attribute for GRBDblAttr {
     }
 }
 
-#[allow(clippy::upper_case_acronyms)]
+#[allow(clippy::upper_case_acronyms, non_camel_case_types)]
 enum GRBStrAttr {
     //* name of scenario i
     SCENNNAME,
