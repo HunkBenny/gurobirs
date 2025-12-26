@@ -476,6 +476,7 @@ impl Attribute for GRBStrAttr {
     }
 }
 
+#[allow(clippy::upper_case_acronyms, non_camel_case_types)]
 enum GRBCharAttr {
     //* QC sense ('<', '>', or '=')
     QCSENSE,
