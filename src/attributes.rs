@@ -3,493 +3,496 @@ use std::ffi::CStr;
 pub trait Attribute {
     fn get(attribute: Self) -> &'static CStr;
 }
+// TODO: define enum and then use `match` map manually!!
+#[allow(clippy::upper_case_acronyms)]
 enum GRBIntAttr {
-    // number of MIP starts
-    Numstart,
-    // number of scenarios
-    Numscenarios,
-    // number of objectives
-    Numobj,
-    // status for a pass during the multi-objective solve
-    Objpassnstatus,
-    // optimization pass in which the selected objective function was processed
-    Objnpass,
-    // number of optimization passes during the multi-objective solve
-    Numobjpasses,
-    // priority
-    Objnpriority,
-    // Force general constr to be (1) or to not be (0) in final IIS
-    IISGenconstrforce,
-    // Force QConstr to be (1) or to not be (0) in final IIS
-    IISQconstrforce,
-    // Force SOS to be (1) or to not be (0) in final IIS
-    IISSosforce,
-    // Force constr to be (1) or to not be (0) in final IIS
-    IISConstrforce,
-    // Force var UB to be (1) or to not be (0) in final IIS
-    IISUbforce,
-    // Force var LB to be (1) or to not be (0) in final IIS
-    IISLbforce,
-    // Boolean: Is general constr in IIS?
-    IISGenconstr,
-    // Boolean: Is QConstr in IIS?
-    IISQconstr,
-    // Boolean: Is SOS in IIS?
-    IISSos,
-    // Boolean: Is constr in IIS?
-    IISConstr,
-    // Boolean: Is var UB in IIS?
-    IISUb,
-    // Boolean: Is var LB in IIS?
-    IISLb,
-    // Boolean: Is IIS Minimal?
-    IISMinimal,
-    // Constraint basis status
-    Cbasis,
-    // Variable basis status
-    Vbasis,
-    // method that solved LP using concurrent
-    Concurrentwinmethod,
+    //* number of MIP starts
+    NUMSTART,
+    //* number of scenarios
+    NUMSCENARIOS,
+    //* number of objectives
+    NUMOBJ,
+    //* status for a pass during the multi-objective solve
+    OBJPASSNSTATUS,
+    //* optimization pass in which the selected objective function was processed
+    OBJNPASS,
+    //* number of optimization passes during the multi-objective solve
+    NUMOBJPASSES,
+    //* priority
+    OBJNPRIORITY,
+    //* Force general constr to be (1) or to not be (0) in final IIS
+    IIS_GENCONSTRFORCE,
+    //* Force QConstr to be (1) or to not be (0) in final IIS
+    IIS_QCONSTRFORCE,
+    //* Force SOS to be (1) or to not be (0) in final IIS
+    IIS_SOSFORCE,
+    //* Force constr to be (1) or to not be (0) in final IIS
+    IIS_CONSTRFORCE,
+    //* Force var UB to be (1) or to not be (0) in final IIS
+    IIS_UBFORCE,
+    //* Force var LB to be (1) or to not be (0) in final IIS
+    IIS_LBFORCE,
+    //* Boolean: Is general constr in IIS?
+    IIS_GENCONSTR,
+    //* Boolean: Is QConstr in IIS?
+    IIS_QCONSTR,
+    //* Boolean: Is SOS in IIS?
+    IIS_SOS,
+    //* Boolean: Is constr in IIS?
+    IIS_CONSTR,
+    //* Boolean: Is var UB in IIS?
+    IIS_UB,
+    //* Boolean: Is var LB in IIS?
+    IIS_LB,
+    //* Boolean: Is IIS Minimal?
+    IIS_MINIMAL,
+    //* Constraint basis status
+    CBASIS,
+    //* Variable basis status
+    VBASIS,
+    //* method that solved LP using concurrent
+    CONCURRENTWINMETHOD,
     // 0, no basis,
     // 1, has basis, so can be computed
     // 2, available
-    Hasdualnorm,
-    // Iters performed (NL barrier)
-    Nlbaritercount,
-    // Iters performed (barrier)
-    Baritercount,
-    // Status computed by barrier before crossover
-    Barstatus,
-    // # of solutions found
-    Solcount,
-    // Optimization status
-    Status,
-    // An option for PWL translation
-    Funcnonlinear,
-    // An option for PWL translation
-    Funcpieces,
-    // Type of general constraint
-    Genconstrtype,
-    // Lazy constraint?
-    Lazy,
-    // Ignore variable for solution identity check in solution pool
-    Poolignore,
-    // user specified variable partition
-    Partition,
-    // variable hint priority
-    Varhintpri,
-    // Convexity of variable PWL obj
-    Pwlobjcvx,
-    // MIP branch priority
-    Branchpriority,
-    // fingerprint computed from the model data and attributes influencing the optimization process
-    Fingerprint,
-    // number of tagged elements in model
-    Numtagged,
-    // License expiration date
-    LicenseExpiration,
-    // Model has multiple objectives?
-    IsMultiobj,
-    // Model has quadratic constr?
-    IsQcp,
-    // Is model a QP/MIQP (without Q/NL constraints)?
-    IsQp,
-    // Is model a MIP?
-    IsMip,
-    // 1=min, -1=max
-    Modelsense,
-    // # of variables with PWL obj.
-    Numpwlobjvars,
-    // # of binary vars
-    Numbinvars,
-    // # of integer vars
-    Numintvars,
-    // # of nz in q constraints
-    Numqcnzs,
-    // # of nz in Q
-    Numqnzs,
-    // # of nz in A
-    Numnzs,
-    // # of general constraints
-    Numgenconstrs,
-    // # of quadratic constraints
-    Numqconstrs,
-    // # of sos constraints
-    Numsos,
-    // # of vars
-    Numvars,
-    // # of constraints
-    Numconstrs,
+    HASDUALNORM,
+    //* Iters performed (NL barrier)
+    NLBARITERCOUNT,
+    //* Iters performed (barrier)
+    BARITERCOUNT,
+    //* Status computed by barrier before crossover
+    BARSTATUS,
+    //* # of solutions found
+    SOLCOUNT,
+    //* Optimization status
+    STATUS,
+    //* An option for PWL translation
+    FUNCNONLINEAR,
+    //* An option for PWL translation
+    FUNCPIECES,
+    //* Type of general constraint
+    GENCONSTRTYPE,
+    //* Lazy constraint?
+    LAZY,
+    //* Ignore variable for solution identity check in solution pool
+    POOLIGNORE,
+    //* user specified variable partition
+    PARTITION,
+    //* variable hint priority
+    VARHINTPRI,
+    //* Convexity of variable PWL obj
+    PWLOBJCVX,
+    //* MIP branch priority
+    BRANCHPRIORITY,
+    //* fingerprint computed from the model data and attributes influencing the optimization process
+    FINGERPRINT,
+    //* number of tagged elements in model
+    NUMTAGGED,
+    //* License expiration date
+    LICENSE_EXPIRATION,
+    //* Model has multiple objectives?
+    IS_MULTIOBJ,
+    //* Model has quadratic constr?
+    IS_QCP,
+    //* Is model a QP/MIQP (without Q/NL constraints)?
+    IS_QP,
+    //* Is model a MIP?
+    IS_MIP,
+    //* 1=min, -1=max
+    MODELSENSE,
+    //* # of variables with PWL obj.
+    NUMPWLOBJVARS,
+    //* # of binary vars
+    NUMBINVARS,
+    //* # of integer vars
+    NUMINTVARS,
+    //* # of nz in q constraints
+    NUMQCNZS,
+    //* # of nz in Q
+    NUMQNZS,
+    //* # of nz in A
+    NUMNZS,
+    //* # of general constraints
+    NUMGENCONSTRS,
+    //* # of quadratic constraints
+    NUMQCONSTRS,
+    //* # of sos constraints
+    NUMSOS,
+    //* # of vars
+    NUMVARS,
+    //* # of constraints
+    NUMCONSTRS,
 }
 
 impl Attribute for GRBIntAttr {
     fn get(attribute: GRBIntAttr) -> &'static CStr {
         match attribute {
-            GRBIntAttr::Numstart => ffi::GRB_INT_ATTR_NUMSTART,
-            GRBIntAttr::Numscenarios => ffi::GRB_INT_ATTR_NUMSCENARIOS,
-            GRBIntAttr::Numobj => ffi::GRB_INT_ATTR_NUMOBJ,
-            GRBIntAttr::Objpassnstatus => ffi::GRB_INT_ATTR_OBJPASSNSTATUS,
-            GRBIntAttr::Objnpass => ffi::GRB_INT_ATTR_OBJNPASS,
-            GRBIntAttr::Numobjpasses => ffi::GRB_INT_ATTR_NUMOBJPASSES,
-            GRBIntAttr::Objnpriority => ffi::GRB_INT_ATTR_OBJNPRIORITY,
-            GRBIntAttr::IISGenconstrforce => ffi::GRB_INT_ATTR_IIS_GENCONSTRFORCE,
-            GRBIntAttr::IISQconstrforce => ffi::GRB_INT_ATTR_IIS_QCONSTRFORCE,
-            GRBIntAttr::IISSosforce => ffi::GRB_INT_ATTR_IIS_SOSFORCE,
-            GRBIntAttr::IISConstrforce => ffi::GRB_INT_ATTR_IIS_CONSTRFORCE,
-            GRBIntAttr::IISUbforce => ffi::GRB_INT_ATTR_IIS_UBFORCE,
-            GRBIntAttr::IISLbforce => ffi::GRB_INT_ATTR_IIS_LBFORCE,
-            GRBIntAttr::IISGenconstr => ffi::GRB_INT_ATTR_IIS_GENCONSTR,
-            GRBIntAttr::IISQconstr => ffi::GRB_INT_ATTR_IIS_QCONSTR,
-            GRBIntAttr::IISSos => ffi::GRB_INT_ATTR_IIS_SOS,
-            GRBIntAttr::IISConstr => ffi::GRB_INT_ATTR_IIS_CONSTR,
-            GRBIntAttr::IISUb => ffi::GRB_INT_ATTR_IIS_UB,
-            GRBIntAttr::IISLb => ffi::GRB_INT_ATTR_IIS_LB,
-            GRBIntAttr::IISMinimal => ffi::GRB_INT_ATTR_IIS_MINIMAL,
-            GRBIntAttr::Cbasis => ffi::GRB_INT_ATTR_CBASIS,
-            GRBIntAttr::Vbasis => ffi::GRB_INT_ATTR_VBASIS,
-            GRBIntAttr::Concurrentwinmethod => ffi::GRB_INT_ATTR_CONCURRENTWINMETHOD,
-            GRBIntAttr::Hasdualnorm => ffi::GRB_INT_ATTR_HASDUALNORM,
-            GRBIntAttr::Nlbaritercount => ffi::GRB_INT_ATTR_NLBARITERCOUNT,
-            GRBIntAttr::Baritercount => ffi::GRB_INT_ATTR_BARITERCOUNT,
-            GRBIntAttr::Barstatus => ffi::GRB_INT_ATTR_BARSTATUS,
-            GRBIntAttr::Solcount => ffi::GRB_INT_ATTR_SOLCOUNT,
-            GRBIntAttr::Status => ffi::GRB_INT_ATTR_STATUS,
-            GRBIntAttr::Funcnonlinear => ffi::GRB_INT_ATTR_FUNCNONLINEAR,
-            GRBIntAttr::Funcpieces => ffi::GRB_INT_ATTR_FUNCPIECES,
-            GRBIntAttr::Genconstrtype => ffi::GRB_INT_ATTR_GENCONSTRTYPE,
-            GRBIntAttr::Lazy => ffi::GRB_INT_ATTR_LAZY,
-            GRBIntAttr::Poolignore => ffi::GRB_INT_ATTR_POOLIGNORE,
-            GRBIntAttr::Partition => ffi::GRB_INT_ATTR_PARTITION,
-            GRBIntAttr::Varhintpri => ffi::GRB_INT_ATTR_VARHINTPRI,
-            GRBIntAttr::Pwlobjcvx => ffi::GRB_INT_ATTR_PWLOBJCVX,
-            GRBIntAttr::Branchpriority => ffi::GRB_INT_ATTR_BRANCHPRIORITY,
-            GRBIntAttr::Fingerprint => ffi::GRB_INT_ATTR_FINGERPRINT,
-            GRBIntAttr::Numtagged => ffi::GRB_INT_ATTR_NUMTAGGED,
-            GRBIntAttr::LicenseExpiration => ffi::GRB_INT_ATTR_LICENSE_EXPIRATION,
-            GRBIntAttr::IsMultiobj => ffi::GRB_INT_ATTR_IS_MULTIOBJ,
-            GRBIntAttr::IsQcp => ffi::GRB_INT_ATTR_IS_QCP,
-            GRBIntAttr::IsQp => ffi::GRB_INT_ATTR_IS_QP,
-            GRBIntAttr::IsMip => ffi::GRB_INT_ATTR_IS_MIP,
-            GRBIntAttr::Modelsense => ffi::GRB_INT_ATTR_MODELSENSE,
-            GRBIntAttr::Numpwlobjvars => ffi::GRB_INT_ATTR_NUMPWLOBJVARS,
-            GRBIntAttr::Numbinvars => ffi::GRB_INT_ATTR_NUMBINVARS,
-            GRBIntAttr::Numintvars => ffi::GRB_INT_ATTR_NUMINTVARS,
-            GRBIntAttr::Numqcnzs => ffi::GRB_INT_ATTR_NUMQCNZS,
-            GRBIntAttr::Numqnzs => ffi::GRB_INT_ATTR_NUMQNZS,
-            GRBIntAttr::Numnzs => ffi::GRB_INT_ATTR_NUMNZS,
-            GRBIntAttr::Numgenconstrs => ffi::GRB_INT_ATTR_NUMGENCONSTRS,
-            GRBIntAttr::Numqconstrs => ffi::GRB_INT_ATTR_NUMQCONSTRS,
-            GRBIntAttr::Numsos => ffi::GRB_INT_ATTR_NUMSOS,
-            GRBIntAttr::Numvars => ffi::GRB_INT_ATTR_NUMVARS,
-            GRBIntAttr::Numconstrs => ffi::GRB_INT_ATTR_NUMCONSTRS,
+            GRBIntAttr::NUMSTART => ffi::GRB_INT_ATTR_NUMSTART,
+            GRBIntAttr::NUMSCENARIOS => ffi::GRB_INT_ATTR_NUMSCENARIOS,
+            GRBIntAttr::NUMOBJ => ffi::GRB_INT_ATTR_NUMOBJ,
+            GRBIntAttr::OBJPASSNSTATUS => ffi::GRB_INT_ATTR_OBJPASSNSTATUS,
+            GRBIntAttr::OBJNPASS => ffi::GRB_INT_ATTR_OBJNPASS,
+            GRBIntAttr::NUMOBJPASSES => ffi::GRB_INT_ATTR_NUMOBJPASSES,
+            GRBIntAttr::OBJNPRIORITY => ffi::GRB_INT_ATTR_OBJNPRIORITY,
+            GRBIntAttr::IIS_GENCONSTRFORCE => ffi::GRB_INT_ATTR_IIS_GENCONSTRFORCE,
+            GRBIntAttr::IIS_QCONSTRFORCE => ffi::GRB_INT_ATTR_IIS_QCONSTRFORCE,
+            GRBIntAttr::IIS_SOSFORCE => ffi::GRB_INT_ATTR_IIS_SOSFORCE,
+            GRBIntAttr::IIS_CONSTRFORCE => ffi::GRB_INT_ATTR_IIS_CONSTRFORCE,
+            GRBIntAttr::IIS_UBFORCE => ffi::GRB_INT_ATTR_IIS_UBFORCE,
+            GRBIntAttr::IIS_LBFORCE => ffi::GRB_INT_ATTR_IIS_LBFORCE,
+            GRBIntAttr::IIS_GENCONSTR => ffi::GRB_INT_ATTR_IIS_GENCONSTR,
+            GRBIntAttr::IIS_QCONSTR => ffi::GRB_INT_ATTR_IIS_QCONSTR,
+            GRBIntAttr::IIS_SOS => ffi::GRB_INT_ATTR_IIS_SOS,
+            GRBIntAttr::IIS_CONSTR => ffi::GRB_INT_ATTR_IIS_CONSTR,
+            GRBIntAttr::IIS_UB => ffi::GRB_INT_ATTR_IIS_UB,
+            GRBIntAttr::IIS_LB => ffi::GRB_INT_ATTR_IIS_LB,
+            GRBIntAttr::IIS_MINIMAL => ffi::GRB_INT_ATTR_IIS_MINIMAL,
+            GRBIntAttr::CBASIS => ffi::GRB_INT_ATTR_CBASIS,
+            GRBIntAttr::VBASIS => ffi::GRB_INT_ATTR_VBASIS,
+            GRBIntAttr::CONCURRENTWINMETHOD => ffi::GRB_INT_ATTR_CONCURRENTWINMETHOD,
+            GRBIntAttr::HASDUALNORM => ffi::GRB_INT_ATTR_HASDUALNORM,
+            GRBIntAttr::NLBARITERCOUNT => ffi::GRB_INT_ATTR_NLBARITERCOUNT,
+            GRBIntAttr::BARITERCOUNT => ffi::GRB_INT_ATTR_BARITERCOUNT,
+            GRBIntAttr::BARSTATUS => ffi::GRB_INT_ATTR_BARSTATUS,
+            GRBIntAttr::SOLCOUNT => ffi::GRB_INT_ATTR_SOLCOUNT,
+            GRBIntAttr::STATUS => ffi::GRB_INT_ATTR_STATUS,
+            GRBIntAttr::FUNCNONLINEAR => ffi::GRB_INT_ATTR_FUNCNONLINEAR,
+            GRBIntAttr::FUNCPIECES => ffi::GRB_INT_ATTR_FUNCPIECES,
+            GRBIntAttr::GENCONSTRTYPE => ffi::GRB_INT_ATTR_GENCONSTRTYPE,
+            GRBIntAttr::LAZY => ffi::GRB_INT_ATTR_LAZY,
+            GRBIntAttr::POOLIGNORE => ffi::GRB_INT_ATTR_POOLIGNORE,
+            GRBIntAttr::PARTITION => ffi::GRB_INT_ATTR_PARTITION,
+            GRBIntAttr::VARHINTPRI => ffi::GRB_INT_ATTR_VARHINTPRI,
+            GRBIntAttr::PWLOBJCVX => ffi::GRB_INT_ATTR_PWLOBJCVX,
+            GRBIntAttr::BRANCHPRIORITY => ffi::GRB_INT_ATTR_BRANCHPRIORITY,
+            GRBIntAttr::FINGERPRINT => ffi::GRB_INT_ATTR_FINGERPRINT,
+            GRBIntAttr::NUMTAGGED => ffi::GRB_INT_ATTR_NUMTAGGED,
+            GRBIntAttr::LICENSE_EXPIRATION => ffi::GRB_INT_ATTR_LICENSE_EXPIRATION,
+            GRBIntAttr::IS_MULTIOBJ => ffi::GRB_INT_ATTR_IS_MULTIOBJ,
+            GRBIntAttr::IS_QCP => ffi::GRB_INT_ATTR_IS_QCP,
+            GRBIntAttr::IS_QP => ffi::GRB_INT_ATTR_IS_QP,
+            GRBIntAttr::IS_MIP => ffi::GRB_INT_ATTR_IS_MIP,
+            GRBIntAttr::MODELSENSE => ffi::GRB_INT_ATTR_MODELSENSE,
+            GRBIntAttr::NUMPWLOBJVARS => ffi::GRB_INT_ATTR_NUMPWLOBJVARS,
+            GRBIntAttr::NUMBINVARS => ffi::GRB_INT_ATTR_NUMBINVARS,
+            GRBIntAttr::NUMINTVARS => ffi::GRB_INT_ATTR_NUMINTVARS,
+            GRBIntAttr::NUMQCNZS => ffi::GRB_INT_ATTR_NUMQCNZS,
+            GRBIntAttr::NUMQNZS => ffi::GRB_INT_ATTR_NUMQNZS,
+            GRBIntAttr::NUMNZS => ffi::GRB_INT_ATTR_NUMNZS,
+            GRBIntAttr::NUMGENCONSTRS => ffi::GRB_INT_ATTR_NUMGENCONSTRS,
+            GRBIntAttr::NUMQCONSTRS => ffi::GRB_INT_ATTR_NUMQCONSTRS,
+            GRBIntAttr::NUMSOS => ffi::GRB_INT_ATTR_NUMSOS,
+            GRBIntAttr::NUMVARS => ffi::GRB_INT_ATTR_NUMVARS,
+            GRBIntAttr::NUMCONSTRS => ffi::GRB_INT_ATTR_NUMCONSTRS,
         }
     }
 }
 
+#[allow(clippy::upper_case_acronyms)]
 enum GRBDblAttr {
-    // Deprecated since v13 - use GRB_DBL_ATTR_POOLNX instead
-    XN,
-    // maximum amount of allocated memory (in GB) in master environment
-    Maxmemused,
-    // current amount of allocated memory (in GB) in master environment
-    Memused,
-    // objective value for scenario i
-    Scennobjval,
-    // objective bound for scenario i
-    Scennobjbound,
-    // solution value in scenario i
-    Scennx,
-    // right hand side in scenario i
-    Scennrhs,
-    // objective in scenario i
-    Scennobj,
-    // upper bound in scenario i
-    Scennub,
-    // lower bound in scenario i
-    Scennlb,
-    // work done for a pass during the multi-objective solve
-    Objpassnwork,
-    // runtime for a pass during the multi-objective solve
-    Objpassnruntime,
-    // number of unexplored nodes for a pass during the multi-objective solve
-    Objpassnopennodecount,
-    // objective value for a pass during the multi-objective solve
-    Objpassnobjval,
-    // objective bound for a pass during the multi-objective solve
-    Objpassnobjbound,
-    // number of explored nodes for a pass during the multi-objective solve
-    Objpassnnodecount,
-    // MIP gap for a pass during the multi-objective solve
-    Objpassnmipgap,
-    // simplex iteration count for a pass during the multi-objective solve
-    Objpassnitercount,
-    // absolute tolerance
-    Objnabstol,
-    // relative tolerance
-    Objnreltol,
-    // weight
-    Objnweight,
-    // constant term
-    Objncon,
-    // Solution objective for Multi-objectives, also depends on solutionnumber
-    Objnval,
-    // ith objective
-    Objn,
-    // Dual norm square
-    Cdualnorm,
-    // QC Constraint slack
-    Qcslack,
-    // Constraint slack
-    Slack,
-    // Dual value for QC
-    Qcpi,
-    // Dual value
-    Pi,
-    // Dual norm square
-    Vdualnorm,
-    // Reduced costs
-    Rc,
-    // Best barrier dual iterate
-    Barpi,
-    // Best barrier primal iterate
-    Barx,
-    // Deprecated since v13 - use GRB_DBL_ATTR_POOLNX instead
+    //* Deprecated since v13 - use POOLNX instead
     Xn,
-    // Alternate MIP solution, depends on solutionnumber
-    Poolnx,
-    // Solution value
+    //* maximum amount of allocated memory (in GB) in master environment
+    MAXMEMUSED,
+    //* current amount of allocated memory (in GB) in master environment
+    MEMUSED,
+    //* objective value for scenario i
+    SCENNOBJVAL,
+    //* objective bound for scenario i
+    SCENNOBJBOUND,
+    //* solution value in scenario i
+    SCENNX,
+    //* right hand side in scenario i
+    SCENNRHS,
+    //* objective in scenario i
+    SCENNOBJ,
+    //* upper bound in scenario i
+    SCENNUB,
+    //* lower bound in scenario i
+    SCENNLB,
+    //* work done for a pass during the multi-objective solve
+    OBJPASSNWORK,
+    //* runtime for a pass during the multi-objective solve
+    OBJPASSNRUNTIME,
+    //* number of unexplored nodes for a pass during the multi-objective solve
+    OBJPASSNOPENNODECOUNT,
+    //* objective value for a pass during the multi-objective solve
+    OBJPASSNOBJVAL,
+    //* objective bound for a pass during the multi-objective solve
+    OBJPASSNOBJBOUND,
+    //* number of explored nodes for a pass during the multi-objective solve
+    OBJPASSNNODECOUNT,
+    //* MIP gap for a pass during the multi-objective solve
+    OBJPASSNMIPGAP,
+    //* simplex iteration count for a pass during the multi-objective solve
+    OBJPASSNITERCOUNT,
+    //* absolute tolerance
+    OBJNABSTOL,
+    //* relative tolerance
+    OBJNRELTOL,
+    //* weight
+    OBJNWEIGHT,
+    //* constant term
+    OBJNCON,
+    //* Solution objective for Multi-objectives, also depends on solutionnumber
+    OBJNVAL,
+    //* ith objective
+    OBJN,
+    //* Dual norm square
+    CDUALNORM,
+    //* QC Constraint slack
+    QCSLACK,
+    //* Constraint slack
+    SLACK,
+    //* Dual value for QC
+    QCPI,
+    //* Dual value
+    PI,
+    //* Dual norm square
+    VDUALNORM,
+    //* Reduced costs
+    RC,
+    //* Best barrier dual iterate
+    BARPI,
+    //* Best barrier primal iterate
+    BARX,
+    //* Deprecated since v13 - use POOLNX instead
+    XN,
+    //* Alternate MIP solution, depends on solutionnumber
+    POOLNX,
+    //* Solution value
     X,
-    // Unexplored nodes (B&C)
-    Opennodecount,
-    // Nodes explored (B&C)
-    Nodecount,
-    // Iters performed (PDHG)
-    Pdhgitercount,
-    // Iters performed (simplex)
-    Itercount,
-    // MIP optimality gap
-    Mipgap,
-    // Deprecated since v13 - use GRB_DBL_ATTR_POOLNOBJVAL instead
-    Poolobjval,
-    // Solution objective, depends on solutionnumber
-    Poolnobjval,
-    // Best bound on pool solution
-    Poolobjbound,
-    // Continuous bound
-    Objboundc,
-    // Best bound on solution
-    Objbound,
-    // Solution objective
-    Objval,
-    // Work for optimization
-    Work,
-    // Run time for optimization
-    Runtime,
-    // Min (abs) rhs of Q
-    MinQcrhs,
-    // Max (abs) rhs of Q
-    MaxQcrhs,
-    // Min (abs) nz coeff in linear part of Q
-    MinQclcoeff,
-    // Max (abs) nz coeff in linear part of Q
-    MaxQclcoeff,
-    // Min (abs) obj coeff of quadratic part
-    MinQobjCoeff,
-    // Max (abs) obj coeff of quadratic part
-    MaxQobjCoeff,
-    // Min (abs) nz coeff in Q
-    MinQccoeff,
-    // Max (abs) nz coeff in Q
-    MaxQccoeff,
-    // Min (abs) rhs coeff
-    MinRhs,
-    // Max (abs) rhs coeff
-    MaxRhs,
-    // Min (abs) obj coeff
-    MinObjCoeff,
-    // Max (abs) obj coeff
-    MaxObjCoeff,
-    // Min (abs) var bd
-    MinBound,
-    // Max (abs) finite var bd
-    MaxBound,
-    // Min (abs) nz coeff in A
-    MinCoeff,
-    // Max (abs) nz coeff in A
-    MaxCoeff,
-    // An option for PWL translation
-    Funcpieceratio,
-    // An option for PWL translation
-    Funcpiecelength,
-    // An option for PWL translation
-    Funcpieceerror,
-    // QC RHS
-    Qcrhs,
-    // LP dual solution warm start
-    Dstart,
-    // RHS
-    Rhs,
-    // variable hint value
-    Varhintval,
-    // LP primal solution warm start
-    Pstart,
-    // MIP start value, depends on startnumber
-    Start,
-    // Objective coeff
-    Obj,
-    // Upper bound
-    Ub,
-    // Lower bound
-    Lb,
-    // Objective constant
-    Objcon,
-    // # of nz in A
-    Dnumnzs,
+    //* Unexplored nodes (B&C)
+    OPENNODECOUNT,
+    //* Nodes explored (B&C)
+    NODECOUNT,
+    //* Iters performed (PDHG)
+    PDHGITERCOUNT,
+    //* Iters performed (simplex)
+    ITERCOUNT,
+    //* MIP optimality gap
+    MIPGAP,
+    //* Deprecated since v13 - use POOLNOBJVAL instead
+    POOLOBJVAL,
+    //* Solution objective, depends on solutionnumber
+    POOLNOBJVAL,
+    //* Best bound on pool solution
+    POOLOBJBOUND,
+    //* Continuous bound
+    OBJBOUNDC,
+    //* Best bound on solution
+    OBJBOUND,
+    //* Solution objective
+    OBJVAL,
+    //* Work for optimization
+    WORK,
+    //* Run time for optimization
+    RUNTIME,
+    //* Min (abs) rhs of Q
+    MIN_QCRHS,
+    //* Max (abs) rhs of Q
+    MAX_QCRHS,
+    //* Min (abs) nz coeff in linear part of Q
+    MIN_QCLCOEFF,
+    //* Max (abs) nz coeff in linear part of Q
+    MAX_QCLCOEFF,
+    //* Min (abs) obj coeff of quadratic part
+    MIN_QOBJ_COEFF,
+    //* Max (abs) obj coeff of quadratic part
+    MAX_QOBJ_COEFF,
+    //* Min (abs) nz coeff in Q
+    MIN_QCCOEFF,
+    //* Max (abs) nz coeff in Q
+    MAX_QCCOEFF,
+    //* Min (abs) rhs coeff
+    MIN_RHS,
+    //* Max (abs) rhs coeff
+    MAX_RHS,
+    //* Min (abs) obj coeff
+    MIN_OBJ_COEFF,
+    //* Max (abs) obj coeff
+    MAX_OBJ_COEFF,
+    //* Min (abs) var bd
+    MIN_BOUND,
+    //* Max (abs) finite var bd
+    MAX_BOUND,
+    //* Min (abs) nz coeff in A
+    MIN_COEFF,
+    //* Max (abs) nz coeff in A
+    MAX_COEFF,
+    //* An option for PWL translation
+    FUNCPIECERATIO,
+    //* An option for PWL translation
+    FUNCPIECELENGTH,
+    //* An option for PWL translation
+    FUNCPIECEERROR,
+    //* QC RHS
+    QCRHS,
+    //* LP dual solution warm start
+    DSTART,
+    //* RHS
+    RHS,
+    //* variable hint value
+    VARHINTVAL,
+    //* LP primal solution warm start
+    PSTART,
+    //* MIP start value, depends on startnumber
+    START,
+    //* Objective coeff
+    OBJ,
+    //* Upper bound
+    UB,
+    //* Lower bound
+    LB,
+    //* Objective constant
+    OBJCON,
+    //* # of nz in A
+    DNUMNZS,
 }
 
 impl Attribute for GRBDblAttr {
     fn get(attribute: GRBDblAttr) -> &'static CStr {
         match attribute {
             GRBDblAttr::Xn => ffi::GRB_DBL_ATTR_Xn,
-            GRBDblAttr::Maxmemused => ffi::GRB_DBL_ATTR_MAXMEMUSED,
-            GRBDblAttr::Memused => ffi::GRB_DBL_ATTR_MEMUSED,
-            GRBDblAttr::Scennobjval => ffi::GRB_DBL_ATTR_SCENNOBJVAL,
-            GRBDblAttr::Scennobjbound => ffi::GRB_DBL_ATTR_SCENNOBJBOUND,
-            GRBDblAttr::Scennx => ffi::GRB_DBL_ATTR_SCENNX,
-            GRBDblAttr::Scennrhs => ffi::GRB_DBL_ATTR_SCENNRHS,
-            GRBDblAttr::Scennobj => ffi::GRB_DBL_ATTR_SCENNOBJ,
-            GRBDblAttr::Scennub => ffi::GRB_DBL_ATTR_SCENNUB,
-            GRBDblAttr::Scennlb => ffi::GRB_DBL_ATTR_SCENNLB,
-            GRBDblAttr::Objpassnwork => ffi::GRB_DBL_ATTR_OBJPASSNWORK,
-            GRBDblAttr::Objpassnruntime => ffi::GRB_DBL_ATTR_OBJPASSNRUNTIME,
-            GRBDblAttr::Objpassnopennodecount => ffi::GRB_DBL_ATTR_OBJPASSNOPENNODECOUNT,
-            GRBDblAttr::Objpassnobjval => ffi::GRB_DBL_ATTR_OBJPASSNOBJVAL,
-            GRBDblAttr::Objpassnobjbound => ffi::GRB_DBL_ATTR_OBJPASSNOBJBOUND,
-            GRBDblAttr::Objpassnnodecount => ffi::GRB_DBL_ATTR_OBJPASSNNODECOUNT,
-            GRBDblAttr::Objpassnmipgap => ffi::GRB_DBL_ATTR_OBJPASSNMIPGAP,
-            GRBDblAttr::Objpassnitercount => ffi::GRB_DBL_ATTR_OBJPASSNITERCOUNT,
-            GRBDblAttr::Objnabstol => ffi::GRB_DBL_ATTR_OBJNABSTOL,
-            GRBDblAttr::Objnreltol => ffi::GRB_DBL_ATTR_OBJNRELTOL,
-            GRBDblAttr::Objnweight => ffi::GRB_DBL_ATTR_OBJNWEIGHT,
-            GRBDblAttr::Objncon => ffi::GRB_DBL_ATTR_OBJNCON,
-            GRBDblAttr::Objnval => ffi::GRB_DBL_ATTR_OBJNVAL,
-            GRBDblAttr::Objn => ffi::GRB_DBL_ATTR_OBJN,
-            GRBDblAttr::Cdualnorm => ffi::GRB_DBL_ATTR_CDUALNORM,
-            GRBDblAttr::Qcslack => ffi::GRB_DBL_ATTR_QCSLACK,
-            GRBDblAttr::Slack => ffi::GRB_DBL_ATTR_SLACK,
-            GRBDblAttr::Qcpi => ffi::GRB_DBL_ATTR_QCPI,
-            GRBDblAttr::Pi => ffi::GRB_DBL_ATTR_PI,
-            GRBDblAttr::Vdualnorm => ffi::GRB_DBL_ATTR_VDUALNORM,
-            GRBDblAttr::Rc => ffi::GRB_DBL_ATTR_RC,
-            GRBDblAttr::Barpi => ffi::GRB_DBL_ATTR_BARPI,
-            GRBDblAttr::Barx => ffi::GRB_DBL_ATTR_BARX,
+            GRBDblAttr::MAXMEMUSED => ffi::GRB_DBL_ATTR_MAXMEMUSED,
+            GRBDblAttr::MEMUSED => ffi::GRB_DBL_ATTR_MEMUSED,
+            GRBDblAttr::SCENNOBJVAL => ffi::GRB_DBL_ATTR_SCENNOBJVAL,
+            GRBDblAttr::SCENNOBJBOUND => ffi::GRB_DBL_ATTR_SCENNOBJBOUND,
+            GRBDblAttr::SCENNX => ffi::GRB_DBL_ATTR_SCENNX,
+            GRBDblAttr::SCENNRHS => ffi::GRB_DBL_ATTR_SCENNRHS,
+            GRBDblAttr::SCENNOBJ => ffi::GRB_DBL_ATTR_SCENNOBJ,
+            GRBDblAttr::SCENNUB => ffi::GRB_DBL_ATTR_SCENNUB,
+            GRBDblAttr::SCENNLB => ffi::GRB_DBL_ATTR_SCENNLB,
+            GRBDblAttr::OBJPASSNWORK => ffi::GRB_DBL_ATTR_OBJPASSNWORK,
+            GRBDblAttr::OBJPASSNRUNTIME => ffi::GRB_DBL_ATTR_OBJPASSNRUNTIME,
+            GRBDblAttr::OBJPASSNOPENNODECOUNT => ffi::GRB_DBL_ATTR_OBJPASSNOPENNODECOUNT,
+            GRBDblAttr::OBJPASSNOBJVAL => ffi::GRB_DBL_ATTR_OBJPASSNOBJVAL,
+            GRBDblAttr::OBJPASSNOBJBOUND => ffi::GRB_DBL_ATTR_OBJPASSNOBJBOUND,
+            GRBDblAttr::OBJPASSNNODECOUNT => ffi::GRB_DBL_ATTR_OBJPASSNNODECOUNT,
+            GRBDblAttr::OBJPASSNMIPGAP => ffi::GRB_DBL_ATTR_OBJPASSNMIPGAP,
+            GRBDblAttr::OBJPASSNITERCOUNT => ffi::GRB_DBL_ATTR_OBJPASSNITERCOUNT,
+            GRBDblAttr::OBJNABSTOL => ffi::GRB_DBL_ATTR_OBJNABSTOL,
+            GRBDblAttr::OBJNRELTOL => ffi::GRB_DBL_ATTR_OBJNRELTOL,
+            GRBDblAttr::OBJNWEIGHT => ffi::GRB_DBL_ATTR_OBJNWEIGHT,
+            GRBDblAttr::OBJNCON => ffi::GRB_DBL_ATTR_OBJNCON,
+            GRBDblAttr::OBJNVAL => ffi::GRB_DBL_ATTR_OBJNVAL,
+            GRBDblAttr::OBJN => ffi::GRB_DBL_ATTR_OBJN,
+            GRBDblAttr::CDUALNORM => ffi::GRB_DBL_ATTR_CDUALNORM,
+            GRBDblAttr::QCSLACK => ffi::GRB_DBL_ATTR_QCSLACK,
+            GRBDblAttr::SLACK => ffi::GRB_DBL_ATTR_SLACK,
+            GRBDblAttr::QCPI => ffi::GRB_DBL_ATTR_QCPI,
+            GRBDblAttr::PI => ffi::GRB_DBL_ATTR_PI,
+            GRBDblAttr::VDUALNORM => ffi::GRB_DBL_ATTR_VDUALNORM,
+            GRBDblAttr::RC => ffi::GRB_DBL_ATTR_RC,
+            GRBDblAttr::BARPI => ffi::GRB_DBL_ATTR_BARPI,
+            GRBDblAttr::BARX => ffi::GRB_DBL_ATTR_BARX,
             GRBDblAttr::XN => ffi::GRB_DBL_ATTR_XN,
-            GRBDblAttr::Poolnx => ffi::GRB_DBL_ATTR_POOLNX,
+            GRBDblAttr::POOLNX => ffi::GRB_DBL_ATTR_POOLNX,
             GRBDblAttr::X => ffi::GRB_DBL_ATTR_X,
-            GRBDblAttr::Opennodecount => ffi::GRB_DBL_ATTR_OPENNODECOUNT,
-            GRBDblAttr::Nodecount => ffi::GRB_DBL_ATTR_NODECOUNT,
-            GRBDblAttr::Pdhgitercount => ffi::GRB_DBL_ATTR_PDHGITERCOUNT,
-            GRBDblAttr::Itercount => ffi::GRB_DBL_ATTR_ITERCOUNT,
-            GRBDblAttr::Mipgap => ffi::GRB_DBL_ATTR_MIPGAP,
-            GRBDblAttr::Poolobjval => ffi::GRB_DBL_ATTR_POOLOBJVAL,
-            GRBDblAttr::Poolnobjval => ffi::GRB_DBL_ATTR_POOLNOBJVAL,
-            GRBDblAttr::Poolobjbound => ffi::GRB_DBL_ATTR_POOLOBJBOUND,
-            GRBDblAttr::Objboundc => ffi::GRB_DBL_ATTR_OBJBOUNDC,
-            GRBDblAttr::Objbound => ffi::GRB_DBL_ATTR_OBJBOUND,
-            GRBDblAttr::Objval => ffi::GRB_DBL_ATTR_OBJVAL,
-            GRBDblAttr::Work => ffi::GRB_DBL_ATTR_WORK,
-            GRBDblAttr::Runtime => ffi::GRB_DBL_ATTR_RUNTIME,
-            GRBDblAttr::MinQcrhs => ffi::GRB_DBL_ATTR_MIN_QCRHS,
-            GRBDblAttr::MaxQcrhs => ffi::GRB_DBL_ATTR_MAX_QCRHS,
-            GRBDblAttr::MinQclcoeff => ffi::GRB_DBL_ATTR_MIN_QCLCOEFF,
-            GRBDblAttr::MaxQclcoeff => ffi::GRB_DBL_ATTR_MAX_QCLCOEFF,
-            GRBDblAttr::MinQobjCoeff => ffi::GRB_DBL_ATTR_MIN_QOBJ_COEFF,
-            GRBDblAttr::MaxQobjCoeff => ffi::GRB_DBL_ATTR_MAX_QOBJ_COEFF,
-            GRBDblAttr::MinQccoeff => ffi::GRB_DBL_ATTR_MIN_QCCOEFF,
-            GRBDblAttr::MaxQccoeff => ffi::GRB_DBL_ATTR_MAX_QCCOEFF,
-            GRBDblAttr::MinRhs => ffi::GRB_DBL_ATTR_MIN_RHS,
-            GRBDblAttr::MaxRhs => ffi::GRB_DBL_ATTR_MAX_RHS,
-            GRBDblAttr::MinObjCoeff => ffi::GRB_DBL_ATTR_MIN_OBJ_COEFF,
-            GRBDblAttr::MaxObjCoeff => ffi::GRB_DBL_ATTR_MAX_OBJ_COEFF,
-            GRBDblAttr::MinBound => ffi::GRB_DBL_ATTR_MIN_BOUND,
-            GRBDblAttr::MaxBound => ffi::GRB_DBL_ATTR_MAX_BOUND,
-            GRBDblAttr::MinCoeff => ffi::GRB_DBL_ATTR_MIN_COEFF,
-            GRBDblAttr::MaxCoeff => ffi::GRB_DBL_ATTR_MAX_COEFF,
-            GRBDblAttr::Funcpieceratio => ffi::GRB_DBL_ATTR_FUNCPIECERATIO,
-            GRBDblAttr::Funcpiecelength => ffi::GRB_DBL_ATTR_FUNCPIECELENGTH,
-            GRBDblAttr::Funcpieceerror => ffi::GRB_DBL_ATTR_FUNCPIECEERROR,
-            GRBDblAttr::Qcrhs => ffi::GRB_DBL_ATTR_QCRHS,
-            GRBDblAttr::Dstart => ffi::GRB_DBL_ATTR_DSTART,
-            GRBDblAttr::Rhs => ffi::GRB_DBL_ATTR_RHS,
-            GRBDblAttr::Varhintval => ffi::GRB_DBL_ATTR_VARHINTVAL,
-            GRBDblAttr::Pstart => ffi::GRB_DBL_ATTR_PSTART,
-            GRBDblAttr::Start => ffi::GRB_DBL_ATTR_START,
-            GRBDblAttr::Obj => ffi::GRB_DBL_ATTR_OBJ,
-            GRBDblAttr::Ub => ffi::GRB_DBL_ATTR_UB,
-            GRBDblAttr::Lb => ffi::GRB_DBL_ATTR_LB,
-            GRBDblAttr::Objcon => ffi::GRB_DBL_ATTR_OBJCON,
-            GRBDblAttr::Dnumnzs => ffi::GRB_DBL_ATTR_DNUMNZS,
+            GRBDblAttr::OPENNODECOUNT => ffi::GRB_DBL_ATTR_OPENNODECOUNT,
+            GRBDblAttr::NODECOUNT => ffi::GRB_DBL_ATTR_NODECOUNT,
+            GRBDblAttr::PDHGITERCOUNT => ffi::GRB_DBL_ATTR_PDHGITERCOUNT,
+            GRBDblAttr::ITERCOUNT => ffi::GRB_DBL_ATTR_ITERCOUNT,
+            GRBDblAttr::MIPGAP => ffi::GRB_DBL_ATTR_MIPGAP,
+            GRBDblAttr::POOLOBJVAL => ffi::GRB_DBL_ATTR_POOLOBJVAL,
+            GRBDblAttr::POOLNOBJVAL => ffi::GRB_DBL_ATTR_POOLNOBJVAL,
+            GRBDblAttr::POOLOBJBOUND => ffi::GRB_DBL_ATTR_POOLOBJBOUND,
+            GRBDblAttr::OBJBOUNDC => ffi::GRB_DBL_ATTR_OBJBOUNDC,
+            GRBDblAttr::OBJBOUND => ffi::GRB_DBL_ATTR_OBJBOUND,
+            GRBDblAttr::OBJVAL => ffi::GRB_DBL_ATTR_OBJVAL,
+            GRBDblAttr::WORK => ffi::GRB_DBL_ATTR_WORK,
+            GRBDblAttr::RUNTIME => ffi::GRB_DBL_ATTR_RUNTIME,
+            GRBDblAttr::MIN_QCRHS => ffi::GRB_DBL_ATTR_MIN_QCRHS,
+            GRBDblAttr::MAX_QCRHS => ffi::GRB_DBL_ATTR_MAX_QCRHS,
+            GRBDblAttr::MIN_QCLCOEFF => ffi::GRB_DBL_ATTR_MIN_QCLCOEFF,
+            GRBDblAttr::MAX_QCLCOEFF => ffi::GRB_DBL_ATTR_MAX_QCLCOEFF,
+            GRBDblAttr::MIN_QOBJ_COEFF => ffi::GRB_DBL_ATTR_MIN_QOBJ_COEFF,
+            GRBDblAttr::MAX_QOBJ_COEFF => ffi::GRB_DBL_ATTR_MAX_QOBJ_COEFF,
+            GRBDblAttr::MIN_QCCOEFF => ffi::GRB_DBL_ATTR_MIN_QCCOEFF,
+            GRBDblAttr::MAX_QCCOEFF => ffi::GRB_DBL_ATTR_MAX_QCCOEFF,
+            GRBDblAttr::MIN_RHS => ffi::GRB_DBL_ATTR_MIN_RHS,
+            GRBDblAttr::MAX_RHS => ffi::GRB_DBL_ATTR_MAX_RHS,
+            GRBDblAttr::MIN_OBJ_COEFF => ffi::GRB_DBL_ATTR_MIN_OBJ_COEFF,
+            GRBDblAttr::MAX_OBJ_COEFF => ffi::GRB_DBL_ATTR_MAX_OBJ_COEFF,
+            GRBDblAttr::MIN_BOUND => ffi::GRB_DBL_ATTR_MIN_BOUND,
+            GRBDblAttr::MAX_BOUND => ffi::GRB_DBL_ATTR_MAX_BOUND,
+            GRBDblAttr::MIN_COEFF => ffi::GRB_DBL_ATTR_MIN_COEFF,
+            GRBDblAttr::MAX_COEFF => ffi::GRB_DBL_ATTR_MAX_COEFF,
+            GRBDblAttr::FUNCPIECERATIO => ffi::GRB_DBL_ATTR_FUNCPIECERATIO,
+            GRBDblAttr::FUNCPIECELENGTH => ffi::GRB_DBL_ATTR_FUNCPIECELENGTH,
+            GRBDblAttr::FUNCPIECEERROR => ffi::GRB_DBL_ATTR_FUNCPIECEERROR,
+            GRBDblAttr::QCRHS => ffi::GRB_DBL_ATTR_QCRHS,
+            GRBDblAttr::DSTART => ffi::GRB_DBL_ATTR_DSTART,
+            GRBDblAttr::RHS => ffi::GRB_DBL_ATTR_RHS,
+            GRBDblAttr::VARHINTVAL => ffi::GRB_DBL_ATTR_VARHINTVAL,
+            GRBDblAttr::PSTART => ffi::GRB_DBL_ATTR_PSTART,
+            GRBDblAttr::START => ffi::GRB_DBL_ATTR_START,
+            GRBDblAttr::OBJ => ffi::GRB_DBL_ATTR_OBJ,
+            GRBDblAttr::UB => ffi::GRB_DBL_ATTR_UB,
+            GRBDblAttr::LB => ffi::GRB_DBL_ATTR_LB,
+            GRBDblAttr::OBJCON => ffi::GRB_DBL_ATTR_OBJCON,
+            GRBDblAttr::DNUMNZS => ffi::GRB_DBL_ATTR_DNUMNZS,
         }
     }
 }
 
+#[allow(clippy::upper_case_acronyms)]
 enum GRBStrAttr {
-    // name of scenario i
-    Scennname,
-    // name
-    Objnname,
-    // Name of general constraint
-    Genconstrname,
-    // QC name
-    Qcname,
-    // quadratic constraint tags
-    Qctag,
-    // Constraint name
-    Constrname,
-    // linear constraint tags
-    Ctag,
-    // variable tags
-    Vtag,
-    // Variable name
-    Varname,
-    // model name
-    Modelname,
+    //* name of scenario i
+    SCENNNAME,
+    //* name
+    OBJNNAME,
+    //* Name of general constraint
+    GENCONSTRNAME,
+    //* QC name
+    QCNAME,
+    //* quadratic constraint tags
+    QCTAG,
+    //* Constraint name
+    CONSTRNAME,
+    //* linear constraint tags
+    CTAG,
+    //* variable tags
+    VTAG,
+    //* Variable name
+    VARNAME,
+    //* model name
+    MODELNAME,
 }
 
 impl Attribute for GRBStrAttr {
     fn get(attribute: GRBStrAttr) -> &'static CStr {
         match attribute {
-            GRBStrAttr::Scennname => ffi::GRB_STR_ATTR_SCENNNAME,
-            GRBStrAttr::Objnname => ffi::GRB_STR_ATTR_OBJNNAME,
-            GRBStrAttr::Genconstrname => ffi::GRB_STR_ATTR_GENCONSTRNAME,
-            GRBStrAttr::Qcname => ffi::GRB_STR_ATTR_QCNAME,
-            GRBStrAttr::Qctag => ffi::GRB_STR_ATTR_QCTAG,
-            GRBStrAttr::Constrname => ffi::GRB_STR_ATTR_CONSTRNAME,
-            GRBStrAttr::Ctag => ffi::GRB_STR_ATTR_CTAG,
-            GRBStrAttr::Vtag => ffi::GRB_STR_ATTR_VTAG,
-            GRBStrAttr::Varname => ffi::GRB_STR_ATTR_VARNAME,
-            GRBStrAttr::Modelname => ffi::GRB_STR_ATTR_MODELNAME,
+            GRBStrAttr::SCENNNAME => ffi::GRB_STR_ATTR_SCENNNAME,
+            GRBStrAttr::OBJNNAME => ffi::GRB_STR_ATTR_OBJNNAME,
+            GRBStrAttr::GENCONSTRNAME => ffi::GRB_STR_ATTR_GENCONSTRNAME,
+            GRBStrAttr::QCNAME => ffi::GRB_STR_ATTR_QCNAME,
+            GRBStrAttr::QCTAG => ffi::GRB_STR_ATTR_QCTAG,
+            GRBStrAttr::CONSTRNAME => ffi::GRB_STR_ATTR_CONSTRNAME,
+            GRBStrAttr::CTAG => ffi::GRB_STR_ATTR_CTAG,
+            GRBStrAttr::VTAG => ffi::GRB_STR_ATTR_VTAG,
+            GRBStrAttr::VARNAME => ffi::GRB_STR_ATTR_VARNAME,
+            GRBStrAttr::MODELNAME => ffi::GRB_STR_ATTR_MODELNAME,
         }
     }
 }
 
 enum GRBCharAttr {
-    // QC sense ('<', '>', or '=')
-    Qcsense,
-    // Sense ('<', '>', or '=')
-    Sense,
-    // Integrality type
-    Vtype,
+    //* QC sense ('<', '>', or '=')
+    QCSENSE,
+    //* Sense ('<', '>', or '=')
+    SENSE,
+    //* Integrality type
+    VTYPE,
 }
 
 impl Attribute for GRBCharAttr {
     fn get(attribute: GRBCharAttr) -> &'static CStr {
         match attribute {
-            GRBCharAttr::Qcsense => ffi::GRB_CHAR_ATTR_QCSENSE,
-            GRBCharAttr::Sense => ffi::GRB_CHAR_ATTR_SENSE,
-            GRBCharAttr::Vtype => ffi::GRB_CHAR_ATTR_VTYPE,
+            GRBCharAttr::QCSENSE => ffi::GRB_CHAR_ATTR_QCSENSE,
+            GRBCharAttr::SENSE => ffi::GRB_CHAR_ATTR_SENSE,
+            GRBCharAttr::VTYPE => ffi::GRB_CHAR_ATTR_VTYPE,
         }
     }
 }
-
 // TODO: Add tests!
