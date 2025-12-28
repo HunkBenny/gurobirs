@@ -5,11 +5,15 @@ use std::{
 
 use crate::ffi;
 
-struct GRBenv {
+pub struct GRBenv {
     inner: *mut ffi::GRBenv,
 }
 
 impl GRBenv {
+    pub fn inner(&self) -> *mut ffi::GRBenv {
+        self.inner
+    }
+
     pub fn new(empty: bool, logfilename: Option<&str>) -> Result<GRBenv, String> {
         // Create the GRBenv pointer
         let mut env_ptr = null_mut();
