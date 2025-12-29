@@ -11,7 +11,7 @@ pub enum GRBVarType {
 
 impl GRBVarType {
     /// Get the Type as a c_char for FFI calls
-    pub fn get_type(&self) -> std::ffi::c_char {
+    pub fn grb_type(&self) -> std::ffi::c_char {
         match self {
             GRBVarType::CONTINUOUS => ffi::GRB_CONTINUOUS as std::ffi::c_char,
             GRBVarType::BINARY => ffi::GRB_BINARY as std::ffi::c_char,
