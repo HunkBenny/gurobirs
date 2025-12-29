@@ -5,7 +5,7 @@ pub trait Parameter {
     fn get(parameter: Self) -> &'static CStr;
 }
 #[allow(clippy::upper_case_acronyms)]
-enum GRBIntParam {
+pub enum GRBIntParam {
     INHERITPARAMS,
     FUNCNONLINEAR,
     FUNCPIECES,
@@ -272,7 +272,7 @@ impl Parameter for GRBIntParam {
 }
 
 #[allow(clippy::upper_case_acronyms)]
-enum GRBDblParam {
+pub enum GRBDblParam {
     FUNCMAXVAL,
     FUNCPIECERATIO,
     FUNCPIECEERROR,
@@ -387,7 +387,7 @@ impl Parameter for GRBDblParam {
 }
 
 #[allow(clippy::upper_case_acronyms)]
-enum GRBStrParam {
+pub enum GRBStrParam {
     JOBID,
     DUMMY,
     RESULTFILE,

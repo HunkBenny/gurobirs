@@ -22,6 +22,7 @@ impl GRBVarType {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct GRBVar {
     index: usize,
 }

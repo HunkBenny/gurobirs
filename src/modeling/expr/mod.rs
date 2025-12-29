@@ -1,4 +1,4 @@
-use crate::{expr::lin_expr::LinExpr, ffi};
+use crate::{ffi, modeling::expr::lin_expr::LinExpr};
 pub mod lin_expr;
 
 pub enum GRBSense {

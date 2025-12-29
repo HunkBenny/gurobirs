@@ -216,6 +216,14 @@ impl Add<f64> for GRBVar {
     }
 }
 
+impl Add<GRBVar> for GRBVar {
+    type Output = LinExpr;
+
+    fn add(self, rhs: GRBVar) -> Self::Output {
+        self + LinExpr::from(rhs)
+    }
+}
+
 // OVERLOAD SUBTRACTION
 impl Sub<GRBVar> for LinExpr {
     type Output = LinExpr;

@@ -4,122 +4,122 @@ pub trait Attribute {
     fn get(attribute: Self) -> &'static CStr;
 }
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
-enum GRBIntAttr {
-    //* number of MIP starts
+pub enum GRBIntAttr {
+    /// number of MIP starts
     NUMSTART,
-    //* number of scenarios
+    /// number of scenarios
     NUMSCENARIOS,
-    //* number of objectives
+    /// number of objectives
     NUMOBJ,
-    //* status for a pass during the multi-objective solve
+    /// status for a pass during the multi-objective solve
     OBJPASSNSTATUS,
-    //* optimization pass in which the selected objective function was processed
+    /// optimization pass in which the selected objective function was processed
     OBJNPASS,
-    //* number of optimization passes during the multi-objective solve
+    /// number of optimization passes during the multi-objective solve
     NUMOBJPASSES,
-    //* priority
+    /// priority
     OBJNPRIORITY,
-    //* Force general constr to be (1) or to not be (0) in final IIS
+    /// Force general constr to be (1) or to not be (0) in final IIS
     IIS_GENCONSTRFORCE,
-    //* Force QConstr to be (1) or to not be (0) in final IIS
+    /// Force QConstr to be (1) or to not be (0) in final IIS
     IIS_QCONSTRFORCE,
-    //* Force SOS to be (1) or to not be (0) in final IIS
+    /// Force SOS to be (1) or to not be (0) in final IIS
     IIS_SOSFORCE,
-    //* Force constr to be (1) or to not be (0) in final IIS
+    /// Force constr to be (1) or to not be (0) in final IIS
     IIS_CONSTRFORCE,
-    //* Force var UB to be (1) or to not be (0) in final IIS
+    /// Force var UB to be (1) or to not be (0) in final IIS
     IIS_UBFORCE,
-    //* Force var LB to be (1) or to not be (0) in final IIS
+    /// Force var LB to be (1) or to not be (0) in final IIS
     IIS_LBFORCE,
-    //* Boolean: Is general constr in IIS?
+    /// Boolean: Is general constr in IIS?
     IIS_GENCONSTR,
-    //* Boolean: Is QConstr in IIS?
+    /// Boolean: Is QConstr in IIS?
     IIS_QCONSTR,
-    //* Boolean: Is SOS in IIS?
+    /// Boolean: Is SOS in IIS?
     IIS_SOS,
-    //* Boolean: Is constr in IIS?
+    /// Boolean: Is constr in IIS?
     IIS_CONSTR,
-    //* Boolean: Is var UB in IIS?
+    /// Boolean: Is var UB in IIS?
     IIS_UB,
-    //* Boolean: Is var LB in IIS?
+    /// Boolean: Is var LB in IIS?
     IIS_LB,
-    //* Boolean: Is IIS Minimal?
+    /// Boolean: Is IIS Minimal?
     IIS_MINIMAL,
-    //* Constraint basis status
+    /// Constraint basis status
     CBASIS,
-    //* Variable basis status
+    /// Variable basis status
     VBASIS,
-    //* method that solved LP using concurrent
+    /// method that solved LP using concurrent
     CONCURRENTWINMETHOD,
     // 0, no basis,
     // 1, has basis, so can be computed
     // 2, available
     HASDUALNORM,
-    //* Iters performed (NL barrier)
+    /// Iters performed (NL barrier)
     NLBARITERCOUNT,
-    //* Iters performed (barrier)
+    /// Iters performed (barrier)
     BARITERCOUNT,
-    //* Status computed by barrier before crossover
+    /// Status computed by barrier before crossover
     BARSTATUS,
-    //* # of solutions found
+    /// # of solutions found
     SOLCOUNT,
-    //* Optimization status
+    /// Optimization status
     STATUS,
-    //* An option for PWL translation
+    /// An option for PWL translation
     FUNCNONLINEAR,
-    //* An option for PWL translation
+    /// An option for PWL translation
     FUNCPIECES,
-    //* Type of general constraint
+    /// Type of general constraint
     GENCONSTRTYPE,
-    //* Lazy constraint?
+    /// Lazy constraint?
     LAZY,
-    //* Ignore variable for solution identity check in solution pool
+    /// Ignore variable for solution identity check in solution pool
     POOLIGNORE,
-    //* user specified variable partition
+    /// user specified variable partition
     PARTITION,
-    //* variable hint priority
+    /// variable hint priority
     VARHINTPRI,
-    //* Convexity of variable PWL obj
+    /// Convexity of variable PWL obj
     PWLOBJCVX,
-    //* MIP branch priority
+    /// MIP branch priority
     BRANCHPRIORITY,
-    //* fingerprint computed from the model data and attributes influencing the optimization process
+    /// fingerprint computed from the model data and attributes influencing the optimization process
     FINGERPRINT,
-    //* number of tagged elements in model
+    /// number of tagged elements in model
     NUMTAGGED,
-    //* License expiration date
+    /// License expiration date
     LICENSE_EXPIRATION,
-    //* Model has multiple objectives?
+    /// Model has multiple objectives?
     IS_MULTIOBJ,
-    //* Model has quadratic constr?
+    /// Model has quadratic constr?
     IS_QCP,
-    //* Is model a QP/MIQP (without Q/NL constraints)?
+    /// Is model a QP/MIQP (without Q/NL constraints)?
     IS_QP,
-    //* Is model a MIP?
+    /// Is model a MIP?
     IS_MIP,
-    //* 1=min, -1=max
+    /// 1=min, -1=max
     MODELSENSE,
-    //* # of variables with PWL obj.
+    /// # of variables with PWL obj.
     NUMPWLOBJVARS,
-    //* # of binary vars
+    /// # of binary vars
     NUMBINVARS,
-    //* # of integer vars
+    /// # of integer vars
     NUMINTVARS,
-    //* # of nz in q constraints
+    /// # of nz in q constraints
     NUMQCNZS,
-    //* # of nz in Q
+    /// # of nz in Q
     NUMQNZS,
-    //* # of nz in A
+    /// # of nz in A
     NUMNZS,
-    //* # of general constraints
+    /// # of general constraints
     NUMGENCONSTRS,
-    //* # of quadratic constraints
+    /// # of quadratic constraints
     NUMQCONSTRS,
-    //* # of sos constraints
+    /// # of sos constraints
     NUMSOS,
-    //* # of vars
+    /// # of vars
     NUMVARS,
-    //* # of constraints
+    /// # of constraints
     NUMCONSTRS,
 }
 
@@ -188,164 +188,164 @@ impl Attribute for GRBIntAttr {
 }
 
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
-enum GRBDblAttr {
-    //* Deprecated since v13 - use POOLNX instead
+pub enum GRBDblAttr {
+    /// Deprecated since v13 - use POOLNX instead
     Xn,
-    //* maximum amount of allocated memory (in GB) in master environment
+    /// maximum amount of allocated memory (in GB) in master environment
     MAXMEMUSED,
-    //* current amount of allocated memory (in GB) in master environment
+    /// current amount of allocated memory (in GB) in master environment
     MEMUSED,
-    //* objective value for scenario i
+    /// objective value for scenario i
     SCENNOBJVAL,
-    //* objective bound for scenario i
+    /// objective bound for scenario i
     SCENNOBJBOUND,
-    //* solution value in scenario i
+    /// solution value in scenario i
     SCENNX,
-    //* right hand side in scenario i
+    /// right hand side in scenario i
     SCENNRHS,
-    //* objective in scenario i
+    /// objective in scenario i
     SCENNOBJ,
-    //* upper bound in scenario i
+    /// upper bound in scenario i
     SCENNUB,
-    //* lower bound in scenario i
+    /// lower bound in scenario i
     SCENNLB,
-    //* work done for a pass during the multi-objective solve
+    /// work done for a pass during the multi-objective solve
     OBJPASSNWORK,
-    //* runtime for a pass during the multi-objective solve
+    /// runtime for a pass during the multi-objective solve
     OBJPASSNRUNTIME,
-    //* number of unexplored nodes for a pass during the multi-objective solve
+    /// number of unexplored nodes for a pass during the multi-objective solve
     OBJPASSNOPENNODECOUNT,
-    //* objective value for a pass during the multi-objective solve
+    /// objective value for a pass during the multi-objective solve
     OBJPASSNOBJVAL,
-    //* objective bound for a pass during the multi-objective solve
+    /// objective bound for a pass during the multi-objective solve
     OBJPASSNOBJBOUND,
-    //* number of explored nodes for a pass during the multi-objective solve
+    /// number of explored nodes for a pass during the multi-objective solve
     OBJPASSNNODECOUNT,
-    //* MIP gap for a pass during the multi-objective solve
+    /// MIP gap for a pass during the multi-objective solve
     OBJPASSNMIPGAP,
-    //* simplex iteration count for a pass during the multi-objective solve
+    /// simplex iteration count for a pass during the multi-objective solve
     OBJPASSNITERCOUNT,
-    //* absolute tolerance
+    /// absolute tolerance
     OBJNABSTOL,
-    //* relative tolerance
+    /// relative tolerance
     OBJNRELTOL,
-    //* weight
+    /// weight
     OBJNWEIGHT,
-    //* constant term
+    /// constant term
     OBJNCON,
-    //* Solution objective for Multi-objectives, also depends on solutionnumber
+    /// Solution objective for Multi-objectives, also depends on solutionnumber
     OBJNVAL,
-    //* ith objective
+    /// ith objective
     OBJN,
-    //* Dual norm square
+    /// Dual norm square
     CDUALNORM,
-    //* QC Constraint slack
+    /// QC Constraint slack
     QCSLACK,
-    //* Constraint slack
+    /// Constraint slack
     SLACK,
-    //* Dual value for QC
+    /// Dual value for QC
     QCPI,
-    //* Dual value
+    /// Dual value
     PI,
-    //* Dual norm square
+    /// Dual norm square
     VDUALNORM,
-    //* Reduced costs
+    /// Reduced costs
     RC,
-    //* Best barrier dual iterate
+    /// Best barrier dual iterate
     BARPI,
-    //* Best barrier primal iterate
+    /// Best barrier primal iterate
     BARX,
-    //* Deprecated since v13 - use POOLNX instead
+    /// Deprecated since v13 - use POOLNX instead
     XN,
-    //* Alternate MIP solution, depends on solutionnumber
+    /// Alternate MIP solution, depends on solutionnumber
     POOLNX,
-    //* Solution value
+    /// Solution value
     X,
-    //* Unexplored nodes (B&C)
+    /// Unexplored nodes (B&C)
     OPENNODECOUNT,
-    //* Nodes explored (B&C)
+    /// Nodes explored (B&C)
     NODECOUNT,
-    //* Iters performed (PDHG)
+    /// Iters performed (PDHG)
     PDHGITERCOUNT,
-    //* Iters performed (simplex)
+    /// Iters performed (simplex)
     ITERCOUNT,
-    //* MIP optimality gap
+    /// MIP optimality gap
     MIPGAP,
-    //* Deprecated since v13 - use POOLNOBJVAL instead
+    /// Deprecated since v13 - use POOLNOBJVAL instead
     POOLOBJVAL,
-    //* Solution objective, depends on solutionnumber
+    /// Solution objective, depends on solutionnumber
     POOLNOBJVAL,
-    //* Best bound on pool solution
+    /// Best bound on pool solution
     POOLOBJBOUND,
-    //* Continuous bound
+    /// Continuous bound
     OBJBOUNDC,
-    //* Best bound on solution
+    /// Best bound on solution
     OBJBOUND,
-    //* Solution objective
+    /// Solution objective
     OBJVAL,
-    //* Work for optimization
+    /// Work for optimization
     WORK,
-    //* Run time for optimization
+    /// Run time for optimization
     RUNTIME,
-    //* Min (abs) rhs of Q
+    /// Min (abs) rhs of Q
     MIN_QCRHS,
-    //* Max (abs) rhs of Q
+    /// Max (abs) rhs of Q
     MAX_QCRHS,
-    //* Min (abs) nz coeff in linear part of Q
+    /// Min (abs) nz coeff in linear part of Q
     MIN_QCLCOEFF,
-    //* Max (abs) nz coeff in linear part of Q
+    /// Max (abs) nz coeff in linear part of Q
     MAX_QCLCOEFF,
-    //* Min (abs) obj coeff of quadratic part
+    /// Min (abs) obj coeff of quadratic part
     MIN_QOBJ_COEFF,
-    //* Max (abs) obj coeff of quadratic part
+    /// Max (abs) obj coeff of quadratic part
     MAX_QOBJ_COEFF,
-    //* Min (abs) nz coeff in Q
+    /// Min (abs) nz coeff in Q
     MIN_QCCOEFF,
-    //* Max (abs) nz coeff in Q
+    /// Max (abs) nz coeff in Q
     MAX_QCCOEFF,
-    //* Min (abs) rhs coeff
+    /// Min (abs) rhs coeff
     MIN_RHS,
-    //* Max (abs) rhs coeff
+    /// Max (abs) rhs coeff
     MAX_RHS,
-    //* Min (abs) obj coeff
+    /// Min (abs) obj coeff
     MIN_OBJ_COEFF,
-    //* Max (abs) obj coeff
+    /// Max (abs) obj coeff
     MAX_OBJ_COEFF,
-    //* Min (abs) var bd
+    /// Min (abs) var bd
     MIN_BOUND,
-    //* Max (abs) finite var bd
+    /// Max (abs) finite var bd
     MAX_BOUND,
-    //* Min (abs) nz coeff in A
+    /// Min (abs) nz coeff in A
     MIN_COEFF,
-    //* Max (abs) nz coeff in A
+    /// Max (abs) nz coeff in A
     MAX_COEFF,
-    //* An option for PWL translation
+    /// An option for PWL translation
     FUNCPIECERATIO,
-    //* An option for PWL translation
+    /// An option for PWL translation
     FUNCPIECELENGTH,
-    //* An option for PWL translation
+    /// An option for PWL translation
     FUNCPIECEERROR,
-    //* QC RHS
+    /// QC RHS
     QCRHS,
-    //* LP dual solution warm start
+    /// LP dual solution warm start
     DSTART,
-    //* RHS
+    /// RHS
     RHS,
-    //* variable hint value
+    /// variable hint value
     VARHINTVAL,
-    //* LP primal solution warm start
+    /// LP primal solution warm start
     PSTART,
-    //* MIP start value, depends on startnumber
+    /// MIP start value, depends on startnumber
     START,
-    //* Objective coeff
+    /// Objective coeff
     OBJ,
-    //* Upper bound
+    /// Upper bound
     UB,
-    //* Lower bound
+    /// Lower bound
     LB,
-    //* Objective constant
+    /// Objective constant
     OBJCON,
-    //* # of nz in A
+    /// # of nz in A
     DNUMNZS,
 }
 
@@ -436,26 +436,26 @@ impl Attribute for GRBDblAttr {
 }
 
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
-enum GRBStrAttr {
-    //* name of scenario i
+pub enum GRBStrAttr {
+    /// name of scenario i
     SCENNNAME,
-    //* name
+    /// name
     OBJNNAME,
-    //* Name of general constraint
+    /// Name of general constraint
     GENCONSTRNAME,
-    //* QC name
+    /// QC name
     QCNAME,
-    //* quadratic constraint tags
+    /// quadratic constraint tags
     QCTAG,
-    //* Constraint name
+    /// Constraint name
     CONSTRNAME,
-    //* linear constraint tags
+    /// linear constraint tags
     CTAG,
-    //* variable tags
+    /// variable tags
     VTAG,
-    //* Variable name
+    /// Variable name
     VARNAME,
-    //* model name
+    /// model name
     MODELNAME,
 }
 
@@ -477,12 +477,12 @@ impl Attribute for GRBStrAttr {
 }
 
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
-enum GRBCharAttr {
-    //* QC sense ('<', '>', or '=')
+pub enum GRBCharAttr {
+    /// QC sense ('<', '>', or '=')
     QCSENSE,
-    //* Sense ('<', '>', or '=')
+    /// Sense ('<', '>', or '=')
     SENSE,
-    //* Integrality type
+    /// Integrality type
     VTYPE,
 }
 
