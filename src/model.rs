@@ -75,7 +75,11 @@ impl GRBModel {
         let constant_term = obj.scalar;
 
         let error = unsafe {
-            ffi::GRBsetdblattr(self.inner(), ffi::GRB_DBL_ATTR_OBJ.as_ptr(), constant_term)
+            ffi::GRBsetdblattr(
+                self.inner(),
+                ffi::GRB_DBL_ATTR_OBJCON.as_ptr(),
+                constant_term,
+            )
         };
         self.get_error(error).unwrap();
         // set coeffs
