@@ -1,4 +1,4 @@
-use crate::ffi;
+use crate::{expr::lin_expr::LinExpr, ffi};
 pub mod lin_expr;
 
 pub enum GRBSense {
@@ -17,5 +17,5 @@ impl GRBSense {
     }
 }
 
-//NOTE: I think I should keep track of the LHS and keep all scalars on the RHS?
+// NOTE: I think I should keep track of the LHS and keep all scalars on the RHS?
 // Then I can call ffi::GRBaddconstr() with the correct inputs

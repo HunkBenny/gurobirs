@@ -12,9 +12,9 @@ pub struct LinExpr {
     ///
     /// NOTE: Even though this will probably not happen often, this has no impact on the solving of
     /// the model, only on the construction of it.
-    expr: BTreeMap<usize, f64>,
+    pub(crate) expr: BTreeMap<usize, f64>,
     /// The constant term
-    scalar: f64,
+    pub(crate) scalar: f64,
 }
 
 // impl add, mult, sub etc
@@ -37,7 +37,7 @@ impl AddAssign<f64> for LinExpr {
 
 impl Add<LinExpr> for LinExpr {
     type Output = LinExpr;
-    //TODO: fix this to create a new linexpr
+    // TODO: fix this to create a new linexpr
     fn add(mut self, rhs: LinExpr) -> Self::Output {
         // 1. add scalar
         self.scalar += rhs.scalar;
