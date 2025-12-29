@@ -83,7 +83,7 @@ impl CanBeAddedToModel for TempConstr {
         // 3. call GRBaddconstr
         let error = unsafe {
             ffi::GRBaddconstr(
-                model.inner_mut(),
+                model.inner(),
                 inds.len() as i32,
                 inds.as_mut_ptr(),
                 coeffs.as_mut_ptr(),
@@ -92,7 +92,7 @@ impl CanBeAddedToModel for TempConstr {
                 name_ptr,
             )
         };
-        // TODO: handle error
+        model.get_error(error).unwrap();
     }
 }
 

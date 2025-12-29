@@ -1,5 +1,5 @@
 use std::{
-    ffi::c_char,
+    ffi::{c_char, CStr},
     ptr::{null, null_mut},
 };
 
@@ -7,6 +7,7 @@ use crate::{
     attributes::{Attribute, GRBDblAttr},
     constr::GRBConstr,
     env::GRBenv,
+    error::check_err,
     ffi,
     modeling::{builder::CanBeAddedToModel, expr::lin_expr::LinExpr},
     var::{GRBVar, GRBVarType},
@@ -34,6 +35,7 @@ impl GRBModel {
                 null_mut(),
             )
         };
+        env.get_error(error).unwrap();
         // start indexes at 0 (per docs)
         GRBModel {
             inner: model,
@@ -55,7 +57,7 @@ impl GRBModel {
         var
     }
 
-    pub fn inner_mut(&mut self) -> *mut ffi::GRBmodel {
+    pub fn inner(&self) -> *mut ffi::GRBmodel {
         self.inner
     }
 
@@ -69,37 +71,58 @@ impl GRBModel {
     }
 
     pub fn set_objective(&mut self, obj: LinExpr, sense: GRBModelSense) {
-        // TODO: handle errors!
+        // set constant term
         let constant_term = obj.scalar;
+
         let error = unsafe {
-            ffi::GRBsetdblattr(
-                self.inner_mut(),
-                ffi::GRB_DBL_ATTR_OBJ.as_ptr(),
-                constant_term,
-            )
+            ffi::GRBsetdblattr(self.inner(), ffi::GRB_DBL_ATTR_OBJ.as_ptr(), constant_term)
         };
+        self.get_error(error).unwrap();
+        // set coeffs
         for (var_idx, coeff) in obj.expr {
             let error = unsafe {
                 ffi::GRBsetdblattrelement(
-                    self.inner_mut(),
+                    self.inner(),
                     ffi::GRB_DBL_ATTR_OBJ.as_ptr(),
                     var_idx as i32,
                     coeff,
                 )
             };
+            self.get_error(error).unwrap();
         }
+        // Set model sense
         let error = unsafe {
             ffi::GRBsetintattr(
-                self.inner_mut(),
+                self.inner(),
                 ffi::GRB_INT_ATTR_MODELSENSE.as_ptr(),
                 GRBModelSense::get(sense),
             )
         };
+        self.get_error(error).unwrap();
     }
 
     pub fn optimize(&mut self) {
-        let error = unsafe { ffi::GRBoptimize(self.inner_mut()) };
-        // TODO: handle error
+        let error = unsafe { ffi::GRBoptimize(self.inner()) };
+        match self.get_error(error) {
+            Ok(_) => (),
+            Err(e) => {
+                panic!("{}", e);
+            }
+        }
+    }
+
+    pub fn get_error(&self, error_code: i32) -> Result<(), String> {
+        match check_err(error_code) {
+            Err(e) => unsafe {
+                Err(format!(
+                    "ERROR CODE {}: {}",
+                    e,
+                    CStr::from_ptr(ffi::GRBgetmerrormsg(self.inner()) as *mut c_char)
+                        .to_string_lossy()
+                ))
+            },
+            Ok(_o) => Ok(()),
+        }
     }
 }
 

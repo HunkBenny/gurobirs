@@ -1,9 +1,9 @@
 use std::{
-    ffi::CString,
+    ffi::{c_char, CStr, CString},
     ptr::{null, null_mut},
 };
 
-use crate::ffi;
+use crate::{error::check_err, ffi};
 
 pub struct GRBenv {
     inner: *mut ffi::GRBenv,
@@ -36,6 +36,20 @@ impl GRBenv {
     pub fn start(&mut self) -> () {
         unsafe {
             ffi::GRBstartenv(self.inner);
+        }
+    }
+
+    pub fn get_error(&self, error_code: i32) -> Result<(), String> {
+        match check_err(error_code) {
+            Err(e) => unsafe {
+                Err(format!(
+                    "ERROR CODE {}: {}",
+                    e,
+                    CStr::from_ptr(ffi::GRBgeterrormsg(self.inner()) as *mut c_char)
+                        .to_string_lossy()
+                ))
+            },
+            Ok(_o) => Ok(()),
         }
     }
 }

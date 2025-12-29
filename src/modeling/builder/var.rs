@@ -1,4 +1,3 @@
-use std::ffi::CStr;
 use std::ffi::CString;
 use std::ptr::null_mut;
 
@@ -59,7 +58,7 @@ impl CanBeAddedToModel for GRBVarBuilder {
 
         let error = unsafe {
             ffi::GRBaddvar(
-                model.inner_mut(),
+                model.inner(),
                 0,
                 null_mut(),
                 null_mut(),
@@ -70,6 +69,6 @@ impl CanBeAddedToModel for GRBVarBuilder {
                 name_ptr,
             )
         };
-        // TODO: HANDLE ERROR
+        model.get_error(error).unwrap();
     }
 }
