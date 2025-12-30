@@ -29,8 +29,9 @@ impl GRBenv {
         } else {
             unsafe { ffi::GRBloadenv(&mut env_ptr, logfilename_ptr) }
         };
-        // TODO: handle error
-        Ok(GRBenv { inner: env_ptr })
+        let env = GRBenv { inner: env_ptr };
+        env.get_error(error).unwrap();
+        Ok(env)
     }
 
     pub fn start(&mut self) -> () {
