@@ -1,6 +1,6 @@
 use std::{
     collections::BTreeMap,
-    ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign},
+    ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign},
 };
 
 use crate::var::GRBVar;

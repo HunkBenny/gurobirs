@@ -4,13 +4,12 @@ use std::{
 };
 
 use crate::{
-    attributes::{Attribute, GRBDblAttr},
     constr::GRBConstr,
     env::GRBenv,
     error::check_err,
     ffi,
     modeling::{builder::CanBeAddedToModel, expr::lin_expr::LinExpr},
-    var::{GRBVar, GRBVarType},
+    var::GRBVar,
 };
 
 pub struct GRBModel {
@@ -44,7 +43,6 @@ impl GRBModel {
         }
     }
 
-    // TODO: Add GRBVarBuilder support
     pub fn add_var<T>(&mut self, var: T) -> GRBVar
     where
         T: CanBeAddedToModel,

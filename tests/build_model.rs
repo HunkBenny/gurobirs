@@ -1,6 +1,4 @@
-use gurobi_rust::prelude::{
-    Expr, GRBModel, GRBModelSense, GRBVar, GRBVarBuilder, GRBVarType, GRBenv,
-};
+use gurobi_rust::prelude::{Expr, GRBModel, GRBModelSense, GRBVar, GRBVarType, GRBenv};
 
 #[test]
 fn test_build_model() {
