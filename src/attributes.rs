@@ -1,8 +1,5 @@
 use crate::ffi;
 use std::ffi::CStr;
-pub trait Attribute {
-    fn get(attribute: Self) -> &'static CStr;
-}
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
 pub enum GRBIntAttr {
     /// number of MIP starts
@@ -123,9 +120,9 @@ pub enum GRBIntAttr {
     NUMCONSTRS,
 }
 
-impl Attribute for GRBIntAttr {
-    fn get(attribute: GRBIntAttr) -> &'static CStr {
-        match attribute {
+impl Into<&'static CStr> for GRBIntAttr {
+    fn into(self) -> &'static CStr {
+        match self {
             GRBIntAttr::NUMSTART => ffi::GRB_INT_ATTR_NUMSTART,
             GRBIntAttr::NUMSCENARIOS => ffi::GRB_INT_ATTR_NUMSCENARIOS,
             GRBIntAttr::NUMOBJ => ffi::GRB_INT_ATTR_NUMOBJ,
@@ -349,9 +346,9 @@ pub enum GRBDblAttr {
     DNUMNZS,
 }
 
-impl Attribute for GRBDblAttr {
-    fn get(attribute: GRBDblAttr) -> &'static CStr {
-        match attribute {
+impl Into<&'static CStr> for GRBDblAttr {
+    fn into(self) -> &'static CStr {
+        match self {
             GRBDblAttr::Xn => ffi::GRB_DBL_ATTR_Xn,
             GRBDblAttr::MAXMEMUSED => ffi::GRB_DBL_ATTR_MAXMEMUSED,
             GRBDblAttr::MEMUSED => ffi::GRB_DBL_ATTR_MEMUSED,
@@ -459,9 +456,9 @@ pub enum GRBStrAttr {
     MODELNAME,
 }
 
-impl Attribute for GRBStrAttr {
-    fn get(attribute: GRBStrAttr) -> &'static CStr {
-        match attribute {
+impl Into<&'static CStr> for GRBStrAttr {
+    fn into(self) -> &'static CStr {
+        match self {
             GRBStrAttr::SCENNNAME => ffi::GRB_STR_ATTR_SCENNNAME,
             GRBStrAttr::OBJNNAME => ffi::GRB_STR_ATTR_OBJNNAME,
             GRBStrAttr::GENCONSTRNAME => ffi::GRB_STR_ATTR_GENCONSTRNAME,
@@ -486,9 +483,9 @@ pub enum GRBCharAttr {
     VTYPE,
 }
 
-impl Attribute for GRBCharAttr {
-    fn get(attribute: GRBCharAttr) -> &'static CStr {
-        match attribute {
+impl Into<&'static CStr> for GRBCharAttr {
+    fn into(self) -> &'static CStr {
+        match self {
             GRBCharAttr::QCSENSE => ffi::GRB_CHAR_ATTR_QCSENSE,
             GRBCharAttr::SENSE => ffi::GRB_CHAR_ATTR_SENSE,
             GRBCharAttr::VTYPE => ffi::GRB_CHAR_ATTR_VTYPE,

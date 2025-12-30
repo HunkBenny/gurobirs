@@ -1,9 +1,6 @@
 use crate::ffi;
 use std::ffi::CStr;
 
-pub trait Parameter {
-    fn get(parameter: Self) -> &'static CStr;
-}
 #[allow(clippy::upper_case_acronyms)]
 pub enum GRBIntParam {
     INHERITPARAMS,
@@ -136,9 +133,9 @@ pub enum GRBIntParam {
     BARITERLIMIT,
 }
 
-impl Parameter for GRBIntParam {
-    fn get(parameter: Self) -> &'static CStr {
-        match parameter {
+impl Into<&'static CStr> for GRBIntParam {
+    fn into(self) -> &'static CStr {
+        match self {
             GRBIntParam::INHERITPARAMS => ffi::GRB_INT_PAR_INHERITPARAMS,
             GRBIntParam::FUNCNONLINEAR => ffi::GRB_INT_PAR_FUNCNONLINEAR,
             GRBIntParam::FUNCPIECES => ffi::GRB_INT_PAR_FUNCPIECES,
@@ -327,9 +324,9 @@ pub enum GRBDblParam {
     CUTOFF,
 }
 
-impl Parameter for GRBDblParam {
-    fn get(parameter: Self) -> &'static CStr {
-        match parameter {
+impl Into<&'static CStr> for GRBDblParam {
+    fn into(self) -> &'static CStr {
+        match self {
             GRBDblParam::FUNCMAXVAL => ffi::GRB_DBL_PAR_FUNCMAXVAL,
             GRBDblParam::FUNCPIECERATIO => ffi::GRB_DBL_PAR_FUNCPIECERATIO,
             GRBDblParam::FUNCPIECEERROR => ffi::GRB_DBL_PAR_FUNCPIECEERROR,
@@ -418,9 +415,9 @@ pub enum GRBStrParam {
     NODEFILEDIR,
 }
 
-impl Parameter for GRBStrParam {
-    fn get(parameter: Self) -> &'static CStr {
-        match parameter {
+impl Into<&'static CStr> for GRBStrParam {
+    fn into(self) -> &'static CStr {
+        match self {
             GRBStrParam::JOBID => ffi::GRB_STR_PAR_JOBID,
             GRBStrParam::DUMMY => ffi::GRB_STR_PAR_DUMMY,
             GRBStrParam::RESULTFILE => ffi::GRB_STR_PAR_RESULTFILE,
