@@ -65,7 +65,7 @@ impl CanBeAddedToModel for GRBVarBuilder {
                 self.obj.unwrap_or(0.0),
                 self.lb.unwrap_or(0.0),
                 self.ub.unwrap_or(f64::INFINITY),
-                self.vtype.unwrap_or(GRBVarType::CONTINUOUS).grb_type() as std::ffi::c_char,
+                self.vtype.unwrap_or(GRBVarType::CONTINUOUS).into(),
                 name_ptr,
             )
         };

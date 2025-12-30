@@ -9,10 +9,9 @@ pub enum GRBVarType {
     SEMIINT,
 }
 
-impl GRBVarType {
-    /// Get the Type as a c_char for FFI calls
-    pub fn grb_type(&self) -> std::ffi::c_char {
-        match self {
+impl From<GRBVarType> for std::ffi::c_char {
+    fn from(value: GRBVarType) -> Self {
+        match value {
             GRBVarType::CONTINUOUS => ffi::GRB_CONTINUOUS as std::ffi::c_char,
             GRBVarType::BINARY => ffi::GRB_BINARY as std::ffi::c_char,
             GRBVarType::INTEGER => ffi::GRB_INTEGER as std::ffi::c_char,

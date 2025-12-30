@@ -133,9 +133,9 @@ pub enum GRBIntParam {
     BARITERLIMIT,
 }
 
-impl Into<&'static CStr> for GRBIntParam {
-    fn into(self) -> &'static CStr {
-        match self {
+impl From<GRBIntParam> for &'static CStr {
+    fn from(value: GRBIntParam) -> &'static CStr {
+        match value {
             GRBIntParam::INHERITPARAMS => ffi::GRB_INT_PAR_INHERITPARAMS,
             GRBIntParam::FUNCNONLINEAR => ffi::GRB_INT_PAR_FUNCNONLINEAR,
             GRBIntParam::FUNCPIECES => ffi::GRB_INT_PAR_FUNCPIECES,
@@ -324,9 +324,9 @@ pub enum GRBDblParam {
     CUTOFF,
 }
 
-impl Into<&'static CStr> for GRBDblParam {
-    fn into(self) -> &'static CStr {
-        match self {
+impl From<GRBDblParam> for &'static CStr {
+    fn from(value: GRBDblParam) -> &'static CStr {
+        match value {
             GRBDblParam::FUNCMAXVAL => ffi::GRB_DBL_PAR_FUNCMAXVAL,
             GRBDblParam::FUNCPIECERATIO => ffi::GRB_DBL_PAR_FUNCPIECERATIO,
             GRBDblParam::FUNCPIECEERROR => ffi::GRB_DBL_PAR_FUNCPIECEERROR,
@@ -415,9 +415,9 @@ pub enum GRBStrParam {
     NODEFILEDIR,
 }
 
-impl Into<&'static CStr> for GRBStrParam {
-    fn into(self) -> &'static CStr {
-        match self {
+impl From<GRBStrParam> for &'static CStr {
+    fn from(value: GRBStrParam) -> &'static CStr {
+        match value {
             GRBStrParam::JOBID => ffi::GRB_STR_PAR_JOBID,
             GRBStrParam::DUMMY => ffi::GRB_STR_PAR_DUMMY,
             GRBStrParam::RESULTFILE => ffi::GRB_STR_PAR_RESULTFILE,

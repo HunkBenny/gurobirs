@@ -120,9 +120,9 @@ pub enum GRBIntAttr {
     NUMCONSTRS,
 }
 
-impl Into<&'static CStr> for GRBIntAttr {
-    fn into(self) -> &'static CStr {
-        match self {
+impl From<GRBIntAttr> for &'static CStr {
+    fn from(value: GRBIntAttr) -> &'static CStr {
+        match value {
             GRBIntAttr::NUMSTART => ffi::GRB_INT_ATTR_NUMSTART,
             GRBIntAttr::NUMSCENARIOS => ffi::GRB_INT_ATTR_NUMSCENARIOS,
             GRBIntAttr::NUMOBJ => ffi::GRB_INT_ATTR_NUMOBJ,
@@ -346,9 +346,9 @@ pub enum GRBDblAttr {
     DNUMNZS,
 }
 
-impl Into<&'static CStr> for GRBDblAttr {
-    fn into(self) -> &'static CStr {
-        match self {
+impl From<GRBDblAttr> for &'static CStr {
+    fn from(value: GRBDblAttr) -> &'static CStr {
+        match value {
             GRBDblAttr::Xn => ffi::GRB_DBL_ATTR_Xn,
             GRBDblAttr::MAXMEMUSED => ffi::GRB_DBL_ATTR_MAXMEMUSED,
             GRBDblAttr::MEMUSED => ffi::GRB_DBL_ATTR_MEMUSED,
@@ -456,9 +456,9 @@ pub enum GRBStrAttr {
     MODELNAME,
 }
 
-impl Into<&'static CStr> for GRBStrAttr {
-    fn into(self) -> &'static CStr {
-        match self {
+impl From<GRBStrAttr> for &'static CStr {
+    fn from(value: GRBStrAttr) -> &'static CStr {
+        match value {
             GRBStrAttr::SCENNNAME => ffi::GRB_STR_ATTR_SCENNNAME,
             GRBStrAttr::OBJNNAME => ffi::GRB_STR_ATTR_OBJNNAME,
             GRBStrAttr::GENCONSTRNAME => ffi::GRB_STR_ATTR_GENCONSTRNAME,
@@ -483,9 +483,9 @@ pub enum GRBCharAttr {
     VTYPE,
 }
 
-impl Into<&'static CStr> for GRBCharAttr {
-    fn into(self) -> &'static CStr {
-        match self {
+impl From<GRBCharAttr> for &'static CStr {
+    fn from(value: GRBCharAttr) -> &'static CStr {
+        match value {
             GRBCharAttr::QCSENSE => ffi::GRB_CHAR_ATTR_QCSENSE,
             GRBCharAttr::SENSE => ffi::GRB_CHAR_ATTR_SENSE,
             GRBCharAttr::VTYPE => ffi::GRB_CHAR_ATTR_VTYPE,
