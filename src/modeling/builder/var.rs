@@ -2,7 +2,7 @@ use std::ffi::CString;
 use std::ptr::null_mut;
 
 use crate::ffi;
-use crate::modeling::builder::CanBeAddedToModel;
+use crate::modeling::CanBeAddedToModel;
 use crate::var::GRBVar;
 use crate::var::GRBVarType;
 

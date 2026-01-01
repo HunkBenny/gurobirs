@@ -6,10 +6,9 @@ pub enum GRBSense {
     Equal,
     GreaterEqual,
 }
-
-impl GRBSense {
-    pub fn to_grb_char(&self) -> std::ffi::c_char {
-        match self {
+impl From<GRBSense> for std::ffi::c_char {
+    fn from(sense: GRBSense) -> Self {
+        match sense {
             GRBSense::LessEqual => ffi::GRB_LESS_EQUAL as std::ffi::c_char,
             GRBSense::Equal => ffi::GRB_EQUAL as std::ffi::c_char,
             GRBSense::GreaterEqual => ffi::GRB_GREATER_EQUAL as std::ffi::c_char,

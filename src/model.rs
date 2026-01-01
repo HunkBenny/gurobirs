@@ -4,12 +4,11 @@ use std::{
 };
 
 use crate::{
-    callback::GRBCallback,
     constr::GRBConstr,
     env::GRBenv,
     error::check_err,
     ffi,
-    modeling::{builder::CanBeAddedToModel, expr::lin_expr::LinExpr},
+    modeling::{expr::lin_expr::LinExpr, CanBeAddedToModel},
     var::GRBVar,
 };
 

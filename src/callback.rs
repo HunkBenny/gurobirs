@@ -6,11 +6,13 @@
 
 use gurobi_sys::GRBmsg;
 
+use crate::error::check_err;
 use crate::ffi;
 use crate::model::GRBModel;
+use crate::modeling::CanBeAddedToCallback;
 use crate::prelude::{GRBSense, LinExpr};
+use std::ffi::{c_char, CStr};
 use std::panic::{catch_unwind, AssertUnwindSafe};
-use std::ptr::null_mut;
 
 pub struct GRBCallbackContext {
     model: *mut ffi::GRBmodel,
@@ -86,11 +88,33 @@ macro_rules! __internal_wrap_callback {
 }
 
 impl GRBCallbackContext {
+    pub fn get_error(&self, error_code: i32) -> Result<(), String> {
+        match check_err(error_code) {
+            Err(e) => unsafe {
+                Err(format!(
+                    "ERROR CODE {}: {}",
+                    e,
+                    CStr::from_ptr(ffi::GRBgetmerrormsg(self.model) as *mut c_char)
+                        .to_string_lossy()
+                ))
+            },
+            Ok(_o) => Ok(()),
+        }
+    }
+
     pub fn abort(&self) {
         unsafe {
             ffi::GRBterminate(self.model);
         }
     }
 
-    pub fn add_cut(&self, expr: LinExpr, sense: GRBSense, rhs: f64) {}
+    pub fn add_cut<E: CanBeAddedToCallback>(&mut self, expr: E) {
+        let error = expr.add_cut(self);
+        self.get_error(error).unwrap();
+    }
+
+    pub fn add_lazy<E: CanBeAddedToCallback>(&mut self, expr: E) {
+        let error = expr.add_lazy(self);
+        self.get_error(error).unwrap();
+    }
 }
