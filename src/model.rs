@@ -144,3 +144,52 @@ impl GRBModelSense {
     }
 }
 // TODO: getters
+
+#[allow(clippy::upper_case_acronyms, non_camel_case_types)]
+pub enum GRBStatus {
+    LOADED,
+    OPTIMAL,
+    INFEASIBLE,
+    INF_OR_UNBD,
+    UNBOUNDED,
+    CUTOFF,
+    ITERATION_LIMIT,
+    NODE_LIMIT,
+    TIME_LIMIT,
+    SOLUTION_LIMIT,
+    INTERRUPTED,
+    NUMERIC,
+    SUBOPTIMAL,
+    INPROGRESS,
+    USER_OBJ_LIMIT,
+    WORK_LIMIT,
+    MEM_LIMIT,
+    LOCALLY_OPTIMAL,
+    LOCALLY_INFEASIBLE,
+}
+
+impl From<GRBStatus> for std::ffi::c_int {
+    fn from(value: GRBStatus) -> Self {
+        match value {
+            GRBStatus::LOADED => ffi::GRB_LOADED,
+            GRBStatus::OPTIMAL => ffi::GRB_OPTIMAL,
+            GRBStatus::INFEASIBLE => ffi::GRB_INFEASIBLE,
+            GRBStatus::INF_OR_UNBD => ffi::GRB_INF_OR_UNBD,
+            GRBStatus::UNBOUNDED => ffi::GRB_UNBOUNDED,
+            GRBStatus::CUTOFF => ffi::GRB_CUTOFF,
+            GRBStatus::ITERATION_LIMIT => ffi::GRB_ITERATION_LIMIT,
+            GRBStatus::NODE_LIMIT => ffi::GRB_NODE_LIMIT,
+            GRBStatus::TIME_LIMIT => ffi::GRB_TIME_LIMIT,
+            GRBStatus::SOLUTION_LIMIT => ffi::GRB_SOLUTION_LIMIT,
+            GRBStatus::INTERRUPTED => ffi::GRB_INTERRUPTED,
+            GRBStatus::NUMERIC => ffi::GRB_NUMERIC,
+            GRBStatus::SUBOPTIMAL => ffi::GRB_SUBOPTIMAL,
+            GRBStatus::INPROGRESS => ffi::GRB_INPROGRESS,
+            GRBStatus::USER_OBJ_LIMIT => ffi::GRB_USER_OBJ_LIMIT,
+            GRBStatus::WORK_LIMIT => ffi::GRB_WORK_LIMIT,
+            GRBStatus::MEM_LIMIT => ffi::GRB_MEM_LIMIT,
+            GRBStatus::LOCALLY_OPTIMAL => ffi::GRB_LOCALLY_OPTIMAL,
+            GRBStatus::LOCALLY_INFEASIBLE => ffi::GRB_LOCALLY_INFEASIBLE,
+        }
+    }
+}
