@@ -4,6 +4,7 @@ use std::{
 };
 
 use crate::{
+    callback::GRBCallback,
     constr::GRBConstr,
     env::GRBenv,
     error::check_err,
@@ -16,6 +17,7 @@ pub struct GRBModel {
     inner: *mut ffi::GRBmodel,
     var_index: usize,
     cons_index: usize,
+    pub(crate) callback: Option<fn()>,
 }
 
 impl GRBModel {
@@ -40,6 +42,7 @@ impl GRBModel {
             inner: model,
             var_index: 0,
             cons_index: 0,
+            callback: None,
         }
     }
 

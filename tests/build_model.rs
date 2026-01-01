@@ -1,4 +1,14 @@
-use gurobi_rust::prelude::{Expr, GRBModel, GRBModelSense, GRBVar, GRBVarType, GRBenv};
+use gurobi_rust::prelude::{
+    CallbackTrait, Expr, GRBCallback, GRBCallbackContext, GRBModel, GRBModelSense, GRBVar,
+    GRBVarType, GRBenv,
+};
+
+struct MyCallback;
+impl CallbackTrait for MyCallback {
+    fn callback(&self, cb_ctx: GRBCallbackContext) {
+        println!("Callback called from Rust! where = {}", cb_ctx.where_);
+    }
+}
 
 #[test]
 fn test_build_model() {
@@ -20,9 +30,10 @@ fn test_build_model() {
             .name("y".to_owned()),
     );
 
-    let cons = x + y;
-    model.add_constr(cons.le(6.0));
+    model.add_constr((x + y).le(6.0));
     let obj = 5.0 * x + 100.0 * y;
     model.set_objective(obj, GRBModelSense::MAXIMIZE);
+    let mut callback = GRBCallback::new(MyCallback);
+    model.set_callback(&mut callback);
     model.optimize();
 }

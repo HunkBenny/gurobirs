@@ -1,4 +1,5 @@
 pub use crate::attributes::{GRBCharAttr, GRBDblAttr, GRBIntAttr, GRBStrAttr};
+pub use crate::callback::{CallbackTrait, GRBCallback, GRBCallbackContext};
 pub use crate::constr::Expr;
 pub use crate::constr::GRBConstr;
 pub use crate::env::GRBenv;
