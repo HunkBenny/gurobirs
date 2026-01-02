@@ -3,7 +3,7 @@ use std::{
     ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign},
 };
 
-use crate::var::GRBVar;
+use crate::{modeling::IsModelingObject, var::GRBVar};
 
 pub struct LinExpr {
     /// Tree of (variable index, coefficient) pairs

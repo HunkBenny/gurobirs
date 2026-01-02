@@ -9,10 +9,9 @@ use std::{
 
 use crate::{
     ffi,
-    model::GRBModel,
     modeling::{
         expr::{lin_expr::LinExpr, GRBSense},
-        CanBeAddedToCallback, CanBeAddedToModel,
+        CanBeAddedToCallback, CanBeAddedToModel, IsModelingObject,
     },
     prelude::GRBCallbackContext,
 };
@@ -146,4 +145,8 @@ pub struct GRBConstr {
     pub index: usize,
 }
 
-impl GRBModel {}
+impl IsModelingObject for GRBConstr {
+    fn index(&self) -> usize {
+        self.index
+    }
+}

@@ -8,7 +8,7 @@ use crate::{
     env::GRBenv,
     error::check_err,
     ffi,
-    modeling::{expr::lin_expr::LinExpr, CanBeAddedToModel},
+    modeling::{expr::lin_expr::LinExpr, CanBeAddedToModel, IsModelingObject},
     var::GRBVar,
 };
 
@@ -43,6 +43,10 @@ impl GRBModel {
             cons_index: 0,
             callback: None,
         }
+    }
+
+    pub(crate) fn get_env(&self) -> *mut ffi::GRBenv {
+        unsafe { ffi::GRBgetenv(self.inner()) }
     }
 
     pub fn add_var<T>(&mut self, var: T) -> GRBVar
@@ -128,6 +132,19 @@ impl GRBModel {
             Ok(_o) => Ok(()),
         }
     }
+
+    pub fn set<S: ModelSetter>(&mut self, what: S, value: S::Value) {
+        let error = what.set(self, value);
+        self.get_error(error).unwrap();
+    }
+    pub fn set_list<C, S>(&mut self, what: S, inds: Vec<C>, values: Vec<S::Value>)
+    where
+        C: IsModelingObject,
+        S: ModelSetterList<C>,
+    {
+        let error = what.set_list(self, inds, values);
+        self.get_error(error).unwrap();
+    }
 }
 
 pub enum GRBModelSense {
@@ -143,7 +160,6 @@ impl GRBModelSense {
         }
     }
 }
-// TODO: getters
 
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
 pub enum GRBStatus {
@@ -193,3 +209,21 @@ impl From<GRBStatus> for std::ffi::c_int {
         }
     }
 }
+
+// trait used to set model attributes and parameters
+pub trait ModelSetter {
+    type Value;
+    fn set(&self, model: &mut GRBModel, value: Self::Value) -> i32;
+}
+
+pub trait ModelSetterList<C>
+where
+    C: IsModelingObject,
+{
+    type Value;
+    fn set_list(&self, model: &mut GRBModel, inds: Vec<C>, values: Vec<Self::Value>) -> i32;
+}
+
+// TODO: setters
+
+// TODO: getters

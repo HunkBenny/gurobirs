@@ -1,7 +1,8 @@
-use crate::ffi;
-use std::ffi::CStr;
+use crate::{ffi, model::ModelSetter};
+use std::ffi::{CStr, CString};
 
 #[allow(clippy::upper_case_acronyms)]
+#[derive(Clone, Copy)]
 pub enum GRBIntParam {
     INHERITPARAMS,
     FUNCNONLINEAR,
@@ -131,6 +132,16 @@ pub enum GRBIntParam {
     NLBARITERLIMIT,
     SOLUTIONLIMIT,
     BARITERLIMIT,
+}
+
+impl ModelSetter for GRBIntParam {
+    type Value = i32;
+
+    fn set(&self, model: &mut crate::prelude::GRBModel, value: Self::Value) -> i32 {
+        let env = model.get_env();
+        let attr_name: &CStr = (*self).into();
+        unsafe { ffi::GRBsetintparam(env, attr_name.as_ptr(), value) }
+    }
 }
 
 impl From<GRBIntParam> for &'static CStr {
@@ -269,6 +280,7 @@ impl From<GRBIntParam> for &'static CStr {
 }
 
 #[allow(clippy::upper_case_acronyms)]
+#[derive(Clone, Copy)]
 pub enum GRBDblParam {
     FUNCMAXVAL,
     FUNCPIECERATIO,
@@ -322,6 +334,16 @@ pub enum GRBDblParam {
     NODELIMIT,
     ITERATIONLIMIT,
     CUTOFF,
+}
+
+impl ModelSetter for GRBDblParam {
+    type Value = f64;
+
+    fn set(&self, model: &mut crate::prelude::GRBModel, value: Self::Value) -> i32 {
+        let env = model.get_env();
+        let attr_name: &CStr = (*self).into();
+        unsafe { ffi::GRBsetdblparam(env, attr_name.as_ptr(), value) }
+    }
 }
 
 impl From<GRBDblParam> for &'static CStr {
@@ -384,6 +406,7 @@ impl From<GRBDblParam> for &'static CStr {
 }
 
 #[allow(clippy::upper_case_acronyms)]
+#[derive(Clone, Copy)]
 pub enum GRBStrParam {
     JOBID,
     DUMMY,
@@ -413,6 +436,18 @@ pub enum GRBStrParam {
     WORKERPOOL,
     SOLFILES,
     NODEFILEDIR,
+}
+
+impl ModelSetter for GRBStrParam {
+    type Value = String;
+
+    fn set(&self, model: &mut crate::prelude::GRBModel, value: Self::Value) -> i32 {
+        let env = model.get_env();
+        let attr_name: &CStr = (*self).into();
+        let value =
+            CString::new(value).expect("Failed to convert String to CString in `ModelSetter::set`");
+        unsafe { ffi::GRBsetstrparam(env, attr_name.as_ptr(), value.as_ptr()) }
+    }
 }
 
 impl From<GRBStrParam> for &'static CStr {

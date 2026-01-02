@@ -9,7 +9,7 @@ use gurobi_sys::{GRBmsg, GRB_INT_ATTR_NUMVARS};
 use crate::error::check_err;
 use crate::ffi;
 use crate::model::GRBModel;
-use crate::modeling::CanBeAddedToCallback;
+use crate::modeling::{CanBeAddedToCallback, IsModelingObject};
 use crate::prelude::{GRBSense, LinExpr};
 use crate::var::GRBVar;
 use std::ffi::{c_char, c_int, CStr};

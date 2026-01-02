@@ -1,4 +1,4 @@
-use crate::ffi;
+use crate::{ffi, modeling::IsModelingObject};
 
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
 pub enum GRBVarType {
@@ -27,12 +27,14 @@ pub struct GRBVar {
 }
 
 impl GRBVar {
-    pub fn index(&self) -> usize {
-        self.index
-    }
-
     pub fn new(index: usize) -> GRBVar {
         GRBVar { index }
+    }
+}
+
+impl IsModelingObject for GRBVar {
+    fn index(&self) -> usize {
+        self.index
     }
 }
 
