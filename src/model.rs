@@ -137,6 +137,7 @@ impl GRBModel {
         let error = what.set(self, value);
         self.get_error(error).unwrap();
     }
+
     pub fn set_list<C, S>(&mut self, what: S, inds: Vec<C>, values: Vec<S::Value>)
     where
         C: IsModelingObject,
@@ -208,6 +209,19 @@ impl From<GRBStatus> for std::ffi::c_int {
             GRBStatus::LOCALLY_INFEASIBLE => ffi::GRB_LOCALLY_INFEASIBLE,
         }
     }
+}
+
+pub trait ModelGetter {
+    type Value;
+    fn get(&self, model: &GRBModel) -> Self::Value;
+}
+
+pub trait ModelGetterList<C>
+where
+    C: IsModelingObject,
+{
+    type Value;
+    fn get_list(&self, model: &GRBModel, inds: Vec<C>) -> Vec<Self::Value>;
 }
 
 // trait used to set model attributes and parameters

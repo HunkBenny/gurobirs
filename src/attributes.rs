@@ -1,9 +1,12 @@
 use crate::{
     ffi,
-    model::{ModelSetter, ModelSetterList},
+    model::{ModelGetter, ModelGetterList, ModelSetter, ModelSetterList},
     modeling::IsModelingObject,
 };
-use std::ffi::{CStr, CString};
+use std::{
+    ffi::{CStr, CString},
+    ptr::null_mut,
+};
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
 #[derive(Clone, Copy)]
 pub enum GRBIntAttr {
@@ -125,6 +128,23 @@ pub enum GRBIntAttr {
     NUMCONSTRS,
 }
 
+impl ModelGetter for GRBIntAttr {
+    type Value = i32;
+
+    fn get(&self, model: &crate::prelude::GRBModel) -> Self::Value {
+        let mut value_p = 0;
+        let attr_name: &CStr = (*self).into();
+        let error = unsafe {
+            ffi::GRBgetintattr(
+                model.inner(),
+                attr_name.as_ptr(),
+                value_p as *mut std::ffi::c_int,
+            )
+        };
+        value_p
+    }
+}
+
 impl ModelSetter for GRBIntAttr {
     type Value = i32;
 
@@ -165,6 +185,32 @@ where
     }
 }
 
+impl<C> ModelGetterList<C> for GRBIntAttr
+where
+    C: IsModelingObject,
+{
+    type Value = i32;
+
+    fn get_list(&self, model: &crate::prelude::GRBModel, inds: Vec<C>) -> Vec<Self::Value> {
+        let len = inds.len();
+        let mut inds = inds
+            .iter()
+            .map(|c| c.index() as std::ffi::c_int)
+            .collect::<Vec<_>>();
+        let mut values = vec![0 as std::ffi::c_int; len];
+        let attr_name: &CStr = (*self).into();
+        unsafe {
+            ffi::GRBgetintattrlist(
+                model.inner(),
+                attr_name.as_ptr(),
+                len as std::ffi::c_int,
+                inds.as_mut_ptr(),
+                values.as_mut_ptr(),
+            )
+        };
+        values
+    }
+}
 impl From<GRBIntAttr> for &'static CStr {
     fn from(value: GRBIntAttr) -> &'static CStr {
         match value {
@@ -392,6 +438,23 @@ pub enum GRBDblAttr {
     DNUMNZS,
 }
 
+impl ModelGetter for GRBDblAttr {
+    type Value = f64;
+
+    fn get(&self, model: &crate::prelude::GRBModel) -> Self::Value {
+        let mut value_p = 0.0;
+        let attr_name: &CStr = (*self).into();
+        let error = unsafe {
+            ffi::GRBgetdblattr(
+                model.inner(),
+                attr_name.as_ptr(),
+                &mut value_p as *mut std::ffi::c_double,
+            )
+        };
+        value_p
+    }
+}
+
 impl ModelSetter for GRBDblAttr {
     type Value = f64;
 
@@ -400,6 +463,7 @@ impl ModelSetter for GRBDblAttr {
         unsafe { ffi::GRBsetdblattr(model.inner(), attr_name.as_ptr(), value) }
     }
 }
+
 impl<C> ModelSetterList<C> for GRBDblAttr
 where
     C: IsModelingObject,
@@ -428,6 +492,33 @@ where
                 values.as_mut_ptr(),
             )
         }
+    }
+}
+
+impl<C> ModelGetterList<C> for GRBDblAttr
+where
+    C: IsModelingObject,
+{
+    type Value = f64;
+
+    fn get_list(&self, model: &crate::prelude::GRBModel, inds: Vec<C>) -> Vec<Self::Value> {
+        let len = inds.len();
+        let mut inds = inds
+            .iter()
+            .map(|c| c.index() as std::ffi::c_int)
+            .collect::<Vec<_>>();
+        let mut values = vec![0.0 as std::ffi::c_double; len];
+        let attr_name: &CStr = (*self).into();
+        unsafe {
+            ffi::GRBgetdblattrlist(
+                model.inner(),
+                attr_name.as_ptr(),
+                len as std::ffi::c_int,
+                inds.as_mut_ptr(),
+                values.as_mut_ptr(),
+            )
+        };
+        values
     }
 }
 impl From<GRBDblAttr> for &'static CStr {
@@ -540,6 +631,17 @@ pub enum GRBStrAttr {
     /// model name
     MODELNAME,
 }
+impl ModelGetter for GRBStrAttr {
+    type Value = String;
+
+    fn get(&self, model: &crate::prelude::GRBModel) -> Self::Value {
+        let value_p = null_mut();
+        let attr_name: &CStr = (*self).into();
+        let error = unsafe { ffi::GRBgetstrattr(model.inner(), attr_name.as_ptr(), value_p) };
+        let c_str: &CStr = unsafe { CStr::from_ptr(*value_p) };
+        c_str.to_string_lossy().to_string()
+    }
+}
 
 impl ModelSetter for GRBStrAttr {
     type Value = String;
@@ -551,6 +653,40 @@ impl ModelSetter for GRBStrAttr {
         unsafe { ffi::GRBsetstrattr(model.inner(), attr_name.as_ptr(), value.as_ptr()) }
     }
 }
+
+impl<C> ModelGetterList<C> for GRBStrAttr
+where
+    C: IsModelingObject,
+{
+    type Value = String;
+
+    fn get_list(&self, model: &crate::prelude::GRBModel, inds: Vec<C>) -> Vec<Self::Value> {
+        let len = inds.len();
+        let mut inds = inds
+            .iter()
+            .map(|c| c.index() as std::ffi::c_int)
+            .collect::<Vec<_>>();
+        let mut values = vec![null_mut(); len];
+        let attr_name: &CStr = (*self).into();
+        unsafe {
+            ffi::GRBgetstrattrlist(
+                model.inner(),
+                attr_name.as_ptr(),
+                len as std::ffi::c_int,
+                inds.as_mut_ptr(),
+                values.as_mut_ptr(),
+            )
+        };
+        values
+            .iter()
+            .map(|&c| {
+                let c_str: &CStr = unsafe { CStr::from_ptr(c) };
+                c_str.to_string_lossy().to_string()
+            })
+            .collect::<Vec<_>>()
+    }
+}
+
 // PERF:Cloning here might be avoidable
 // FIX: Memory leak due to CString::into_raw() - need to convert back to CString and let it drop
 impl<C> ModelSetterList<C> for GRBStrAttr
@@ -625,6 +761,32 @@ impl From<GRBCharAttr> for &'static CStr {
             GRBCharAttr::SENSE => ffi::GRB_CHAR_ATTR_SENSE,
             GRBCharAttr::VTYPE => ffi::GRB_CHAR_ATTR_VTYPE,
         }
+    }
+}
+impl<C> ModelGetterList<C> for GRBCharAttr
+where
+    C: IsModelingObject,
+{
+    type Value = char;
+
+    fn get_list(&self, model: &crate::prelude::GRBModel, inds: Vec<C>) -> Vec<Self::Value> {
+        let len = inds.len();
+        let mut inds = inds
+            .iter()
+            .map(|c| c.index() as std::ffi::c_int)
+            .collect::<Vec<_>>();
+        let mut values = vec!['\0' as std::ffi::c_char; len];
+        let attr_name: &CStr = (*self).into();
+        unsafe {
+            ffi::GRBgetcharattrlist(
+                model.inner(),
+                attr_name.as_ptr(),
+                len as std::ffi::c_int,
+                inds.as_mut_ptr(),
+                values.as_mut_ptr(),
+            )
+        };
+        values.iter().map(|&c| c as u8 as char).collect()
     }
 }
 
