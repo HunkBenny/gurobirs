@@ -1,7 +1,8 @@
+use crate::ffi;
 use crate::{model::GRBModel, prelude::GRBCallbackContext};
 
 pub(crate) trait CanBeAddedToModel {
-    fn add_to_model(self, model: &mut GRBModel);
+    fn add_to_model(self, model: *mut ffi::GRBmodel) -> i32;
 }
 /// Marker trait for modeling objects (variables, constraints, etc)
 /// This can then be used to implement generic functions that work with any modeling object

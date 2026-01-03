@@ -81,7 +81,7 @@ impl Expr for LinExpr {
 }
 
 impl CanBeAddedToModel for TempConstr {
-    fn add_to_model(self, model: &mut crate::model::GRBModel) {
+    fn add_to_model(self, model: *mut ffi::GRBmodel) -> i32 {
         // 1. collect indices and coefficients
         let (mut inds, mut coeffs) = self.get_inds_and_coeffs();
 
@@ -92,9 +92,9 @@ impl CanBeAddedToModel for TempConstr {
         };
 
         // 3. call GRBaddconstr
-        let error = unsafe {
+        unsafe {
             ffi::GRBaddconstr(
-                model.inner(),
+                model,
                 inds.len() as i32,
                 inds.as_mut_ptr(),
                 coeffs.as_mut_ptr(),
@@ -102,8 +102,7 @@ impl CanBeAddedToModel for TempConstr {
                 self.rhs,
                 name_ptr,
             )
-        };
-        model.get_error(error).unwrap();
+        }
     }
 }
 

@@ -1,4 +1,7 @@
-use crate::{ffi, model::ModelSetter};
+use crate::{
+    ffi,
+    model::{EnvSetter, ModelSetter},
+};
 use std::ffi::{CStr, CString};
 
 #[allow(clippy::upper_case_acronyms)]
@@ -134,11 +137,10 @@ pub enum GRBIntParam {
     BARITERLIMIT,
 }
 
-impl ModelSetter for GRBIntParam {
+impl EnvSetter for GRBIntParam {
     type Value = i32;
 
-    fn set(&self, model: &mut crate::prelude::GRBModel, value: Self::Value) -> i32 {
-        let env = model.get_env();
+    fn set(&self, env: *mut ffi::GRBenv, value: Self::Value) -> i32 {
         let attr_name: &CStr = (*self).into();
         unsafe { ffi::GRBsetintparam(env, attr_name.as_ptr(), value) }
     }
@@ -336,11 +338,10 @@ pub enum GRBDblParam {
     CUTOFF,
 }
 
-impl ModelSetter for GRBDblParam {
+impl EnvSetter for GRBDblParam {
     type Value = f64;
 
-    fn set(&self, model: &mut crate::prelude::GRBModel, value: Self::Value) -> i32 {
-        let env = model.get_env();
+    fn set(&self, env: *mut ffi::GRBenv, value: Self::Value) -> i32 {
         let attr_name: &CStr = (*self).into();
         unsafe { ffi::GRBsetdblparam(env, attr_name.as_ptr(), value) }
     }
@@ -438,11 +439,10 @@ pub enum GRBStrParam {
     NODEFILEDIR,
 }
 
-impl ModelSetter for GRBStrParam {
+impl EnvSetter for GRBStrParam {
     type Value = String;
 
-    fn set(&self, model: &mut crate::prelude::GRBModel, value: Self::Value) -> i32 {
-        let env = model.get_env();
+    fn set(&self, env: *mut ffi::GRBenv, value: Self::Value) -> i32 {
         let attr_name: &CStr = (*self).into();
         let value =
             CString::new(value).expect("Failed to convert String to CString in `ModelSetter::set`");

@@ -61,7 +61,7 @@ impl GRBModel {
         unsafe {
             // PERF: Check if [GRBsetcallbackfuncadv](https://docs.gurobi.com/projects/optimizer/en/current/reference/c/logging.html#c.GRBsetcallbackfuncadv) could lead to performance improvements in certain scenarios.
             ffi::GRBsetcallbackfunc(
-                self.inner(),
+                *self.inner,
                 Some(c_shim::<C>),
                 callback as *mut _ as *mut std::ffi::c_void,
             );

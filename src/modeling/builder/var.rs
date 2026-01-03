@@ -50,7 +50,7 @@ impl GRBVar {
 }
 
 impl CanBeAddedToModel for GRBVarBuilder {
-    fn add_to_model(self, model: &mut crate::model::GRBModel) {
+    fn add_to_model(self, model: *mut ffi::GRBmodel) -> i32 {
         let name_ptr = match self.name {
             Some(cname) => cname.as_ptr(),
             None => null_mut(),
@@ -58,7 +58,7 @@ impl CanBeAddedToModel for GRBVarBuilder {
 
         let error = unsafe {
             ffi::GRBaddvar(
-                model.inner(),
+                model,
                 0,
                 null_mut(),
                 null_mut(),
@@ -69,6 +69,6 @@ impl CanBeAddedToModel for GRBVarBuilder {
                 name_ptr,
             )
         };
-        model.get_error(error).unwrap();
+        error
     }
 }

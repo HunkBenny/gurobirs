@@ -1,6 +1,6 @@
 use crate::{
     ffi,
-    model::{ModelGetter, ModelGetterList, ModelSetter, ModelSetterList},
+    model::{GRBModelPtr, ModelGetter, ModelGetterList, ModelSetter, ModelSetterList},
     modeling::IsModelingObject,
 };
 use std::{
@@ -131,15 +131,11 @@ pub enum GRBIntAttr {
 impl ModelGetter for GRBIntAttr {
     type Value = i32;
 
-    fn get(&self, model: &crate::prelude::GRBModel) -> Self::Value {
+    fn get(&self, model: *mut ffi::GRBmodel) -> Self::Value {
         let mut value_p = 0;
         let attr_name: &CStr = (*self).into();
         let error = unsafe {
-            ffi::GRBgetintattr(
-                model.inner(),
-                attr_name.as_ptr(),
-                value_p as *mut std::ffi::c_int,
-            )
+            ffi::GRBgetintattr(model, attr_name.as_ptr(), value_p as *mut std::ffi::c_int)
         };
         value_p
     }
@@ -148,9 +144,9 @@ impl ModelGetter for GRBIntAttr {
 impl ModelSetter for GRBIntAttr {
     type Value = i32;
 
-    fn set(&self, model: &mut crate::prelude::GRBModel, value: Self::Value) -> i32 {
+    fn set(&self, model: *mut ffi::GRBmodel, value: Self::Value) -> i32 {
         let attr_name: &CStr = (*self).into();
-        unsafe { ffi::GRBsetintattr(model.inner(), attr_name.as_ptr(), value) }
+        unsafe { ffi::GRBsetintattr(model, attr_name.as_ptr(), value) }
     }
 }
 
@@ -160,12 +156,7 @@ where
 {
     type Value = i32;
 
-    fn set_list(
-        &self,
-        model: &mut crate::prelude::GRBModel,
-        inds: Vec<C>,
-        values: Vec<Self::Value>,
-    ) -> i32 {
+    fn set_list(&self, model: *mut ffi::GRBmodel, inds: Vec<C>, values: Vec<Self::Value>) -> i32 {
         let attr_name: &CStr = (*self).into();
         let len = values.len();
         let mut inds = inds
@@ -175,7 +166,7 @@ where
         let mut values = values;
         unsafe {
             ffi::GRBsetintattrlist(
-                model.inner(),
+                model,
                 attr_name.as_ptr(),
                 len as std::ffi::c_int,
                 inds.as_mut_ptr(),
@@ -191,7 +182,7 @@ where
 {
     type Value = i32;
 
-    fn get_list(&self, model: &crate::prelude::GRBModel, inds: Vec<C>) -> Vec<Self::Value> {
+    fn get_list(&self, model: *mut ffi::GRBmodel, inds: Vec<C>) -> Vec<Self::Value> {
         let len = inds.len();
         let mut inds = inds
             .iter()
@@ -201,7 +192,7 @@ where
         let attr_name: &CStr = (*self).into();
         unsafe {
             ffi::GRBgetintattrlist(
-                model.inner(),
+                model,
                 attr_name.as_ptr(),
                 len as std::ffi::c_int,
                 inds.as_mut_ptr(),
@@ -441,12 +432,12 @@ pub enum GRBDblAttr {
 impl ModelGetter for GRBDblAttr {
     type Value = f64;
 
-    fn get(&self, model: &crate::prelude::GRBModel) -> Self::Value {
+    fn get(&self, model: *mut ffi::GRBmodel) -> Self::Value {
         let mut value_p = 0.0;
         let attr_name: &CStr = (*self).into();
         let error = unsafe {
             ffi::GRBgetdblattr(
-                model.inner(),
+                model,
                 attr_name.as_ptr(),
                 &mut value_p as *mut std::ffi::c_double,
             )
@@ -458,9 +449,9 @@ impl ModelGetter for GRBDblAttr {
 impl ModelSetter for GRBDblAttr {
     type Value = f64;
 
-    fn set(&self, model: &mut crate::prelude::GRBModel, value: Self::Value) -> i32 {
+    fn set(&self, model: *mut ffi::GRBmodel, value: Self::Value) -> i32 {
         let attr_name: &CStr = (*self).into();
-        unsafe { ffi::GRBsetdblattr(model.inner(), attr_name.as_ptr(), value) }
+        unsafe { ffi::GRBsetdblattr(model, attr_name.as_ptr(), value) }
     }
 }
 
@@ -470,12 +461,7 @@ where
 {
     type Value = f64;
 
-    fn set_list(
-        &self,
-        model: &mut crate::prelude::GRBModel,
-        inds: Vec<C>,
-        values: Vec<Self::Value>,
-    ) -> i32 {
+    fn set_list(&self, model: *mut ffi::GRBmodel, inds: Vec<C>, values: Vec<Self::Value>) -> i32 {
         let attr_name: &CStr = (*self).into();
         let len = values.len();
         let mut inds = inds
@@ -485,7 +471,7 @@ where
         let mut values = values;
         unsafe {
             ffi::GRBsetdblattrlist(
-                model.inner(),
+                model,
                 attr_name.as_ptr(),
                 len as std::ffi::c_int,
                 inds.as_mut_ptr(),
@@ -501,7 +487,7 @@ where
 {
     type Value = f64;
 
-    fn get_list(&self, model: &crate::prelude::GRBModel, inds: Vec<C>) -> Vec<Self::Value> {
+    fn get_list(&self, model: *mut ffi::GRBmodel, inds: Vec<C>) -> Vec<Self::Value> {
         let len = inds.len();
         let mut inds = inds
             .iter()
@@ -511,7 +497,7 @@ where
         let attr_name: &CStr = (*self).into();
         unsafe {
             ffi::GRBgetdblattrlist(
-                model.inner(),
+                model,
                 attr_name.as_ptr(),
                 len as std::ffi::c_int,
                 inds.as_mut_ptr(),
@@ -634,10 +620,10 @@ pub enum GRBStrAttr {
 impl ModelGetter for GRBStrAttr {
     type Value = String;
 
-    fn get(&self, model: &crate::prelude::GRBModel) -> Self::Value {
+    fn get(&self, model: *mut ffi::GRBmodel) -> Self::Value {
         let value_p = null_mut();
         let attr_name: &CStr = (*self).into();
-        let error = unsafe { ffi::GRBgetstrattr(model.inner(), attr_name.as_ptr(), value_p) };
+        let error = unsafe { ffi::GRBgetstrattr(model, attr_name.as_ptr(), value_p) };
         let c_str: &CStr = unsafe { CStr::from_ptr(*value_p) };
         c_str.to_string_lossy().to_string()
     }
@@ -646,11 +632,11 @@ impl ModelGetter for GRBStrAttr {
 impl ModelSetter for GRBStrAttr {
     type Value = String;
 
-    fn set(&self, model: &mut crate::prelude::GRBModel, value: Self::Value) -> i32 {
+    fn set(&self, model: *mut ffi::GRBmodel, value: Self::Value) -> i32 {
         let attr_name: &CStr = (*self).into();
         let value =
             CString::new(value).expect("Failed to convert String to CString in `ModelSetter::set`");
-        unsafe { ffi::GRBsetstrattr(model.inner(), attr_name.as_ptr(), value.as_ptr()) }
+        unsafe { ffi::GRBsetstrattr(model, attr_name.as_ptr(), value.as_ptr()) }
     }
 }
 
@@ -660,7 +646,7 @@ where
 {
     type Value = String;
 
-    fn get_list(&self, model: &crate::prelude::GRBModel, inds: Vec<C>) -> Vec<Self::Value> {
+    fn get_list(&self, model: *mut ffi::GRBmodel, inds: Vec<C>) -> Vec<Self::Value> {
         let len = inds.len();
         let mut inds = inds
             .iter()
@@ -670,7 +656,7 @@ where
         let attr_name: &CStr = (*self).into();
         unsafe {
             ffi::GRBgetstrattrlist(
-                model.inner(),
+                model,
                 attr_name.as_ptr(),
                 len as std::ffi::c_int,
                 inds.as_mut_ptr(),
@@ -695,12 +681,7 @@ where
 {
     type Value = String;
 
-    fn set_list(
-        &self,
-        model: &mut crate::prelude::GRBModel,
-        inds: Vec<C>,
-        values: Vec<Self::Value>,
-    ) -> i32 {
+    fn set_list(&self, model: *mut ffi::GRBmodel, inds: Vec<C>, values: Vec<Self::Value>) -> i32 {
         let attr_name: &CStr = (*self).into();
         let len = values.len();
         let mut inds = inds
@@ -717,7 +698,7 @@ where
             .collect::<Vec<_>>();
         unsafe {
             ffi::GRBsetstrattrlist(
-                model.inner(),
+                model,
                 attr_name.as_ptr(),
                 len as std::ffi::c_int,
                 inds.as_mut_ptr(),
@@ -769,7 +750,7 @@ where
 {
     type Value = char;
 
-    fn get_list(&self, model: &crate::prelude::GRBModel, inds: Vec<C>) -> Vec<Self::Value> {
+    fn get_list(&self, model: *mut ffi::GRBmodel, inds: Vec<C>) -> Vec<Self::Value> {
         let len = inds.len();
         let mut inds = inds
             .iter()
@@ -779,7 +760,7 @@ where
         let attr_name: &CStr = (*self).into();
         unsafe {
             ffi::GRBgetcharattrlist(
-                model.inner(),
+                model,
                 attr_name.as_ptr(),
                 len as std::ffi::c_int,
                 inds.as_mut_ptr(),
@@ -796,12 +777,7 @@ where
 {
     type Value = char;
 
-    fn set_list(
-        &self,
-        model: &mut crate::prelude::GRBModel,
-        inds: Vec<C>,
-        values: Vec<Self::Value>,
-    ) -> i32 {
+    fn set_list(&self, model: *mut ffi::GRBmodel, inds: Vec<C>, values: Vec<Self::Value>) -> i32 {
         let attr_name: &CStr = (*self).into();
         let len = values.len();
         let mut inds = inds
@@ -814,7 +790,7 @@ where
             .collect::<Vec<_>>();
         unsafe {
             ffi::GRBsetcharattrlist(
-                model.inner(),
+                model,
                 attr_name.as_ptr(),
                 len as std::ffi::c_int,
                 inds.as_mut_ptr(),
