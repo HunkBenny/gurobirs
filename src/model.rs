@@ -5,7 +5,7 @@ use std::{
 };
 
 use crate::{
-    constr::GRBConstr,
+    constr::{GRBConstr, TempConstr, TempQConstr},
     env::GRBenv,
     error::check_err,
     ffi,
@@ -88,10 +88,17 @@ impl GRBModel {
         self.inner.clone()
     }
 
-    /// Add constraint to model.
-    ///
-    /// The constraint can be either a `LinExpr` with a sense and rhs, or a `QuadExpr` with a sense and rhs.
-    pub fn add_constr<E: CanBeAddedToModel>(&mut self, expr: E) -> GRBConstr {
+    pub fn add_constr(&mut self, expr: TempConstr) -> GRBConstr {
+        let error = expr.add_to_model(*self.inner.0);
+        self.get_error(error).unwrap();
+        let constr = GRBConstr {
+            index: self.cons_index,
+        };
+        self.cons_index += 1;
+        constr
+    }
+
+    pub fn add_qconstr(&mut self, expr: TempQConstr) -> GRBConstr {
         let error = expr.add_to_model(*self.inner.0);
         self.get_error(error).unwrap();
         let constr = GRBConstr {
