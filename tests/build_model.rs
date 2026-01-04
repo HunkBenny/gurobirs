@@ -30,8 +30,8 @@ fn test_build_model() {
             .name("y".to_owned()),
     );
 
-    model.add_constr((x + y).le(6.0));
     let obj = 5.0 * x + 100.0 * y;
+    model.add_constr((x + y).le(6.0));
     model.set_objective(obj, GRBModelSense::MAXIMIZE);
     let mut callback = GRBCallback::new(MyCallback);
     model.set_callback(&mut callback);

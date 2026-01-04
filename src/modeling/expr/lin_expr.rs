@@ -224,6 +224,30 @@ impl Add<GRBVar> for GRBVar {
     }
 }
 
+impl Add<&GRBVar> for GRBVar {
+    type Output = LinExpr;
+
+    fn add(self, rhs: &GRBVar) -> Self::Output {
+        self + LinExpr::from(rhs.clone())
+    }
+}
+
+impl Add<GRBVar> for &GRBVar {
+    type Output = LinExpr;
+
+    fn add(self, rhs: GRBVar) -> Self::Output {
+        rhs + LinExpr::from(self.clone())
+    }
+}
+
+impl Add<&GRBVar> for &GRBVar {
+    type Output = LinExpr;
+
+    fn add(self, rhs: &GRBVar) -> Self::Output {
+        rhs.clone() + LinExpr::from(self.clone())
+    }
+}
+
 // OVERLOAD SUBTRACTION
 impl Sub<GRBVar> for LinExpr {
     type Output = LinExpr;
@@ -276,6 +300,22 @@ impl Mul<GRBVar> for f64 {
     type Output = LinExpr;
 
     fn mul(self, var: GRBVar) -> Self::Output {
+        var * self
+    }
+}
+
+impl Mul<f64> for &GRBVar {
+    type Output = LinExpr;
+
+    fn mul(self, scalar: f64) -> Self::Output {
+        LinExpr::from(self.clone()) * scalar
+    }
+}
+
+impl Mul<&GRBVar> for f64 {
+    type Output = LinExpr;
+
+    fn mul(self, var: &GRBVar) -> Self::Output {
         var * self
     }
 }

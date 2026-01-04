@@ -1,4 +1,4 @@
-use crate::{ffi, modeling::IsModelingObject};
+use crate::{ffi, model::GRBModelPtr, modeling::IsModelingObject};
 
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
 pub enum GRBVarType {
@@ -21,14 +21,15 @@ impl From<GRBVarType> for std::ffi::c_char {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct GRBVar {
     index: usize,
+    pub(crate) inner: GRBModelPtr,
 }
 
 impl GRBVar {
-    pub fn new(index: usize) -> GRBVar {
-        GRBVar { index }
+    pub fn new(index: usize, inner: GRBModelPtr) -> GRBVar {
+        GRBVar { index, inner }
     }
 }
 

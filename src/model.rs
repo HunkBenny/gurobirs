@@ -13,7 +13,13 @@ use crate::{
     var::GRBVar,
 };
 
-pub type GRBModelPtr = Rc<*mut ffi::GRBmodel>;
+pub struct GRBModelPtr(pub(crate) Rc<*mut ffi::GRBmodel>);
+
+impl Clone for GRBModelPtr {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
 
 pub struct GRBModel {
     pub(crate) inner: GRBModelPtr,
@@ -41,7 +47,7 @@ impl GRBModel {
         env.get_error(error).unwrap();
         // start indexes at 0 (per docs)
         GRBModel {
-            inner: Rc::new(model),
+            inner: GRBModelPtr(Rc::new(model)),
             var_index: 0,
             cons_index: 0,
             callback: None,
@@ -49,7 +55,7 @@ impl GRBModel {
     }
 
     pub(crate) fn get_env(&self) -> *mut ffi::GRBenv {
-        unsafe { ffi::GRBgetenv(*self.inner) }
+        unsafe { ffi::GRBgetenv(*self.inner.0) }
     }
 
     pub fn add_var<T>(&mut self, var: T) -> GRBVar
@@ -57,10 +63,10 @@ impl GRBModel {
         T: CanBeAddedToModel,
     {
         // add to model
-        let error = var.add_to_model(*self.inner);
+        let error = var.add_to_model(*self.inner.0);
         self.get_error(error).unwrap();
         // create GRBVar Rust-object
-        let var = GRBVar::new(self.var_index);
+        let var = GRBVar::new(self.var_index, self.inner());
         self.var_index += 1;
         var
     }
@@ -70,7 +76,7 @@ impl GRBModel {
     }
 
     pub fn add_constr<E: CanBeAddedToModel>(&mut self, expr: E) -> GRBConstr {
-        let error = expr.add_to_model(*self.inner);
+        let error = expr.add_to_model(*self.inner.0);
         self.get_error(error).unwrap();
         let constr = GRBConstr {
             index: self.cons_index,
@@ -85,7 +91,7 @@ impl GRBModel {
 
         let error = unsafe {
             ffi::GRBsetdblattr(
-                *self.inner,
+                *self.inner.0,
                 ffi::GRB_DBL_ATTR_OBJCON.as_ptr(),
                 constant_term,
             )
@@ -95,7 +101,7 @@ impl GRBModel {
         for (var_idx, coeff) in obj.expr {
             let error = unsafe {
                 ffi::GRBsetdblattrelement(
-                    *self.inner,
+                    *self.inner.0,
                     ffi::GRB_DBL_ATTR_OBJ.as_ptr(),
                     var_idx as i32,
                     coeff,
@@ -106,7 +112,7 @@ impl GRBModel {
         // Set model sense
         let error = unsafe {
             ffi::GRBsetintattr(
-                *self.inner,
+                *self.inner.0,
                 ffi::GRB_INT_ATTR_MODELSENSE.as_ptr(),
                 GRBModelSense::get(sense),
             )
@@ -115,7 +121,7 @@ impl GRBModel {
     }
 
     pub fn optimize(&mut self) {
-        let error = unsafe { ffi::GRBoptimize(*self.inner) };
+        let error = unsafe { ffi::GRBoptimize(*self.inner.0) };
         match self.get_error(error) {
             Ok(_) => (),
             Err(e) => {
@@ -130,7 +136,7 @@ impl GRBModel {
                 Err(format!(
                     "ERROR CODE {}: {}",
                     e,
-                    CStr::from_ptr(ffi::GRBgetmerrormsg(*self.inner) as *mut c_char)
+                    CStr::from_ptr(ffi::GRBgetmerrormsg(*self.inner.0) as *mut c_char)
                         .to_string_lossy()
                 ))
             },
@@ -139,7 +145,7 @@ impl GRBModel {
     }
 
     pub fn set<S: ModelSetter>(&mut self, what: S, value: S::Value) {
-        let error = what.set(*self.inner, value);
+        let error = what.set(*self.inner.0, value);
         self.get_error(error).unwrap();
     }
 
@@ -148,7 +154,7 @@ impl GRBModel {
         C: IsModelingObject,
         S: ModelSetterList<C>,
     {
-        let error = what.set_list(*self.inner, inds, values);
+        let error = what.set_list(*self.inner.0, inds, values);
         self.get_error(error).unwrap();
     }
 }
