@@ -10,28 +10,46 @@ use std::{
 use crate::{
     ffi,
     modeling::{
-        expr::{lin_expr::LinExpr, GRBSense},
+        expr::{lin_expr::LinExpr, quad_expr::QuadExpr, GRBSense},
         CanBeAddedToCallback, CanBeAddedToModel, IsModelingObject,
     },
     prelude::GRBCallbackContext,
 };
 
 pub struct TempConstr {
-    lhs: LinExpr,
+    linear_terms: Vec<(usize, f64)>,
+    quadratic_terms: Vec<((usize, usize), f64)>,
     sense: GRBSense,
     rhs: f64,
     name: Option<CString>,
 }
 
 impl TempConstr {
-    pub fn get_inds_and_coeffs(&self) -> (Vec<i32>, Vec<f64>) {
-        let mut inds = Vec::new();
-        let mut coeffs = Vec::new();
-        for (var_idx, coeff) in self.lhs.expr.iter() {
-            inds.push(*var_idx as i32);
-            coeffs.push(*coeff);
+    pub fn get_inds_and_coeffs(&self) -> (Vec<i32>, Vec<f64>, Vec<i32>, Vec<i32>, Vec<f64>) {
+        let mut linear_terms_inds = Vec::new();
+        let mut linear_terms_coeffs = Vec::new();
+        // linear terms
+        for (var_idx, coeff) in self.linear_terms.iter() {
+            linear_terms_inds.push(*var_idx as i32);
+            linear_terms_coeffs.push(*coeff);
         }
-        (inds, coeffs)
+        let mut quadratic_terms_inds_rows = Vec::new();
+        let mut quadratic_terms_inds_cols = Vec::new();
+        let mut quadratic_terms_coeffs = Vec::new();
+        for ((var_idx1, var_idx2), coeff) in self.quadratic_terms.iter() {
+            quadratic_terms_inds_rows.push(*var_idx1 as i32);
+            quadratic_terms_inds_cols.push(*var_idx2 as i32);
+            quadratic_terms_coeffs.push(*coeff);
+        }
+        // quadratic terms
+
+        (
+            linear_terms_inds,
+            linear_terms_coeffs,
+            quadratic_terms_inds_rows,
+            quadratic_terms_inds_cols,
+            quadratic_terms_coeffs,
+        )
     }
 
     pub fn name(mut self, name: &str) -> Self {
@@ -53,8 +71,10 @@ impl Expr for LinExpr {
     type Output = TempConstr;
 
     fn eq(self, rhs: f64) -> Self::Output {
+        let rhs = rhs - self.scalar;
         TempConstr {
-            lhs: self,
+            linear_terms: self.expr.into_iter().collect(),
+            quadratic_terms: Vec::new(),
             sense: GRBSense::Equal,
             rhs,
             name: None,
@@ -62,8 +82,10 @@ impl Expr for LinExpr {
     }
 
     fn ge(self, rhs: f64) -> Self::Output {
+        let rhs = rhs - self.scalar;
         TempConstr {
-            lhs: self,
+            linear_terms: self.expr.into_iter().collect(),
+            quadratic_terms: Vec::new(),
             sense: GRBSense::GreaterEqual,
             rhs,
             name: None,
@@ -71,8 +93,46 @@ impl Expr for LinExpr {
     }
 
     fn le(self, rhs: f64) -> Self::Output {
+        let rhs = rhs - self.scalar;
         TempConstr {
-            lhs: self,
+            linear_terms: self.expr.into_iter().collect(),
+            quadratic_terms: Vec::new(),
+            sense: GRBSense::LessEqual,
+            rhs,
+            name: None,
+        }
+    }
+}
+
+impl Expr for QuadExpr {
+    type Output = TempConstr;
+    fn eq(self, rhs: f64) -> Self::Output {
+        let rhs = rhs - self.linear_expr.scalar;
+        TempConstr {
+            linear_terms: self.linear_expr.expr.into_iter().collect(),
+            quadratic_terms: self.quad_expr.into_iter().collect(),
+            sense: GRBSense::Equal,
+            rhs,
+            name: None,
+        }
+    }
+
+    fn ge(self, rhs: f64) -> Self::Output {
+        let rhs = rhs - self.linear_expr.scalar;
+        TempConstr {
+            linear_terms: self.linear_expr.expr.into_iter().collect(),
+            quadratic_terms: self.quad_expr.into_iter().collect(),
+            sense: GRBSense::GreaterEqual,
+            rhs,
+            name: None,
+        }
+    }
+
+    fn le(self, rhs: f64) -> Self::Output {
+        let rhs = rhs - self.linear_expr.scalar;
+        TempConstr {
+            linear_terms: self.linear_expr.expr.into_iter().collect(),
+            quadratic_terms: self.quad_expr.into_iter().collect(),
             sense: GRBSense::LessEqual,
             rhs,
             name: None,
@@ -83,7 +143,13 @@ impl Expr for LinExpr {
 impl CanBeAddedToModel for TempConstr {
     fn add_to_model(self, model: *mut ffi::GRBmodel) -> i32 {
         // 1. collect indices and coefficients
-        let (mut inds, mut coeffs) = self.get_inds_and_coeffs();
+        let (
+            mut inds_linear,
+            mut coeffs_linear,
+            mut inds_nonlinear_row,
+            mut inds_nonlinear_col,
+            mut coeffs_nonlinear,
+        ) = self.get_inds_and_coeffs();
 
         // 2. handle name
         let name_ptr = match self.name {
@@ -91,17 +157,35 @@ impl CanBeAddedToModel for TempConstr {
             None => null_mut(),
         };
 
-        // 3. call GRBaddconstr
-        unsafe {
-            ffi::GRBaddconstr(
-                model,
-                inds.len() as i32,
-                inds.as_mut_ptr(),
-                coeffs.as_mut_ptr(),
-                self.sense.into(),
-                self.rhs,
-                name_ptr,
-            )
+        // 3. call GRBaddconstr or GRBaddqconstr based on presence of quadratic terms
+        if !inds_nonlinear_row.is_empty() {
+            unsafe {
+                ffi::GRBaddconstr(
+                    model,
+                    inds_linear.len() as std::ffi::c_int,
+                    inds_linear.as_mut_ptr(),
+                    coeffs_linear.as_mut_ptr(),
+                    self.sense.into(),
+                    self.rhs,
+                    name_ptr,
+                )
+            }
+        } else {
+            unsafe {
+                ffi::GRBaddqconstr(
+                    model,
+                    inds_linear.len() as std::ffi::c_int,
+                    inds_linear.as_mut_ptr(),
+                    coeffs_linear.as_mut_ptr(),
+                    inds_nonlinear_row.len() as std::ffi::c_int,
+                    inds_nonlinear_row.as_mut_ptr(),
+                    inds_nonlinear_col.as_mut_ptr(),
+                    coeffs_nonlinear.as_mut_ptr(),
+                    self.sense.into(),
+                    self.rhs,
+                    name_ptr,
+                )
+            }
         }
     }
 }
@@ -109,7 +193,7 @@ impl CanBeAddedToModel for TempConstr {
 impl CanBeAddedToCallback for TempConstr {
     fn add_cut(self, callback: &mut GRBCallbackContext) -> i32 {
         // 1. collect indices and coefficients
-        let (mut inds, mut coeffs) = self.get_inds_and_coeffs();
+        let (mut inds, mut coeffs, _, _, _) = self.get_inds_and_coeffs();
         // 2. call GRBcbcut
         unsafe {
             ffi::GRBcbcut(
@@ -125,7 +209,7 @@ impl CanBeAddedToCallback for TempConstr {
 
     fn add_lazy(self, callback: &mut GRBCallbackContext) -> i32 {
         // 1. collect indices and coefficients
-        let (mut inds, mut coeffs) = self.get_inds_and_coeffs();
+        let (mut inds, mut coeffs, _, _, _) = self.get_inds_and_coeffs();
         // 2. call GRBcbcut
         unsafe {
             ffi::GRBcblazy(

@@ -88,6 +88,9 @@ impl GRBModel {
         self.inner.clone()
     }
 
+    /// Add constraint to model.
+    ///
+    /// The constraint can be either a `LinExpr` with a sense and rhs, or a `QuadExpr` with a sense and rhs.
     pub fn add_constr<E: CanBeAddedToModel>(&mut self, expr: E) -> GRBConstr {
         let error = expr.add_to_model(*self.inner.0);
         self.get_error(error).unwrap();
