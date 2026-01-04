@@ -15,6 +15,19 @@ use crate::{
 
 pub struct GRBModelPtr(pub(crate) Rc<*mut ffi::GRBmodel>);
 
+impl Drop for GRBModelPtr {
+    fn drop(&mut self) {
+        // if more than one reference, do not free
+        if Rc::strong_count(&self.0) > 1 {
+            return;
+        }
+        // if last reference, free model
+        unsafe {
+            ffi::GRBfreemodel(*self.0);
+        }
+    }
+}
+
 impl Clone for GRBModelPtr {
     fn clone(&self) -> Self {
         Self(self.0.clone())
