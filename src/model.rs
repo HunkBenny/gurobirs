@@ -9,7 +9,7 @@ use crate::{
     env::GRBenv,
     error::check_err,
     ffi,
-    modeling::{expr::lin_expr::LinExpr, CanBeAddedToModel, IsModelingObject},
+    modeling::{expr::lin_expr::LinExpr, CanBeAddedToModel, IsModelingObject, Objective},
     var::GRBVar,
 };
 
@@ -110,39 +110,8 @@ impl GRBModel {
         constr
     }
 
-    pub fn set_objective(&mut self, obj: LinExpr, sense: GRBModelSense) {
-        // set constant term
-        let constant_term = obj.scalar;
-
-        let error = unsafe {
-            ffi::GRBsetdblattr(
-                *self.inner.0,
-                ffi::GRB_DBL_ATTR_OBJCON.as_ptr(),
-                constant_term,
-            )
-        };
-        self.get_error(error).unwrap();
-        // set coeffs
-        for (var_idx, coeff) in obj.expr {
-            let error = unsafe {
-                ffi::GRBsetdblattrelement(
-                    *self.inner.0,
-                    ffi::GRB_DBL_ATTR_OBJ.as_ptr(),
-                    var_idx as i32,
-                    coeff,
-                )
-            };
-            self.get_error(error).unwrap();
-        }
-        // Set model sense
-        let error = unsafe {
-            ffi::GRBsetintattr(
-                *self.inner.0,
-                ffi::GRB_INT_ATTR_MODELSENSE.as_ptr(),
-                GRBModelSense::get(sense),
-            )
-        };
-        self.get_error(error).unwrap();
+    pub fn set_objective<O: Objective>(&mut self, obj: O, sense: GRBModelSense) {
+        obj.set_as_objective(self, sense);
     }
 
     pub fn optimize(&mut self) {

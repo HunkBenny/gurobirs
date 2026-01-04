@@ -1,4 +1,5 @@
 use crate::ffi;
+use crate::model::GRBModelSense;
 use crate::{model::GRBModel, prelude::GRBCallbackContext};
 
 pub(crate) trait CanBeAddedToModel {
@@ -14,6 +15,10 @@ pub trait IsModelingObject {
 pub trait CanBeAddedToCallback {
     fn add_cut(self, callback: &mut GRBCallbackContext) -> i32;
     fn add_lazy(self, callback: &mut GRBCallbackContext) -> i32;
+}
+
+pub trait Objective {
+    fn set_as_objective(self, model: &mut GRBModel, sense: GRBModelSense);
 }
 
 pub mod builder;

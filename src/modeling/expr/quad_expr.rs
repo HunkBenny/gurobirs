@@ -3,11 +3,50 @@ use std::{
     ops::{Add, AddAssign, Mul, Sub, SubAssign},
 };
 
-use crate::{modeling::expr::lin_expr::LinExpr, var::GRBVar};
+use gurobi_sys::GRBaddqpterms;
+
+use crate::ffi;
+use crate::{
+    modeling::{expr::lin_expr::LinExpr, Objective},
+    var::GRBVar,
+};
 
 pub struct QuadExpr {
     pub(crate) quad_expr: BTreeMap<(usize, usize), f64>, // (var_idx1, var_idx2, coeff)
     pub(crate) linear_expr: LinExpr,
+}
+
+impl Objective for QuadExpr {
+    fn set_as_objective(
+        self,
+        model: &mut crate::prelude::GRBModel,
+        sense: crate::prelude::GRBModelSense,
+    ) {
+        // set linear part
+        self.linear_expr.set_as_objective(model, sense);
+        // set quadratic part
+        let len = self.quad_expr.len();
+        let mut row = Vec::with_capacity(len);
+        let mut col = Vec::with_capacity(len);
+        let mut val = Vec::with_capacity(len);
+        self.quad_expr
+            .into_iter()
+            .for_each(|((idx1, idx2), coeff)| {
+                row.push(idx1 as i32);
+                col.push(idx2 as i32);
+                val.push(coeff);
+            });
+        let error = unsafe {
+            ffi::GRBaddqpterms(
+                *model.inner.0,
+                len as std::ffi::c_int,
+                row.as_mut_ptr(),
+                col.as_mut_ptr(),
+                val.as_mut_ptr(),
+            )
+        };
+        model.get_error(error).unwrap();
+    }
 }
 
 // OVERLOAD ADDITION

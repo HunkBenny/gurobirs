@@ -3,7 +3,13 @@ use std::{
     ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign},
 };
 
-use crate::{modeling::IsModelingObject, var::GRBVar};
+use crate::{
+    model::GRBModelSense,
+    modeling::{IsModelingObject, Objective},
+    var::GRBVar,
+};
+
+use crate::ffi;
 
 #[derive(Clone)]
 pub struct LinExpr {
@@ -16,6 +22,44 @@ pub struct LinExpr {
     pub(crate) expr: BTreeMap<usize, f64>,
     /// The constant term
     pub(crate) scalar: f64,
+}
+
+impl Objective for LinExpr {
+    fn set_as_objective(self, model: &mut crate::prelude::GRBModel, sense: GRBModelSense) {
+        // set constant term
+        let constant_term = self.scalar;
+
+        let error = unsafe {
+            ffi::GRBsetdblattr(
+                *model.inner.0,
+                ffi::GRB_DBL_ATTR_OBJCON.as_ptr(),
+                constant_term,
+            )
+        };
+        model.get_error(error).unwrap();
+        // set coeffs
+        for (var_idx, coeff) in self.expr {
+            let error = unsafe {
+                ffi::GRBsetdblattrelement(
+                    *model.inner.0,
+                    ffi::GRB_DBL_ATTR_OBJ.as_ptr(),
+                    var_idx as i32,
+                    coeff,
+                )
+            };
+            model.get_error(error).unwrap();
+        }
+
+        // Set model sense
+        let error = unsafe {
+            ffi::GRBsetintattr(
+                *model.inner.0,
+                ffi::GRB_INT_ATTR_MODELSENSE.as_ptr(),
+                GRBModelSense::get(sense),
+            )
+        };
+        model.get_error(error).unwrap();
+    }
 }
 
 // impl add, mult, sub etc
