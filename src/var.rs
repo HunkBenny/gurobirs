@@ -1,4 +1,11 @@
-use crate::{ffi, model::GRBModelPtr, modeling::IsModelingObject};
+use std::ffi::CStr;
+
+use crate::{error::check_err, ffi, model::GRBModelPtr, modeling::IsModelingObject};
+
+pub trait VariableSetter {
+    type Value;
+    fn set(&self, var: &GRBVar, value: Self::Value) -> i32;
+}
 
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
 pub enum GRBVarType {
@@ -30,6 +37,25 @@ pub struct GRBVar {
 impl GRBVar {
     pub fn new(index: usize, inner: GRBModelPtr) -> GRBVar {
         GRBVar { index, inner }
+    }
+
+    pub fn set<V: VariableSetter>(&self, setter: V, value: V::Value) {
+        let err_code = setter.set(self, value);
+        self.get_error(err_code).unwrap();
+    }
+
+    pub fn get_error(&self, error_code: i32) -> Result<(), String> {
+        match check_err(error_code) {
+            Err(e) => unsafe {
+                Err(format!(
+                    "ERROR CODE {}: {}",
+                    e,
+                    CStr::from_ptr(ffi::GRBgetmerrormsg(*self.inner.0) as *mut std::ffi::c_char)
+                        .to_string_lossy()
+                ))
+            },
+            Ok(_o) => Ok(()),
+        }
     }
 }
 

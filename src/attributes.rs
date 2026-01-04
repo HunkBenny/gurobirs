@@ -2,6 +2,7 @@ use crate::{
     ffi,
     model::{GRBModelPtr, ModelGetter, ModelGetterList, ModelSetter, ModelSetterList},
     modeling::IsModelingObject,
+    var::VariableSetter,
 };
 use std::{
     ffi::{CStr, CString},
@@ -126,6 +127,22 @@ pub enum GRBIntAttr {
     NUMVARS,
     /// # of constraints
     NUMCONSTRS,
+}
+
+impl VariableSetter for GRBIntAttr {
+    type Value = i32;
+
+    fn set(&self, var: &crate::prelude::GRBVar, value: Self::Value) -> i32 {
+        let attr_name: &CStr = (*self).into();
+        unsafe {
+            ffi::GRBsetintattrelement(
+                *var.inner.0,
+                attr_name.as_ptr(),
+                var.index() as std::ffi::c_int,
+                value,
+            )
+        }
+    }
 }
 
 impl ModelGetter for GRBIntAttr {
@@ -429,6 +446,22 @@ pub enum GRBDblAttr {
     DNUMNZS,
 }
 
+impl VariableSetter for GRBDblAttr {
+    type Value = f64;
+
+    fn set(&self, var: &crate::prelude::GRBVar, value: Self::Value) -> i32 {
+        let attr_name: &CStr = (*self).into();
+        unsafe {
+            ffi::GRBsetdblattrelement(
+                *var.inner.0,
+                attr_name.as_ptr(),
+                var.index() as std::ffi::c_int,
+                value,
+            )
+        }
+    }
+}
+
 impl ModelGetter for GRBDblAttr {
     type Value = f64;
 
@@ -617,6 +650,24 @@ pub enum GRBStrAttr {
     /// model name
     MODELNAME,
 }
+impl VariableSetter for GRBStrAttr {
+    type Value = String;
+
+    fn set(&self, var: &crate::prelude::GRBVar, value: Self::Value) -> i32 {
+        let attr_name: &CStr = (*self).into();
+        let value =
+            CString::new(value).expect("Failed to convert String to CString in `ModelSetter::set`");
+        unsafe {
+            ffi::GRBsetstrattrelement(
+                *var.inner.0,
+                attr_name.as_ptr(),
+                var.index() as std::ffi::c_int,
+                value.as_ptr(),
+            )
+        }
+    }
+}
+
 impl ModelGetter for GRBStrAttr {
     type Value = String;
 
@@ -768,6 +819,23 @@ where
             )
         };
         values.iter().map(|&c| c as u8 as char).collect()
+    }
+}
+
+impl VariableSetter for GRBCharAttr {
+    type Value = char;
+
+    fn set(&self, var: &crate::prelude::GRBVar, value: Self::Value) -> i32 {
+        let attr_name: &CStr = (*self).into();
+        let value = value as std::ffi::c_char;
+        unsafe {
+            ffi::GRBsetcharattrelement(
+                *var.inner.0,
+                attr_name.as_ptr(),
+                var.index() as std::ffi::c_int,
+                value,
+            )
+        }
     }
 }
 
