@@ -2,7 +2,7 @@ use crate::{
     ffi,
     model::{GRBModelPtr, ModelGetter, ModelGetterList, ModelSetter, ModelSetterList},
     modeling::IsModelingObject,
-    var::VariableSetter,
+    var::{VariableGetter, VariableSetter},
 };
 use std::{
     ffi::{CStr, CString},
@@ -127,6 +127,25 @@ pub enum GRBIntAttr {
     NUMVARS,
     /// # of constraints
     NUMCONSTRS,
+}
+
+impl VariableGetter for GRBIntAttr {
+    type Value = i32;
+
+    fn get(&self, var: &crate::prelude::GRBVar) -> Self::Value {
+        let attr_name: &CStr = (*self).into();
+        let return_ptr = 0;
+        let error = unsafe {
+            ffi::GRBgetintattrelement(
+                *var.inner.0,
+                attr_name.as_ptr(),
+                var.index() as std::ffi::c_int,
+                return_ptr as *mut std::ffi::c_int,
+            )
+        };
+        var.get_error(error).unwrap();
+        return_ptr
+    }
 }
 
 impl VariableSetter for GRBIntAttr {
@@ -446,6 +465,25 @@ pub enum GRBDblAttr {
     DNUMNZS,
 }
 
+impl VariableGetter for GRBDblAttr {
+    type Value = f64;
+
+    fn get(&self, var: &crate::prelude::GRBVar) -> Self::Value {
+        let attr_name: &CStr = (*self).into();
+        let mut return_ptr = 0.0;
+        let error = unsafe {
+            ffi::GRBgetdblattrelement(
+                *var.inner.0,
+                attr_name.as_ptr(),
+                var.index() as std::ffi::c_int,
+                &mut return_ptr as *mut std::ffi::c_double,
+            )
+        };
+        var.get_error(error).unwrap();
+        return_ptr
+    }
+}
+
 impl VariableSetter for GRBDblAttr {
     type Value = f64;
 
@@ -650,6 +688,27 @@ pub enum GRBStrAttr {
     /// model name
     MODELNAME,
 }
+
+impl VariableGetter for GRBStrAttr {
+    type Value = String;
+
+    fn get(&self, var: &crate::prelude::GRBVar) -> Self::Value {
+        let attr_name: &CStr = (*self).into();
+        let value_p = null_mut();
+        let error = unsafe {
+            ffi::GRBgetstrattrelement(
+                *var.inner.0,
+                attr_name.as_ptr(),
+                var.index() as std::ffi::c_int,
+                value_p,
+            )
+        };
+        var.get_error(error).unwrap();
+        let c_str: &CStr = unsafe { CStr::from_ptr(*value_p) };
+        c_str.to_string_lossy().to_string()
+    }
+}
+
 impl VariableSetter for GRBStrAttr {
     type Value = String;
 
@@ -795,6 +854,26 @@ impl From<GRBCharAttr> for &'static CStr {
         }
     }
 }
+
+impl VariableGetter for GRBCharAttr {
+    type Value = char;
+
+    fn get(&self, var: &crate::prelude::GRBVar) -> Self::Value {
+        let attr_name: &CStr = (*self).into();
+        let return_ptr = '\0' as std::ffi::c_char;
+        let error = unsafe {
+            ffi::GRBgetcharattrelement(
+                *var.inner.0,
+                attr_name.as_ptr(),
+                var.index() as std::ffi::c_int,
+                return_ptr as *mut std::ffi::c_char,
+            )
+        };
+        var.get_error(error).unwrap();
+        return_ptr as u8 as char
+    }
+}
+
 impl<C> ModelGetterList<C> for GRBCharAttr
 where
     C: IsModelingObject,

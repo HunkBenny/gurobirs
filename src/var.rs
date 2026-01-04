@@ -7,6 +7,11 @@ pub trait VariableSetter {
     fn set(&self, var: &GRBVar, value: Self::Value) -> i32;
 }
 
+pub trait VariableGetter {
+    type Value;
+    fn get(&self, var: &GRBVar) -> Self::Value;
+}
+
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
 pub enum GRBVarType {
     CONTINUOUS,
