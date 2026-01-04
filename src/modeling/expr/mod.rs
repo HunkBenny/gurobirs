@@ -1,5 +1,6 @@
 use crate::ffi;
 pub mod lin_expr;
+pub mod quad_expr;
 
 pub enum GRBSense {
     LessEqual,

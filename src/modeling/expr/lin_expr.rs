@@ -5,6 +5,7 @@ use std::{
 
 use crate::{modeling::IsModelingObject, var::GRBVar};
 
+#[derive(Clone)]
 pub struct LinExpr {
     /// Tree of (variable index, coefficient) pairs
     /// Tree, because if two LinExpr are added together and have an overlap in variables, the
@@ -153,6 +154,14 @@ impl Mul<f64> for LinExpr {
             *coeff *= scalar;
         }
         self
+    }
+}
+
+impl Mul<LinExpr> for f64 {
+    type Output = LinExpr;
+
+    fn mul(self, expr: LinExpr) -> Self::Output {
+        expr * self
     }
 }
 
