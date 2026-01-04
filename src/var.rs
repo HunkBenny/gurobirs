@@ -49,6 +49,10 @@ impl GRBVar {
         self.get_error(err_code).unwrap();
     }
 
+    pub fn get<G: VariableGetter>(&self, getter: G) -> G::Value {
+        getter.get(self)
+    }
+
     pub fn get_error(&self, error_code: i32) -> Result<(), String> {
         match check_err(error_code) {
             Err(e) => unsafe {
