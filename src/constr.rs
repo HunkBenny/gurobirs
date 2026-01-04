@@ -3,18 +3,30 @@
 // This way, we can overload '==', '<=', '>=' operators to create TempConstr
 
 use std::{
-    ffi::{c_void, CString},
+    ffi::{c_void, CStr, CString},
     ptr::null_mut,
 };
 
 use crate::{
+    error::check_err,
     ffi,
+    model::GRBModelPtr,
     modeling::{
         expr::{lin_expr::LinExpr, quad_expr::QuadExpr, GRBSense},
         CanBeAddedToCallback, CanBeAddedToModel, IsModelingObject,
     },
     prelude::GRBCallbackContext,
 };
+
+pub trait ConstrGetter {
+    type Value;
+    fn get(&self, constr: &GRBConstr) -> Self::Value;
+}
+
+pub trait ConstrSetter {
+    type Value;
+    fn set(&self, constr: &GRBConstr, value: Self::Value) -> i32;
+}
 
 pub struct TempConstr {
     linear_terms: Vec<(usize, f64)>,
@@ -260,8 +272,34 @@ impl CanBeAddedToCallback for TempConstr {
     }
 }
 
+impl GRBConstr {
+    pub fn get_error(&self, error_code: i32) -> Result<(), String> {
+        match check_err(error_code) {
+            Err(e) => unsafe {
+                Err(format!(
+                    "ERROR CODE {}: {}",
+                    e,
+                    CStr::from_ptr(ffi::GRBgetmerrormsg(*self.inner.0) as *mut std::ffi::c_char)
+                        .to_string_lossy()
+                ))
+            },
+            Ok(_o) => Ok(()),
+        }
+    }
+
+    pub fn set<V: ConstrSetter>(&self, setter: V, value: V::Value) {
+        let err_code = setter.set(self, value);
+        self.get_error(err_code).unwrap();
+    }
+
+    pub fn get<G: ConstrGetter>(&self, getter: G) -> G::Value {
+        getter.get(self)
+    }
+}
+
 pub struct GRBConstr {
     pub index: usize,
+    pub(crate) inner: GRBModelPtr,
 }
 
 impl IsModelingObject for GRBConstr {

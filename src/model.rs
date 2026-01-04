@@ -93,6 +93,7 @@ impl GRBModel {
         self.get_error(error).unwrap();
         let constr = GRBConstr {
             index: self.cons_index,
+            inner: self.inner.clone(),
         };
         self.cons_index += 1;
         constr
@@ -103,6 +104,7 @@ impl GRBModel {
         self.get_error(error).unwrap();
         let constr = GRBConstr {
             index: self.cons_index,
+            inner: self.inner.clone(),
         };
         self.cons_index += 1;
         constr
