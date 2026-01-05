@@ -3,7 +3,7 @@ use std::{
     ops::{Add, AddAssign, Mul, Sub, SubAssign},
 };
 
-use crate::ffi;
+use crate::{ffi, modeling::IsModelingObject};
 use crate::{
     modeling::{expr::lin_expr::LinExpr, Objective},
     var::GRBVar,
@@ -132,7 +132,7 @@ impl Sub<QuadExpr> for QuadExpr {
                     *existing_coeff -= coeff;
                 }
                 None => {
-                    self.quad_expr.insert(*idxs, *coeff);
+                    self.quad_expr.insert(*idxs, -*coeff);
                 }
             }
         }
@@ -205,6 +205,40 @@ impl Mul<LinExpr> for LinExpr {
         QuadExpr {
             quad_expr,
             linear_expr,
+        }
+    }
+}
+
+impl Mul<&GRBVar> for LinExpr {
+    type Output = QuadExpr;
+
+    fn mul(self, var: &GRBVar) -> Self::Output {
+        let mut linear_expr = self.scalar * LinExpr::from(var);
+        linear_expr.scalar = 0.0;
+        let mut quad_expr = BTreeMap::new();
+        for (idx, coeff) in self.expr {
+            let key = (idx, var.index());
+            let value = coeff;
+            quad_expr.insert(key, value);
+        }
+        QuadExpr {
+            quad_expr,
+            linear_expr,
+        }
+    }
+}
+
+impl Mul<&GRBVar> for &GRBVar {
+    type Output = QuadExpr;
+
+    fn mul(self, rhs: &GRBVar) -> Self::Output {
+        let quad_expr = BTreeMap::from([((self.index(), rhs.index()), 1.0)]);
+        QuadExpr {
+            quad_expr,
+            linear_expr: LinExpr {
+                expr: BTreeMap::new(),
+                scalar: 0.0,
+            },
         }
     }
 }
