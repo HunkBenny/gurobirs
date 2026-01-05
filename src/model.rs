@@ -38,7 +38,6 @@ pub struct GRBModel {
     pub(crate) inner: GRBModelPtr,
     var_index: usize,
     cons_index: usize,
-    pub(crate) callback: Option<fn()>,
 }
 
 impl GRBModel {
@@ -63,7 +62,6 @@ impl GRBModel {
             inner: GRBModelPtr(Rc::new(model)),
             var_index: 0,
             cons_index: 0,
-            callback: None,
         }
     }
 
