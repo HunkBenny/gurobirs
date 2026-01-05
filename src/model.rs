@@ -151,6 +151,10 @@ impl GRBModel {
         let error = what.set_list(*self.inner.0, inds, values);
         self.get_error(error).unwrap();
     }
+
+    pub fn get<G: ModelGetter>(&self, what: G) -> G::Value {
+        what.get(*self.inner.0)
+    }
 }
 
 pub enum GRBModelSense {

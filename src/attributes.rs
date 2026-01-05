@@ -784,7 +784,9 @@ impl ConstrGetter for GRBStrAttr {
 
     fn get(&self, constr: &crate::prelude::GRBConstr) -> Self::Value {
         let attr_name: &CStr = (*self).into();
-        let return_ptr = null_mut();
+        // We cannot use null_mut() here directly because we need a pointer to a pointer, the
+        // pointer we point to is allowed to be null, but the pointer itself must be valid
+        let return_ptr = (&mut null_mut()) as *mut *mut std::ffi::c_char;
         let error = unsafe {
             ffi::GRBgetstrattrelement(
                 *constr.inner.0,
@@ -803,7 +805,9 @@ impl VariableGetter for GRBStrAttr {
 
     fn get(&self, var: &crate::prelude::GRBVar) -> Self::Value {
         let attr_name: &CStr = (*self).into();
-        let value_p = null_mut();
+        // We cannot use null_mut() here directly because we need a pointer to a pointer, the
+        // pointer we point to is allowed to be null, but the pointer itself must be valid
+        let value_p = (&mut null_mut()) as *mut *mut std::ffi::c_char;
         let error = unsafe {
             ffi::GRBgetstrattrelement(
                 *var.inner.0,
@@ -840,7 +844,9 @@ impl ModelGetter for GRBStrAttr {
     type Value = String;
 
     fn get(&self, model: *mut ffi::GRBmodel) -> Self::Value {
-        let value_p = null_mut();
+        // We cannot use null_mut() here directly because we need a pointer to a pointer, the
+        // pointer we point to is allowed to be null, but the pointer itself must be valid
+        let value_p = (&mut null_mut()) as *mut *mut std::ffi::c_char;
         let attr_name: &CStr = (*self).into();
         let error = unsafe { ffi::GRBgetstrattr(model, attr_name.as_ptr(), value_p) };
         let c_str: &CStr = unsafe { CStr::from_ptr(*value_p) };
