@@ -4,15 +4,12 @@
 // 3. internally, we create a C-compatible function pointer that calls `my_callback_fn`.
 //    This way, we can guarantee that we don't continuously call a callback_function.
 
-use gurobi_sys::{GRBmsg, GRB_INT_ATTR_NUMVARS};
-
 use crate::error::check_err;
 use crate::ffi;
 use crate::model::GRBModel;
 use crate::modeling::{CanBeAddedToCallback, IsModelingObject};
-use crate::prelude::{GRBSense, LinExpr};
 use crate::var::GRBVar;
-use std::ffi::{c_char, c_int, CStr};
+use std::ffi::{c_char, CStr};
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
 pub struct GRBCallbackContext {

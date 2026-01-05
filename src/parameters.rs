@@ -1,7 +1,4 @@
-use crate::{
-    ffi,
-    model::{EnvSetter, ModelSetter},
-};
+use crate::{ffi, model::EnvSetter};
 use std::ffi::{CStr, CString};
 
 #[allow(clippy::upper_case_acronyms)]

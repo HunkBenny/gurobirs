@@ -1,7 +1,7 @@
 use crate::{
     constr::{ConstrGetter, ConstrSetter},
     ffi,
-    model::{GRBModelPtr, ModelGetter, ModelGetterList, ModelSetter, ModelSetterList},
+    model::{ModelGetter, ModelGetterList, ModelSetter, ModelSetterList},
     modeling::IsModelingObject,
     var::{VariableGetter, VariableSetter},
 };

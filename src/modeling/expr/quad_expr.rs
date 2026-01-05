@@ -3,8 +3,6 @@ use std::{
     ops::{Add, AddAssign, Mul, Sub, SubAssign},
 };
 
-use gurobi_sys::GRBaddqpterms;
-
 use crate::ffi;
 use crate::{
     modeling::{expr::lin_expr::LinExpr, Objective},

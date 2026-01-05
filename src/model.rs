@@ -9,7 +9,7 @@ use crate::{
     env::GRBenv,
     error::check_err,
     ffi,
-    modeling::{expr::lin_expr::LinExpr, CanBeAddedToModel, IsModelingObject, Objective},
+    modeling::{CanBeAddedToModel, IsModelingObject, Objective},
     var::GRBVar,
 };
 
