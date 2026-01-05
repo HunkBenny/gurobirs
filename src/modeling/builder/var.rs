@@ -1,3 +1,4 @@
+use std::ffi::CStr;
 use std::ffi::CString;
 use std::ptr::null_mut;
 
@@ -50,12 +51,7 @@ impl GRBVar {
 }
 
 impl CanBeAddedToModel for GRBVarBuilder {
-    fn add_to_model(self, model: *mut ffi::GRBmodel) -> i32 {
-        let name_ptr = match self.name {
-            Some(cname) => cname.as_ptr(),
-            None => null_mut(),
-        };
-
+    fn add_to_model(self, model: *mut ffi::GRBmodel, name_ptr: *const std::ffi::c_char) -> i32 {
         let error = unsafe {
             ffi::GRBaddvar(
                 model,
@@ -70,5 +66,9 @@ impl CanBeAddedToModel for GRBVarBuilder {
             )
         };
         error
+    }
+
+    fn get_name(&mut self) -> Option<CString> {
+        self.name.take()
     }
 }

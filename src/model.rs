@@ -10,6 +10,7 @@ use crate::{
     error::check_err,
     ffi,
     modeling::{CanBeAddedToModel, IsModelingObject, Objective},
+    prelude::GRBVarBuilder,
     var::GRBVar,
 };
 
@@ -69,15 +70,18 @@ impl GRBModel {
         unsafe { ffi::GRBgetenv(*self.inner.0) }
     }
 
-    pub fn add_var<T>(&mut self, var: T) -> GRBVar
-    where
-        T: CanBeAddedToModel,
-    {
+    pub fn add_var(&mut self, mut var: GRBVarBuilder) -> GRBVar {
+        // TODO: Does this need to be a pinned box?
+        let name = var.get_name();
+        let name_ptr = match name {
+            Some(ref s) => s.as_ptr(),
+            None => null_mut(),
+        };
         // add to model
-        let error = var.add_to_model(*self.inner.0);
+        let error = var.add_to_model(*self.inner.0, name_ptr);
         self.get_error(error).unwrap();
         // create GRBVar Rust-object
-        let var = GRBVar::new(self.var_index, self.inner());
+        let var = GRBVar::new(self.var_index, self.inner(), name);
         self.var_index += 1;
         var
     }
@@ -86,8 +90,13 @@ impl GRBModel {
         self.inner.clone()
     }
 
-    pub fn add_constr(&mut self, expr: TempConstr) -> GRBConstr {
-        let error = expr.add_to_model(*self.inner.0);
+    pub fn add_constr(&mut self, mut expr: TempConstr) -> GRBConstr {
+        let name = expr.get_name();
+        let name_ptr = match name {
+            Some(ref s) => s.as_ptr(),
+            None => null_mut(),
+        };
+        let error = expr.add_to_model(*self.inner.0, name_ptr);
         self.get_error(error).unwrap();
         let constr = GRBConstr {
             index: self.cons_index,
@@ -97,8 +106,13 @@ impl GRBModel {
         constr
     }
 
-    pub fn add_qconstr(&mut self, expr: TempQConstr) -> GRBConstr {
-        let error = expr.add_to_model(*self.inner.0);
+    pub fn add_qconstr(&mut self, mut expr: TempQConstr) -> GRBConstr {
+        let name = expr.get_name();
+        let name_ptr = match name {
+            Some(ref s) => s.as_ptr(),
+            None => null_mut(),
+        };
+        let error = expr.add_to_model(*self.inner.0, name_ptr);
         self.get_error(error).unwrap();
         let constr = GRBConstr {
             index: self.cons_index,

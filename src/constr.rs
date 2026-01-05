@@ -177,7 +177,7 @@ impl Expr for QuadExpr {
 }
 
 impl CanBeAddedToModel for TempConstr {
-    fn add_to_model(self, model: *mut gurobi_sys::GRBmodel) -> i32 {
+    fn add_to_model(self, model: *mut gurobi_sys::GRBmodel, name: *const std::ffi::c_char) -> i32 {
         // 1. collect indices and coefficients
         let (mut inds_linear, mut coeffs_linear) = self.get_linear_inds_and_coeffs();
 
@@ -196,14 +196,18 @@ impl CanBeAddedToModel for TempConstr {
                 coeffs_linear.as_mut_ptr(),
                 self.sense.into(),
                 self.rhs,
-                name_ptr,
+                name,
             )
         }
+    }
+
+    fn get_name(&mut self) -> Option<CString> {
+        self.name.take()
     }
 }
 
 impl CanBeAddedToModel for TempQConstr {
-    fn add_to_model(self, model: *mut gurobi_sys::GRBmodel) -> i32 {
+    fn add_to_model(self, model: *mut gurobi_sys::GRBmodel, name: *const std::ffi::c_char) -> i32 {
         // 1. collect indices and coefficients
         let (
             mut inds_linear,
@@ -212,12 +216,6 @@ impl CanBeAddedToModel for TempQConstr {
             mut inds_nonlinear_col,
             mut coeffs_nonlinear,
         ) = self.get_quadratic_inds_and_coeffs();
-
-        // 2. handle name
-        let name_ptr = match self.name {
-            Some(cname) => cname.as_ptr(),
-            None => null_mut(),
-        };
 
         // 3. call GRBaddconstr or GRBaddqconstr based on presence of quadratic terms
         unsafe {
@@ -232,9 +230,13 @@ impl CanBeAddedToModel for TempQConstr {
                 coeffs_nonlinear.as_mut_ptr(),
                 self.sense.into(),
                 self.rhs,
-                name_ptr,
+                name,
             )
         }
+    }
+
+    fn get_name(&mut self) -> Option<CString> {
+        self.name.take()
     }
 }
 
