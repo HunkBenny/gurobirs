@@ -3,7 +3,7 @@
 // This way, we can overload '==', '<=', '>=' operators to create TempConstr
 
 use std::{
-    ffi::{c_void, CStr, CString},
+    ffi::{CStr, CString, c_void},
     ptr::null_mut,
 };
 
@@ -12,8 +12,8 @@ use crate::{
     ffi,
     model::GRBModelPtr,
     modeling::{
-        expr::{lin_expr::GRBLinExpr, quad_expr::QuadExpr, GRBSense},
         CanBeAddedToCallback, CanBeAddedToModel, IsModelingObject,
+        expr::{GRBSense, lin_expr::GRBLinExpr, quad_expr::GRBQuadExpr},
     },
     prelude::GRBCallbackContext,
 };
@@ -140,7 +140,7 @@ impl Expr for GRBLinExpr {
     }
 }
 
-impl Expr for QuadExpr {
+impl Expr for GRBQuadExpr {
     type Output = TempQConstr;
     fn eq(self, rhs: f64) -> Self::Output {
         let rhs = rhs - self.linear_expr.scalar;
