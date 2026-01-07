@@ -12,7 +12,7 @@ use crate::{
     ffi,
     model::GRBModelPtr,
     modeling::{
-        expr::{lin_expr::LinExpr, quad_expr::QuadExpr, GRBSense},
+        expr::{lin_expr::GRBLinExpr, quad_expr::QuadExpr, GRBSense},
         CanBeAddedToCallback, CanBeAddedToModel, IsModelingObject,
     },
     prelude::GRBCallbackContext,
@@ -106,7 +106,7 @@ pub trait Expr {
     fn le(self, rhs: f64) -> Self::Output;
 }
 
-impl Expr for LinExpr {
+impl Expr for GRBLinExpr {
     type Output = TempConstr;
 
     fn eq(self, rhs: f64) -> Self::Output {

@@ -5,13 +5,13 @@ use std::{
 
 use crate::{ffi, modeling::IsModelingObject};
 use crate::{
-    modeling::{expr::lin_expr::LinExpr, Objective},
+    modeling::{expr::lin_expr::GRBLinExpr, Objective},
     var::GRBVar,
 };
 
 pub struct QuadExpr {
     pub(crate) quad_expr: BTreeMap<(usize, usize), f64>, // (var_idx1, var_idx2, coeff)
-    pub(crate) linear_expr: LinExpr,
+    pub(crate) linear_expr: GRBLinExpr,
 }
 
 impl Objective for QuadExpr {
@@ -54,7 +54,7 @@ impl Add<f64> for QuadExpr {
     fn add(self, scalar: f64) -> Self::Output {
         QuadExpr {
             quad_expr: self.quad_expr,
-            linear_expr: LinExpr {
+            linear_expr: GRBLinExpr {
                 expr: self.linear_expr.expr,
                 scalar: self.linear_expr.scalar + scalar,
             },
@@ -114,7 +114,7 @@ impl Sub<f64> for QuadExpr {
     fn sub(self, scalar: f64) -> Self::Output {
         QuadExpr {
             quad_expr: self.quad_expr,
-            linear_expr: LinExpr {
+            linear_expr: GRBLinExpr {
                 expr: self.linear_expr.expr,
                 scalar: self.linear_expr.scalar - scalar,
             },
@@ -187,10 +187,10 @@ impl Mul<QuadExpr> for f64 {
     }
 }
 
-impl Mul<LinExpr> for LinExpr {
+impl Mul<GRBLinExpr> for GRBLinExpr {
     type Output = QuadExpr;
 
-    fn mul(self, rhs: LinExpr) -> Self::Output {
+    fn mul(self, rhs: GRBLinExpr) -> Self::Output {
         // linear term can remain, bc of scalar mult
         let linear_expr = rhs.scalar * self.clone() + self.scalar * rhs.clone();
         let mut quad_expr = BTreeMap::new();
@@ -209,11 +209,11 @@ impl Mul<LinExpr> for LinExpr {
     }
 }
 
-impl Mul<&GRBVar> for LinExpr {
+impl Mul<&GRBVar> for GRBLinExpr {
     type Output = QuadExpr;
 
     fn mul(self, var: &GRBVar) -> Self::Output {
-        let mut linear_expr = self.scalar * LinExpr::from(var);
+        let mut linear_expr = self.scalar * GRBLinExpr::from(var);
         linear_expr.scalar = 0.0;
         let mut quad_expr = BTreeMap::new();
         for (idx, coeff) in self.expr {
@@ -235,7 +235,7 @@ impl Mul<&GRBVar> for &GRBVar {
         let quad_expr = BTreeMap::from([((self.index(), rhs.index()), 1.0)]);
         QuadExpr {
             quad_expr,
-            linear_expr: LinExpr {
+            linear_expr: GRBLinExpr {
                 expr: BTreeMap::new(),
                 scalar: 0.0,
             },

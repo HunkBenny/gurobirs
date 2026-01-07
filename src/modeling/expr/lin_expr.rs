@@ -12,7 +12,7 @@ use crate::{
 use crate::ffi;
 
 #[derive(Clone)]
-pub struct LinExpr {
+pub struct GRBLinExpr {
     /// Tree of (variable index, coefficient) pairs
     /// Tree, because if two LinExpr are added together and have an overlap in variables, the
     /// coefficients need to be summed. So there needs to be an efficient way to look up variable indices.
@@ -24,7 +24,16 @@ pub struct LinExpr {
     pub(crate) scalar: f64,
 }
 
-impl Objective for LinExpr {
+impl GRBLinExpr {
+    pub fn new() -> Self {
+        GRBLinExpr {
+            expr: BTreeMap::new(),
+            scalar: 0.0,
+        }
+    }
+}
+
+impl Objective for GRBLinExpr {
     fn set_as_objective(self, model: &mut crate::prelude::GRBModel, sense: GRBModelSense) {
         // set constant term
         let constant_term = self.scalar;
@@ -63,27 +72,27 @@ impl Objective for LinExpr {
 }
 
 // impl add, mult, sub etc
-impl Add<f64> for LinExpr {
-    type Output = LinExpr;
+impl Add<f64> for GRBLinExpr {
+    type Output = GRBLinExpr;
 
     fn add(self, scalar: f64) -> Self::Output {
-        LinExpr {
+        GRBLinExpr {
             expr: self.expr,
             scalar: self.scalar + scalar,
         }
     }
 }
 
-impl AddAssign<f64> for LinExpr {
+impl AddAssign<f64> for GRBLinExpr {
     fn add_assign(&mut self, scalar: f64) {
         self.scalar += scalar;
     }
 }
 
-impl Add<LinExpr> for LinExpr {
-    type Output = LinExpr;
+impl Add<GRBLinExpr> for GRBLinExpr {
+    type Output = GRBLinExpr;
     // TODO: fix this to create a new linexpr
-    fn add(mut self, rhs: LinExpr) -> Self::Output {
+    fn add(mut self, rhs: GRBLinExpr) -> Self::Output {
         // 1. add scalar
         self.scalar += rhs.scalar;
         // 2. add expr to self, consuming the other linexpr
@@ -102,8 +111,8 @@ impl Add<LinExpr> for LinExpr {
     }
 }
 
-impl AddAssign<LinExpr> for LinExpr {
-    fn add_assign(&mut self, rhs: LinExpr) {
+impl AddAssign<GRBLinExpr> for GRBLinExpr {
+    fn add_assign(&mut self, rhs: GRBLinExpr) {
         // 1. add scalar
         self.scalar += rhs.scalar;
         // 2. add expr to self, consuming the other linexpr
@@ -120,35 +129,35 @@ impl AddAssign<LinExpr> for LinExpr {
     }
 }
 
-impl Sub<f64> for LinExpr {
-    type Output = LinExpr;
+impl Sub<f64> for GRBLinExpr {
+    type Output = GRBLinExpr;
 
     fn sub(self, scalar: f64) -> Self::Output {
-        LinExpr {
+        GRBLinExpr {
             expr: self.expr,
             scalar: self.scalar - scalar,
         }
     }
 }
 
-impl Sub<LinExpr> for f64 {
-    type Output = LinExpr;
+impl Sub<GRBLinExpr> for f64 {
+    type Output = GRBLinExpr;
 
-    fn sub(self, expr: LinExpr) -> Self::Output {
+    fn sub(self, expr: GRBLinExpr) -> Self::Output {
         expr - self
     }
 }
 
-impl SubAssign<f64> for LinExpr {
+impl SubAssign<f64> for GRBLinExpr {
     fn sub_assign(&mut self, scalar: f64) {
         self.scalar -= scalar;
     }
 }
 
-impl Sub<LinExpr> for LinExpr {
-    type Output = LinExpr;
+impl Sub<GRBLinExpr> for GRBLinExpr {
+    type Output = GRBLinExpr;
     //TODO: fix this to create a new linexpr
-    fn sub(mut self, rhs: LinExpr) -> Self::Output {
+    fn sub(mut self, rhs: GRBLinExpr) -> Self::Output {
         // 1. add scalar
         self.scalar -= rhs.scalar;
         // 2. add expr to self, consuming the other linexpr
@@ -168,8 +177,8 @@ impl Sub<LinExpr> for LinExpr {
     }
 }
 
-impl SubAssign<LinExpr> for LinExpr {
-    fn sub_assign(&mut self, rhs: LinExpr) {
+impl SubAssign<GRBLinExpr> for GRBLinExpr {
+    fn sub_assign(&mut self, rhs: GRBLinExpr) {
         // 1. add scalar
         self.scalar -= rhs.scalar;
         // 2. add expr to self, consuming the other linexpr
@@ -188,8 +197,8 @@ impl SubAssign<LinExpr> for LinExpr {
 
 // NOTE: multiplication only makes sense with scalars for linear expressions
 
-impl Mul<f64> for LinExpr {
-    type Output = LinExpr;
+impl Mul<f64> for GRBLinExpr {
+    type Output = GRBLinExpr;
 
     fn mul(mut self, scalar: f64) -> Self::Output {
         self.scalar *= scalar;
@@ -201,15 +210,15 @@ impl Mul<f64> for LinExpr {
     }
 }
 
-impl Mul<LinExpr> for f64 {
-    type Output = LinExpr;
+impl Mul<GRBLinExpr> for f64 {
+    type Output = GRBLinExpr;
 
-    fn mul(self, expr: LinExpr) -> Self::Output {
+    fn mul(self, expr: GRBLinExpr) -> Self::Output {
         expr * self
     }
 }
 
-impl MulAssign<f64> for LinExpr {
+impl MulAssign<f64> for GRBLinExpr {
     fn mul_assign(&mut self, scalar: f64) {
         self.scalar *= scalar;
 
@@ -222,111 +231,111 @@ impl MulAssign<f64> for LinExpr {
 // NOTE: OPERATOR OVERLOADING FOR GRBVar:
 // Create possibility to make LinExpr from GRBvar;
 
-impl From<&GRBVar> for LinExpr {
+impl From<&GRBVar> for GRBLinExpr {
     fn from(value: &GRBVar) -> Self {
         let mut expr = BTreeMap::new();
         expr.insert(value.index(), 1.0);
-        LinExpr { expr, scalar: 0.0 }
+        GRBLinExpr { expr, scalar: 0.0 }
     }
 }
 
 // OVERLOAD ADDITION
-impl Add<&GRBVar> for LinExpr {
-    type Output = LinExpr;
+impl Add<&GRBVar> for GRBLinExpr {
+    type Output = GRBLinExpr;
 
     fn add(self, var: &GRBVar) -> Self::Output {
-        self + LinExpr::from(var)
+        self + GRBLinExpr::from(var)
     }
 }
 
-impl Add<LinExpr> for &GRBVar {
-    type Output = LinExpr;
+impl Add<GRBLinExpr> for &GRBVar {
+    type Output = GRBLinExpr;
 
-    fn add(self, expr: LinExpr) -> Self::Output {
+    fn add(self, expr: GRBLinExpr) -> Self::Output {
         expr + self
     }
 }
 
-impl AddAssign<&GRBVar> for LinExpr {
+impl AddAssign<&GRBVar> for GRBLinExpr {
     fn add_assign(&mut self, var: &GRBVar) {
-        *self += LinExpr::from(var);
+        *self += GRBLinExpr::from(var);
     }
 }
 
 impl Add<&GRBVar> for f64 {
-    type Output = LinExpr;
+    type Output = GRBLinExpr;
 
     fn add(self, var: &GRBVar) -> Self::Output {
-        LinExpr::from(var) + self
+        GRBLinExpr::from(var) + self
     }
 }
 
 impl Add<f64> for &GRBVar {
-    type Output = LinExpr;
+    type Output = GRBLinExpr;
 
     fn add(self, scalar: f64) -> Self::Output {
-        LinExpr::from(self) + scalar
+        GRBLinExpr::from(self) + scalar
     }
 }
 
 impl Add<&GRBVar> for &GRBVar {
-    type Output = LinExpr;
+    type Output = GRBLinExpr;
 
     fn add(self, rhs: &GRBVar) -> Self::Output {
-        rhs + LinExpr::from(self)
+        rhs + GRBLinExpr::from(self)
     }
 }
 
 // OVERLOAD SUBTRACTION
-impl Sub<&GRBVar> for LinExpr {
-    type Output = LinExpr;
+impl Sub<&GRBVar> for GRBLinExpr {
+    type Output = GRBLinExpr;
 
     fn sub(self, var: &GRBVar) -> Self::Output {
-        self - LinExpr::from(var)
+        self - GRBLinExpr::from(var)
     }
 }
 
-impl Sub<LinExpr> for &GRBVar {
-    type Output = LinExpr;
+impl Sub<GRBLinExpr> for &GRBVar {
+    type Output = GRBLinExpr;
 
-    fn sub(self, expr: LinExpr) -> Self::Output {
+    fn sub(self, expr: GRBLinExpr) -> Self::Output {
         expr - self
     }
 }
 
-impl SubAssign<&GRBVar> for LinExpr {
+impl SubAssign<&GRBVar> for GRBLinExpr {
     fn sub_assign(&mut self, var: &GRBVar) {
-        *self -= LinExpr::from(var);
+        *self -= GRBLinExpr::from(var);
     }
 }
 
 impl Sub<&GRBVar> for f64 {
-    type Output = LinExpr;
+    type Output = GRBLinExpr;
 
     fn sub(self, var: &GRBVar) -> Self::Output {
-        self - LinExpr::from(var)
+        self - GRBLinExpr::from(var)
     }
 }
 
 impl Sub<f64> for &GRBVar {
-    type Output = LinExpr;
+    type Output = GRBLinExpr;
 
     fn sub(self, scalar: f64) -> Self::Output {
-        LinExpr::from(self) - scalar
+        GRBLinExpr::from(self) - scalar
     }
 }
 
 // OVERLOAD MULTIPLICATION
 impl Mul<f64> for &GRBVar {
-    type Output = LinExpr;
+    type Output = GRBLinExpr;
 
     fn mul(self, scalar: f64) -> Self::Output {
-        LinExpr::from(self) * scalar
+        GRBLinExpr::from(self) * scalar
     }
 }
 
 impl Mul<&GRBVar> for f64 {
-    type Output = LinExpr;
+    type Output = GRBLinExpr;
 
     fn mul(self, var: &GRBVar) -> Self::Output {
         var * self
