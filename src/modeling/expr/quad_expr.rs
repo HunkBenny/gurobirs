@@ -9,12 +9,12 @@ use crate::{
     var::GRBVar,
 };
 
-pub struct QuadExpr {
+pub struct GRBQuadExpr {
     pub(crate) quad_expr: BTreeMap<(usize, usize), f64>, // (var_idx1, var_idx2, coeff)
     pub(crate) linear_expr: GRBLinExpr,
 }
 
-impl Objective for QuadExpr {
+impl Objective for GRBQuadExpr {
     fn set_as_objective(
         self,
         model: &mut crate::prelude::GRBModel,
@@ -48,11 +48,11 @@ impl Objective for QuadExpr {
 }
 
 // OVERLOAD ADDITION
-impl Add<f64> for QuadExpr {
-    type Output = QuadExpr;
+impl Add<f64> for GRBQuadExpr {
+    type Output = GRBQuadExpr;
 
     fn add(self, scalar: f64) -> Self::Output {
-        QuadExpr {
+        GRBQuadExpr {
             quad_expr: self.quad_expr,
             linear_expr: GRBLinExpr {
                 expr: self.linear_expr.expr,
@@ -62,9 +62,9 @@ impl Add<f64> for QuadExpr {
     }
 }
 
-impl Add<QuadExpr> for QuadExpr {
-    type Output = QuadExpr;
-    fn add(mut self, rhs: QuadExpr) -> Self::Output {
+impl Add<GRBQuadExpr> for GRBQuadExpr {
+    type Output = GRBQuadExpr;
+    fn add(mut self, rhs: GRBQuadExpr) -> Self::Output {
         self.linear_expr += rhs.linear_expr;
         for (idxs, coeff) in rhs.quad_expr.iter() {
             match self.quad_expr.get_mut(idxs) {
@@ -82,8 +82,8 @@ impl Add<QuadExpr> for QuadExpr {
     }
 }
 
-impl Add<&GRBVar> for QuadExpr {
-    type Output = QuadExpr;
+impl Add<&GRBVar> for GRBQuadExpr {
+    type Output = GRBQuadExpr;
 
     fn add(mut self, var: &GRBVar) -> Self::Output {
         self.linear_expr += var;
@@ -91,16 +91,16 @@ impl Add<&GRBVar> for QuadExpr {
     }
 }
 
-impl Add<QuadExpr> for &GRBVar {
-    type Output = QuadExpr;
+impl Add<GRBQuadExpr> for &GRBVar {
+    type Output = GRBQuadExpr;
 
-    fn add(self, mut rhs: QuadExpr) -> Self::Output {
+    fn add(self, mut rhs: GRBQuadExpr) -> Self::Output {
         rhs.linear_expr += self;
         rhs
     }
 }
 
-impl AddAssign<&GRBVar> for QuadExpr {
+impl AddAssign<&GRBVar> for GRBQuadExpr {
     fn add_assign(&mut self, rhs: &GRBVar) {
         self.linear_expr += rhs;
     }
@@ -108,11 +108,11 @@ impl AddAssign<&GRBVar> for QuadExpr {
 
 // OVERLOAD SUBTRACTION
 
-impl Sub<f64> for QuadExpr {
-    type Output = QuadExpr;
+impl Sub<f64> for GRBQuadExpr {
+    type Output = GRBQuadExpr;
 
     fn sub(self, scalar: f64) -> Self::Output {
-        QuadExpr {
+        GRBQuadExpr {
             quad_expr: self.quad_expr,
             linear_expr: GRBLinExpr {
                 expr: self.linear_expr.expr,
@@ -122,9 +122,9 @@ impl Sub<f64> for QuadExpr {
     }
 }
 
-impl Sub<QuadExpr> for QuadExpr {
-    type Output = QuadExpr;
-    fn sub(mut self, rhs: QuadExpr) -> Self::Output {
+impl Sub<GRBQuadExpr> for GRBQuadExpr {
+    type Output = GRBQuadExpr;
+    fn sub(mut self, rhs: GRBQuadExpr) -> Self::Output {
         self.linear_expr -= rhs.linear_expr;
         for (idxs, coeff) in rhs.quad_expr.iter() {
             match self.quad_expr.get_mut(idxs) {
@@ -140,8 +140,8 @@ impl Sub<QuadExpr> for QuadExpr {
     }
 }
 
-impl Sub<&GRBVar> for QuadExpr {
-    type Output = QuadExpr;
+impl Sub<&GRBVar> for GRBQuadExpr {
+    type Output = GRBQuadExpr;
 
     fn sub(mut self, var: &GRBVar) -> Self::Output {
         self.linear_expr -= var;
@@ -149,24 +149,24 @@ impl Sub<&GRBVar> for QuadExpr {
     }
 }
 
-impl Sub<QuadExpr> for &GRBVar {
-    type Output = QuadExpr;
+impl Sub<GRBQuadExpr> for &GRBVar {
+    type Output = GRBQuadExpr;
 
-    fn sub(self, mut rhs: QuadExpr) -> Self::Output {
+    fn sub(self, mut rhs: GRBQuadExpr) -> Self::Output {
         rhs.linear_expr -= self;
         rhs
     }
 }
 
-impl SubAssign<&GRBVar> for QuadExpr {
+impl SubAssign<&GRBVar> for GRBQuadExpr {
     fn sub_assign(&mut self, rhs: &GRBVar) {
         self.linear_expr -= rhs;
     }
 }
 
 // OVERLOAD MULTIPLICATION
-impl Mul<f64> for QuadExpr {
-    type Output = QuadExpr;
+impl Mul<f64> for GRBQuadExpr {
+    type Output = GRBQuadExpr;
 
     fn mul(mut self, scalar: f64) -> Self::Output {
         // multiply coefficients
@@ -179,16 +179,16 @@ impl Mul<f64> for QuadExpr {
     }
 }
 
-impl Mul<QuadExpr> for f64 {
-    type Output = QuadExpr;
+impl Mul<GRBQuadExpr> for f64 {
+    type Output = GRBQuadExpr;
 
-    fn mul(self, expr: QuadExpr) -> Self::Output {
+    fn mul(self, expr: GRBQuadExpr) -> Self::Output {
         expr * self
     }
 }
 
 impl Mul<GRBLinExpr> for GRBLinExpr {
-    type Output = QuadExpr;
+    type Output = GRBQuadExpr;
 
     fn mul(self, rhs: GRBLinExpr) -> Self::Output {
         // linear term can remain, bc of scalar mult
@@ -202,7 +202,7 @@ impl Mul<GRBLinExpr> for GRBLinExpr {
                 quad_expr.insert(key, value);
             }
         }
-        QuadExpr {
+        GRBQuadExpr {
             quad_expr,
             linear_expr,
         }
@@ -210,7 +210,7 @@ impl Mul<GRBLinExpr> for GRBLinExpr {
 }
 
 impl Mul<&GRBVar> for GRBLinExpr {
-    type Output = QuadExpr;
+    type Output = GRBQuadExpr;
 
     fn mul(self, var: &GRBVar) -> Self::Output {
         let mut linear_expr = self.scalar * GRBLinExpr::from(var);
@@ -221,7 +221,7 @@ impl Mul<&GRBVar> for GRBLinExpr {
             let value = coeff;
             quad_expr.insert(key, value);
         }
-        QuadExpr {
+        GRBQuadExpr {
             quad_expr,
             linear_expr,
         }
@@ -229,11 +229,11 @@ impl Mul<&GRBVar> for GRBLinExpr {
 }
 
 impl Mul<&GRBVar> for &GRBVar {
-    type Output = QuadExpr;
+    type Output = GRBQuadExpr;
 
     fn mul(self, rhs: &GRBVar) -> Self::Output {
         let quad_expr = BTreeMap::from([((self.index(), rhs.index()), 1.0)]);
-        QuadExpr {
+        GRBQuadExpr {
             quad_expr,
             linear_expr: GRBLinExpr {
                 expr: BTreeMap::new(),
