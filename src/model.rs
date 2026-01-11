@@ -327,6 +327,45 @@ impl GRBModel {
         cons
     }
 
+    pub fn add_genconstrPWL(
+        &mut self,
+        xvar: GRBVar,
+        yvar: GRBVar,
+        npts: i32,
+        xpts: Vec<f64>,
+        ypts: Vec<f64>,
+        name: &str,
+    ) -> GRBConstr {
+        let name = CString::new(name).unwrap();
+        let name = name.as_ptr();
+        let xpts = xpts
+            .iter()
+            .map(|x| *x as std::ffi::c_double)
+            .collect::<Vec<_>>();
+        let ypts = ypts
+            .iter()
+            .map(|y| *y as std::ffi::c_double)
+            .collect::<Vec<_>>();
+        let error = unsafe {
+            ffi::GRBaddgenconstrPWL(
+                *self.inner.0,
+                name,
+                xvar.index() as std::ffi::c_int,
+                yvar.index() as std::ffi::c_int,
+                npts,
+                xpts.as_ptr(),
+                ypts.as_ptr(),
+            )
+        };
+        self.get_error(error).unwrap();
+        let cons = GRBConstr {
+            index: self.cons_index,
+            inner: self.inner(),
+        };
+        self.cons_index += 1;
+        cons
+    }
+
     pub fn set_objective<O: Objective>(&mut self, obj: O, sense: GRBModelSense) {
         obj.set_as_objective(self, sense);
     }
