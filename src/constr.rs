@@ -3,7 +3,7 @@
 // This way, we can overload '==', '<=', '>=' operators to create TempConstr
 
 use std::{
-    ffi::{CStr, CString, c_void},
+    ffi::{c_void, CStr, CString},
     ptr::null_mut,
 };
 
@@ -12,8 +12,8 @@ use crate::{
     ffi,
     model::GRBModelPtr,
     modeling::{
-        CanBeAddedToCallback, CanBeAddedToModel, IsModelingObject,
-        expr::{GRBSense, lin_expr::GRBLinExpr, quad_expr::GRBQuadExpr},
+        expr::{lin_expr::GRBLinExpr, quad_expr::GRBQuadExpr, GRBSense},
+        AddAsIndicator, CanBeAddedToCallback, CanBeAddedToModel, IsModelingObject,
     },
     prelude::GRBCallbackContext,
 };
@@ -44,13 +44,13 @@ pub struct TempQConstr {
 }
 
 impl TempConstr {
-    pub fn get_linear_inds_and_coeffs(&self) -> (Vec<i32>, Vec<f64>) {
+    pub fn get_linear_inds_and_coeffs(&self) -> (Vec<std::ffi::c_int>, Vec<std::ffi::c_double>) {
         let mut linear_terms_inds = Vec::new();
         let mut linear_terms_coeffs = Vec::new();
         // linear terms
         for (var_idx, coeff) in self.linear_terms.iter() {
-            linear_terms_inds.push(*var_idx as i32);
-            linear_terms_coeffs.push(*coeff);
+            linear_terms_inds.push(*var_idx as std::ffi::c_int);
+            linear_terms_coeffs.push(*coeff as std::ffi::c_double);
         }
 
         (linear_terms_inds, linear_terms_coeffs)
@@ -181,12 +181,6 @@ impl CanBeAddedToModel for TempConstr {
         // 1. collect indices and coefficients
         let (mut inds_linear, mut coeffs_linear) = self.get_linear_inds_and_coeffs();
 
-        // 2. handle name
-        let name_ptr = match self.name {
-            Some(cname) => cname.as_ptr(),
-            None => null_mut(),
-        };
-
         // 3. call GRBaddconstr or GRBaddqconstr based on presence of quadratic terms
         unsafe {
             ffi::GRBaddconstr(
@@ -307,5 +301,31 @@ pub struct GRBConstr {
 impl IsModelingObject for GRBConstr {
     fn index(&self) -> usize {
         self.index
+    }
+}
+
+impl AddAsIndicator for TempConstr {
+    fn add_as_indicator(
+        self,
+        model: *mut gurobi_sys::GRBmodel,
+        binvar: crate::prelude::GRBVar,
+        binval: i8,
+        name: *const std::ffi::c_char,
+    ) -> i32 {
+        let (inds, coeffs) = self.get_linear_inds_and_coeffs();
+        let len = inds.len();
+        unsafe {
+            ffi::GRBaddgenconstrIndicator(
+                model,
+                name,
+                binvar.index() as std::ffi::c_int,
+                binval as std::ffi::c_int,
+                len as std::ffi::c_int,
+                inds.as_ptr(),
+                coeffs.as_ptr(),
+                self.sense.into(),
+                self.rhs as std::ffi::c_double,
+            )
+        }
     }
 }

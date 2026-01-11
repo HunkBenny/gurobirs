@@ -2,12 +2,23 @@ use std::ffi::CString;
 
 use crate::ffi;
 use crate::model::GRBModelSense;
+use crate::var::GRBVar;
 use crate::{model::GRBModel, prelude::GRBCallbackContext};
 
 pub(crate) trait CanBeAddedToModel {
     /// take out the name, leave a none in place
     fn get_name(&mut self) -> Option<CString>;
     fn add_to_model(self, model: *mut ffi::GRBmodel, name: *const std::ffi::c_char) -> i32;
+}
+
+pub(crate) trait AddAsIndicator {
+    fn add_as_indicator(
+        self,
+        model: *mut ffi::GRBmodel,
+        binvar: GRBVar,
+        binval: i8,
+        name: *const std::ffi::c_char,
+    ) -> i32;
 }
 
 /// Marker trait for modeling objects (variables, constraints, etc)

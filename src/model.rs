@@ -1,5 +1,5 @@
 use std::{
-    ffi::{c_char, CStr},
+    ffi::{c_char, CStr, CString},
     ptr::{null, null_mut},
     rc::Rc,
 };
@@ -9,7 +9,7 @@ use crate::{
     env::GRBenv,
     error::check_err,
     ffi,
-    modeling::{CanBeAddedToModel, IsModelingObject, Objective},
+    modeling::{AddAsIndicator, CanBeAddedToModel, IsModelingObject, Objective},
     prelude::GRBVarBuilder,
     var::GRBVar,
 };
@@ -120,6 +120,211 @@ impl GRBModel {
         };
         self.cons_index += 1;
         constr
+    }
+
+    pub fn add_genconstrmax(
+        &mut self,
+        res_var: GRBVar,
+        xvars: Vec<GRBVar>,
+        constant: f64,
+        name: &str,
+    ) -> GRBConstr {
+        let name = CString::new(name).unwrap();
+        let name = name.as_ptr() as *const std::ffi::c_char;
+        let len = xvars.len();
+        let xvars = xvars
+            .iter()
+            .map(|x| x.index() as std::ffi::c_int)
+            .collect::<Vec<_>>();
+        let error = unsafe {
+            ffi::GRBaddgenconstrMax(
+                *self.inner.0,
+                name,
+                res_var.index() as std::ffi::c_int,
+                len as std::ffi::c_int,
+                xvars.as_ptr(),
+                constant,
+            )
+        };
+        self.get_error(error).unwrap();
+
+        let cons = GRBConstr {
+            index: self.cons_index,
+            inner: self.inner(),
+        };
+        self.cons_index += 1;
+        cons
+    }
+
+    pub fn add_genconstrmin(
+        &mut self,
+        res_var: GRBVar,
+        xvars: Vec<GRBVar>,
+        constant: f64,
+        name: &str,
+    ) -> GRBConstr {
+        // name
+        let name = CString::new(name).unwrap();
+        let name = name.as_ptr() as *const std::ffi::c_char;
+        let len = xvars.len();
+        let xvars = xvars
+            .iter()
+            .map(|x| x.index() as std::ffi::c_int)
+            .collect::<Vec<_>>();
+        let error = unsafe {
+            ffi::GRBaddgenconstrMin(
+                *self.inner.0,
+                name,
+                res_var.index() as std::ffi::c_int,
+                len as std::ffi::c_int,
+                xvars.as_ptr(),
+                constant,
+            )
+        };
+        self.get_error(error).unwrap();
+
+        let cons = GRBConstr {
+            index: self.cons_index,
+            inner: self.inner(),
+        };
+        self.cons_index += 1;
+        cons
+    }
+
+    pub fn add_genconstrabs(&mut self, res_var: GRBVar, arg_var: GRBVar, name: &str) -> GRBConstr {
+        let name = CString::new(name).unwrap();
+        let name = name.as_ptr();
+        let error = unsafe {
+            ffi::GRBaddgenconstrAbs(
+                *self.inner.0,
+                name,
+                res_var.index() as std::ffi::c_int,
+                arg_var.index() as std::ffi::c_int,
+            )
+        };
+        self.get_error(error);
+        let cons = GRBConstr {
+            index: self.cons_index,
+            inner: self.inner(),
+        };
+        self.cons_index += 1;
+        cons
+    }
+
+    pub fn add_genconstrand(
+        &mut self,
+        res_var: GRBVar,
+        xvars: Vec<GRBVar>,
+        name: &str,
+    ) -> GRBConstr {
+        let name = CString::new(name).unwrap();
+        let name = name.as_ptr();
+        let xvars = xvars
+            .iter()
+            .map(|x| x.index() as std::ffi::c_int)
+            .collect::<Vec<_>>();
+        let len = xvars.len();
+        let error = unsafe {
+            ffi::GRBaddgenconstrAnd(
+                *self.inner.0,
+                name,
+                res_var.index() as std::ffi::c_int,
+                len as std::ffi::c_int,
+                xvars.as_ptr(),
+            )
+        };
+        self.get_error(error).unwrap();
+        let cons = GRBConstr {
+            index: self.cons_index,
+            inner: self.inner(),
+        };
+        self.cons_index += 1;
+        cons
+    }
+
+    pub fn add_genconstror(
+        &mut self,
+        res_var: GRBVar,
+        xvars: Vec<GRBVar>,
+        name: &str,
+    ) -> GRBConstr {
+        let name = CString::new(name).unwrap();
+        let name = name.as_ptr();
+        let xvars = xvars
+            .iter()
+            .map(|x| x.index() as std::ffi::c_int)
+            .collect::<Vec<_>>();
+        let len = xvars.len();
+        let error = unsafe {
+            ffi::GRBaddgenconstrOr(
+                *self.inner.0,
+                name,
+                res_var.index() as std::ffi::c_int,
+                len as std::ffi::c_int,
+                xvars.as_ptr(),
+            )
+        };
+        self.get_error(error).unwrap();
+        let cons = GRBConstr {
+            index: self.cons_index,
+            inner: self.inner(),
+        };
+        self.cons_index += 1;
+        cons
+    }
+
+    pub fn add_genconstrnorm(
+        &mut self,
+        res_var: GRBVar,
+        xvars: Vec<GRBVar>,
+        which: f64,
+        name: &str,
+    ) -> GRBConstr {
+        let name = CString::new(name).unwrap();
+        let name = name.as_ptr();
+        let xvars = xvars
+            .iter()
+            .map(|x| x.index() as std::ffi::c_int)
+            .collect::<Vec<_>>();
+        let len = xvars.len();
+        let error = unsafe {
+            ffi::GRBaddgenconstrNorm(
+                *self.inner.0,
+                name,
+                res_var.index() as std::ffi::c_int,
+                len as std::ffi::c_int,
+                xvars.as_ptr(),
+                which as std::ffi::c_double,
+            )
+        };
+        self.get_error(error).unwrap();
+        let cons = GRBConstr {
+            index: self.cons_index,
+            inner: self.inner(),
+        };
+        self.cons_index += 1;
+        cons
+    }
+
+    pub fn add_genconstrindicator(
+        &mut self,
+        binvar: GRBVar,
+        binval: i8,
+        mut constr: TempConstr,
+    ) -> GRBConstr {
+        let name = constr.get_name();
+        let name_ptr = match name {
+            Some(ref s) => s.as_ptr(),
+            None => null_mut(),
+        };
+        let error = constr.add_as_indicator(*self.inner.0, binvar, binval, name_ptr);
+        self.get_error(error).unwrap();
+        let cons = GRBConstr {
+            index: self.cons_index,
+            inner: self.inner(),
+        };
+        self.cons_index += 1;
+        cons
     }
 
     pub fn set_objective<O: Objective>(&mut self, obj: O, sense: GRBModelSense) {
