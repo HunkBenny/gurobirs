@@ -122,7 +122,7 @@ impl GRBModel {
         constr
     }
 
-    pub fn add_genconstrmax(
+    pub fn add_genconstr_max(
         &mut self,
         res_var: GRBVar,
         xvars: Vec<GRBVar>,
@@ -156,7 +156,7 @@ impl GRBModel {
         cons
     }
 
-    pub fn add_genconstrmin(
+    pub fn add_genconstr_min(
         &mut self,
         res_var: GRBVar,
         xvars: Vec<GRBVar>,
@@ -191,7 +191,7 @@ impl GRBModel {
         cons
     }
 
-    pub fn add_genconstrabs(&mut self, res_var: GRBVar, arg_var: GRBVar, name: &str) -> GRBConstr {
+    pub fn add_genconstr_abs(&mut self, res_var: GRBVar, arg_var: GRBVar, name: &str) -> GRBConstr {
         let name = CString::new(name).unwrap();
         let name = name.as_ptr();
         let error = unsafe {
@@ -211,7 +211,7 @@ impl GRBModel {
         cons
     }
 
-    pub fn add_genconstrand(
+    pub fn add_genconstr_and(
         &mut self,
         res_var: GRBVar,
         xvars: Vec<GRBVar>,
@@ -242,7 +242,7 @@ impl GRBModel {
         cons
     }
 
-    pub fn add_genconstror(
+    pub fn add_genconstr_or(
         &mut self,
         res_var: GRBVar,
         xvars: Vec<GRBVar>,
@@ -273,7 +273,7 @@ impl GRBModel {
         cons
     }
 
-    pub fn add_genconstrnorm(
+    pub fn add_genconstr_norm(
         &mut self,
         res_var: GRBVar,
         xvars: Vec<GRBVar>,
@@ -306,7 +306,7 @@ impl GRBModel {
         cons
     }
 
-    pub fn add_genconstrindicator(
+    pub fn add_genconstr_indicator(
         &mut self,
         binvar: GRBVar,
         binval: i8,
@@ -327,7 +327,7 @@ impl GRBModel {
         cons
     }
 
-    pub fn add_genconstrPWL(
+    pub fn add_genconstr_pwl(
         &mut self,
         xvar: GRBVar,
         yvar: GRBVar,
