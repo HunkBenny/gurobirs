@@ -6,6 +6,7 @@ authors = ["HunkBenny"]
 repository = "https://github.com/HunkBenny/gurobirs"
 license = "MIT"
 readme = "README.md"
+description = "A Rust-API resembling the C++ API of the Gurobi Optimizer."
 
 [dependencies]
 gurobi-sys = { version = "0.1.0", path = "../gurobi-sys" }
