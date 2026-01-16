@@ -177,7 +177,7 @@ impl Expr for GRBQuadExpr {
 }
 
 impl CanBeAddedToModel for TempConstr {
-    fn add_to_model(self, model: *mut gurobi_sys::GRBmodel, name: *const std::ffi::c_char) -> i32 {
+    fn add_to_model(self, model: *mut ffi::GRBmodel, name: *const std::ffi::c_char) -> i32 {
         // 1. collect indices and coefficients
         let (mut inds_linear, mut coeffs_linear) = self.get_linear_inds_and_coeffs();
 
@@ -201,7 +201,7 @@ impl CanBeAddedToModel for TempConstr {
 }
 
 impl CanBeAddedToModel for TempQConstr {
-    fn add_to_model(self, model: *mut gurobi_sys::GRBmodel, name: *const std::ffi::c_char) -> i32 {
+    fn add_to_model(self, model: *mut ffi::GRBmodel, name: *const std::ffi::c_char) -> i32 {
         // 1. collect indices and coefficients
         let (
             mut inds_linear,
@@ -307,7 +307,7 @@ impl IsModelingObject for GRBConstr {
 impl AddAsIndicator for TempConstr {
     fn add_as_indicator(
         self,
-        model: *mut gurobi_sys::GRBmodel,
+        model: *mut ffi::GRBmodel,
         binvar: crate::prelude::GRBVar,
         binval: i8,
         name: *const std::ffi::c_char,

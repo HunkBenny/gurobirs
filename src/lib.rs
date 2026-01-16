@@ -1,4 +1,4 @@
-pub use gurobi_sys as ffi;
+pub use gurobirs_sys as ffi;
 
 mod attributes;
 mod callback;

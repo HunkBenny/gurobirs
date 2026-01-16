@@ -503,7 +503,7 @@ pub trait EnvSetter {
 impl<E: EnvSetter> ModelSetter for E {
     type Value = E::Value;
 
-    fn set(&self, model: *mut gurobi_sys::GRBmodel, value: Self::Value) -> i32 {
+    fn set(&self, model: *mut ffi::GRBmodel, value: Self::Value) -> i32 {
         // get env
         let env_ptr = unsafe { ffi::GRBgetenv(model) };
         // call set on env
