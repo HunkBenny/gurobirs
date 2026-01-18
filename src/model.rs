@@ -369,6 +369,8 @@ impl GRBModel {
         cons
     }
 
+    // TODO: Best to add a nonlinexpr struct that can be built using arithmetic operations (like
+    // python api)
     pub fn add_genconstr_nl(
         &mut self,
         res_var: GRBVar,
