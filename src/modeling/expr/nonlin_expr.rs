@@ -2,6 +2,7 @@
 // not necessary though.
 
 use crate::ffi;
+#[derive(Copy, Clone)]
 pub enum GRBOpCode {
     Constant,
     Variable,

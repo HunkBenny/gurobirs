@@ -9,7 +9,10 @@ use crate::{
     env::GRBenv,
     error::check_err,
     ffi,
-    modeling::{AddAsIndicator, CanBeAddedToModel, IsModelingObject, Objective},
+    modeling::{
+        expr::nonlin_expr::GRBOpCode, AddAsIndicator, CanBeAddedToModel, IsModelingObject,
+        Objective,
+    },
     prelude::GRBVarBuilder,
     var::GRBVar,
 };
@@ -355,6 +358,50 @@ impl GRBModel {
                 npts,
                 xpts.as_ptr(),
                 ypts.as_ptr(),
+            )
+        };
+        self.get_error(error).unwrap();
+        let cons = GRBConstr {
+            index: self.cons_index,
+            inner: self.inner(),
+        };
+        self.cons_index += 1;
+        cons
+    }
+
+    pub fn add_genconstr_nl(
+        &mut self,
+        res_var: GRBVar,
+        opcodes: Vec<GRBOpCode>,
+        data: Vec<f64>,
+        parent: Vec<i32>,
+        name: &str,
+    ) -> GRBConstr {
+        let name = CString::new(name).unwrap();
+        let name = name.as_ptr();
+        let len = opcodes.len();
+        let opcode = opcodes
+            .iter()
+            .map(|&x| x as std::ffi::c_int)
+            .collect::<Vec<_>>();
+        let data = data
+            .iter()
+            .map(|&x| x as std::ffi::c_double)
+            .collect::<Vec<_>>();
+        let parent = parent
+            .iter()
+            .map(|&x| x as std::ffi::c_int)
+            .collect::<Vec<_>>();
+
+        let error = unsafe {
+            ffi::GRBaddgenconstrNL(
+                *self.inner.0,
+                name,
+                res_var.index() as std::ffi::c_int,
+                len as std::ffi::c_int,
+                opcode.as_ptr(),
+                data.as_ptr(),
+                parent.as_ptr(),
             )
         };
         self.get_error(error).unwrap();
