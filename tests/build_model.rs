@@ -1,4 +1,4 @@
-use gurobi_rust::prelude::{
+use gurobirs::prelude::{
     CallbackTrait, Expr, GRBCallback, GRBCallbackContext, GRBDblAttr, GRBModel, GRBModelSense,
     GRBVar, GRBVarType, GRBenv,
 };

@@ -1,5 +1,5 @@
-use gurobi_rust::prelude::*;
-use gurobi_sys::GRB_METHOD_BARRIER;
+use gurobirs::prelude::*;
+use gurobirs_sys::GRB_METHOD_BARRIER;
 
 #[test]
 fn test_facility_location() {

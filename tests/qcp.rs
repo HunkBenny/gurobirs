@@ -1,4 +1,4 @@
-use gurobi_rust::prelude::{
+use gurobirs::prelude::{
     Expr, GRBDblAttr, GRBLinExpr, GRBModel, GRBModelSense, GRBStrAttr, GRBStrParam, GRBVar,
     GRBVarBuilder, GRBenv,
 };

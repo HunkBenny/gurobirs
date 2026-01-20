@@ -1,4 +1,4 @@
-use gurobi_rust::prelude::*;
+use gurobirs::prelude::*;
 
 #[test]
 fn test_mip1() {
