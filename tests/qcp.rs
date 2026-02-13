@@ -15,8 +15,8 @@ fn test_qcp() {
 
     model.add_constr((&x + &y + &z).eq(1.0).name("c0"));
 
-    model.add_qconstr((&x * &x + &y * &y - &z * &z).le(0.0).name("qc0"));
-    model.add_qconstr((&x * &x - &y * &z).le(0.0).name("qc1"));
+    model.add_qconstr((&x * &x + &y * &y).le(&z * &z).name("qc0"));
+    model.add_qconstr((&x * &x).le(&y * &z).name("qc1"));
 
     model.optimize();
     println!("{} {}", x.get(GRBStrAttr::VARNAME), x.get(GRBDblAttr::X));
