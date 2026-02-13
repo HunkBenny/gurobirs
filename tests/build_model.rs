@@ -1,6 +1,6 @@
 use gurobirs::prelude::{
-    CallbackTrait, Expr, GRBCallback, GRBCallbackContext, GRBDblAttr, GRBModel, GRBModelSense,
-    GRBVar, GRBVarType, GRBenv,
+    CallbackTrait, Expr, GRBCallback, GRBCallbackContext, GRBDblAttr, GRBEnv, GRBModel,
+    GRBModelSense, GRBVar, GRBVarType,
 };
 
 struct MyCallback;
@@ -14,7 +14,7 @@ impl CallbackTrait for MyCallback {
 fn test_build_model() {
     // first create env
     let env =
-        GRBenv::new(false, None).expect("err nerrr sth happened when creating the environment");
+        GRBEnv::new(false, None).expect("err nerrr sth happened when creating the environment");
     let mut model = GRBModel::new(env);
 
     let x = model.add_var(

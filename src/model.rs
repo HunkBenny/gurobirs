@@ -6,7 +6,7 @@ use std::{
 
 use crate::{
     constr::{GRBConstr, TempConstr, TempQConstr},
-    env::GRBenv,
+    env::GRBEnv,
     error::check_err,
     ffi,
     modeling::{
@@ -45,7 +45,7 @@ pub struct GRBModel {
 }
 
 impl GRBModel {
-    pub fn new(env: GRBenv) -> GRBModel {
+    pub fn new(env: GRBEnv) -> GRBModel {
         let mut model = null_mut();
         let error = unsafe {
             ffi::GRBnewmodel(

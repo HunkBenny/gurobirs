@@ -21,7 +21,7 @@ fn test_facility_location() {
         vec![2200, 2600, 3100, 3700, 3200],
     ];
     // Create a new Gurobi environment
-    let env = GRBenv::new(false, None).unwrap();
+    let env = GRBEnv::new(false, None).unwrap();
     let mut model = GRBModel::new(env);
     model.set(GRBStrAttr::MODELNAME, "facility_location".to_string());
 

@@ -1,11 +1,11 @@
 use gurobirs::prelude::{
-    Expr, GRBDblAttr, GRBLinExpr, GRBModel, GRBModelSense, GRBStrAttr, GRBStrParam, GRBVar,
-    GRBVarBuilder, GRBenv,
+    Expr, GRBDblAttr, GRBEnv, GRBLinExpr, GRBModel, GRBModelSense, GRBStrAttr, GRBStrParam, GRBVar,
+    GRBVarBuilder,
 };
 
 #[test]
 fn test_qcp() {
-    let env = GRBenv::new(false, None).unwrap();
+    let env = GRBEnv::new(false, None).unwrap();
     let mut model = GRBModel::new(env);
     let x = model.add_var(GRBVar::builder().name("x".to_owned()));
     let y = model.add_var(GRBVar::builder().name("y".to_owned()));

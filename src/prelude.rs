@@ -2,7 +2,7 @@ pub use crate::attributes::{GRBCharAttr, GRBDblAttr, GRBIntAttr, GRBStrAttr};
 pub use crate::callback::{CallbackTrait, GRBCallback, GRBCallbackContext};
 pub use crate::constr::Expr;
 pub use crate::constr::GRBConstr;
-pub use crate::env::GRBenv;
+pub use crate::env::GRBEnv;
 pub use crate::model::{GRBModel, GRBModelSense};
 pub use crate::modeling::builder::var::GRBVarBuilder;
 pub use crate::modeling::expr::{lin_expr::GRBLinExpr, GRBSense};

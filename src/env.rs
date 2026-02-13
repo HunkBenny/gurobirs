@@ -5,16 +5,16 @@ use std::{
 
 use crate::{error::check_err, ffi};
 
-pub struct GRBenv {
+pub struct GRBEnv {
     inner: *mut ffi::GRBenv,
 }
 
-impl GRBenv {
+impl GRBEnv {
     pub fn inner(&self) -> *mut ffi::GRBenv {
         self.inner
     }
 
-    pub fn new(empty: bool, logfilename: Option<&str>) -> Result<GRBenv, String> {
+    pub fn new(empty: bool, logfilename: Option<&str>) -> Result<GRBEnv, String> {
         // Create the GRBenv pointer
         let mut env_ptr = null_mut();
         // Prepare the logfilename pointer
@@ -29,7 +29,7 @@ impl GRBenv {
         } else {
             unsafe { ffi::GRBloadenv(&mut env_ptr, logfilename_ptr) }
         };
-        let env = GRBenv { inner: env_ptr };
+        let env = GRBEnv { inner: env_ptr };
         env.get_error(error).unwrap();
         Ok(env)
     }
@@ -55,13 +55,13 @@ impl GRBenv {
     }
 }
 
-impl Default for GRBenv {
+impl Default for GRBEnv {
     fn default() -> Self {
-        GRBenv::new(false, None).expect("Failed to create default GRBenv")
+        GRBEnv::new(false, None).expect("Failed to create default GRBenv")
     }
 }
 
-impl Drop for GRBenv {
+impl Drop for GRBEnv {
     fn drop(&mut self) {
         unsafe {
             ffi::GRBfreeenv(self.inner);
