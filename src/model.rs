@@ -45,7 +45,7 @@ pub struct GRBModel {
 }
 
 impl GRBModel {
-    pub fn new(env: GRBEnv) -> GRBModel {
+    pub fn new(env: &GRBEnv) -> GRBModel {
         let mut model = null_mut();
         let error = unsafe {
             ffi::GRBnewmodel(

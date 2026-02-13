@@ -3,7 +3,7 @@ use gurobirs::prelude::*;
 #[test]
 fn test_mip1() {
     let env = GRBEnv::new(false, None).unwrap();
-    let mut model = GRBModel::new(env);
+    let mut model = GRBModel::new(&env);
     let x = model.add_var(
         GRBVar::builder()
             .lb(0.0)

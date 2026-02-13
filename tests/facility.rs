@@ -22,7 +22,7 @@ fn test_facility_location() {
     ];
     // Create a new Gurobi environment
     let env = GRBEnv::new(false, None).unwrap();
-    let mut model = GRBModel::new(env);
+    let mut model = GRBModel::new(&env);
     model.set(GRBStrAttr::MODELNAME, "facility_location".to_string());
 
     // plant open

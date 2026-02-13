@@ -6,7 +6,7 @@ use gurobirs::prelude::{
 #[test]
 fn test_qcp() {
     let env = GRBEnv::new(false, None).unwrap();
-    let mut model = GRBModel::new(env);
+    let mut model = GRBModel::new(&env);
     let x = model.add_var(GRBVar::builder().name("x".to_owned()));
     let y = model.add_var(GRBVar::builder().name("y".to_owned()));
     let z = model.add_var(GRBVar::builder().name("z".to_owned()));

@@ -15,7 +15,7 @@ fn test_build_model() {
     // first create env
     let env =
         GRBEnv::new(false, None).expect("err nerrr sth happened when creating the environment");
-    let mut model = GRBModel::new(env);
+    let mut model = GRBModel::new(&env);
 
     let x = model.add_var(
         GRBVar::builder()
