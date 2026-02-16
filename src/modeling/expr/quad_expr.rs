@@ -115,6 +115,22 @@ impl AddAssign<&GRBVar> for GRBQuadExpr {
     }
 }
 
+impl AddAssign<GRBQuadExpr> for GRBQuadExpr {
+    fn add_assign(&mut self, rhs: GRBQuadExpr) {
+        self.linear_expr += rhs.linear_expr;
+        for (idxs, coeff) in rhs.quad_expr.iter() {
+            match self.quad_expr.get_mut(idxs) {
+                Some(existing_coeff) => {
+                    *existing_coeff += coeff;
+                }
+                None => {
+                    self.quad_expr.insert(*idxs, *coeff);
+                }
+            }
+        }
+    }
+}
+
 // OVERLOAD SUBTRACTION
 
 impl Sub<f64> for GRBQuadExpr {
