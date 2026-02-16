@@ -5,6 +5,6 @@ pub use crate::constr::GRBConstr;
 pub use crate::env::GRBEnv;
 pub use crate::model::{GRBModel, GRBModelSense};
 pub use crate::modeling::builder::var::GRBVarBuilder;
-pub use crate::modeling::expr::{lin_expr::GRBLinExpr, GRBSense};
+pub use crate::modeling::expr::{lin_expr::GRBLinExpr, quad_expr::GRBQuadExpr, GRBSense};
 pub use crate::parameters::{GRBDblParam, GRBIntParam, GRBStrParam};
 pub use crate::var::{GRBVar, GRBVarType};
