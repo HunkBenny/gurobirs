@@ -14,6 +14,15 @@ pub struct GRBQuadExpr {
     pub(crate) linear_expr: GRBLinExpr,
 }
 
+impl GRBQuadExpr {
+    pub fn new() -> Self {
+        GRBQuadExpr {
+            quad_expr: BTreeMap::new(),
+            linear_expr: GRBLinExpr::new(),
+        }
+    }
+}
+
 impl Objective for GRBQuadExpr {
     fn set_as_objective(
         self,
