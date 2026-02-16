@@ -117,7 +117,9 @@ impl AddAssign<&GRBVar> for GRBQuadExpr {
 
 impl AddAssign<GRBQuadExpr> for GRBQuadExpr {
     fn add_assign(&mut self, rhs: GRBQuadExpr) {
+        // 1. add linear part (logic implemented in linexpr)
         self.linear_expr += rhs.linear_expr;
+        // 2. add quadr part, looping over rhs quad expr and adding to self
         for (idxs, coeff) in rhs.quad_expr.iter() {
             match self.quad_expr.get_mut(idxs) {
                 Some(existing_coeff) => {
