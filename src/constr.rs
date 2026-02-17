@@ -17,6 +17,7 @@ use crate::{
         AddAsIndicator, CanBeAddedToCallback, CanBeAddedToModel, IsModelingObject,
     },
     prelude::GRBCallbackContext,
+    var::GRBVar,
 };
 
 pub trait ConstrGetter {
@@ -251,6 +252,70 @@ impl Expr<f64> for GRBLinExpr {
             linear_terms,
             sense: GRBSense::LessEqual,
             rhs,
+            name: None,
+        }
+    }
+}
+
+impl Expr<&GRBVar> for GRBLinExpr {
+    type Output = TempConstr;
+
+    fn eq(self, rhs: &GRBVar) -> Self::Output {
+        let linear_terms = self
+            .expr
+            .into_iter()
+            .map(|(var_idx, coeff)| {
+                if var_idx == rhs.index() {
+                    (var_idx, coeff - 1.0)
+                } else {
+                    (var_idx, coeff)
+                }
+            })
+            .collect::<Vec<_>>();
+        TempConstr {
+            linear_terms,
+            sense: GRBSense::Equal,
+            rhs: -self.scalar,
+            name: None,
+        }
+    }
+
+    fn ge(self, rhs: &GRBVar) -> Self::Output {
+        let linear_terms = self
+            .expr
+            .into_iter()
+            .map(|(var_idx, coeff)| {
+                if var_idx == rhs.index() {
+                    (var_idx, coeff - 1.0)
+                } else {
+                    (var_idx, coeff)
+                }
+            })
+            .collect::<Vec<_>>();
+        TempConstr {
+            linear_terms,
+            sense: GRBSense::GreaterEqual,
+            rhs: -self.scalar,
+            name: None,
+        }
+    }
+
+    fn le(self, rhs: &GRBVar) -> Self::Output {
+        let linear_terms = self
+            .expr
+            .into_iter()
+            .map(|(var_idx, coeff)| {
+                if var_idx == rhs.index() {
+                    (var_idx, coeff - 1.0)
+                } else {
+                    (var_idx, coeff)
+                }
+            })
+            .collect::<Vec<_>>();
+        TempConstr {
+            linear_terms,
+            sense: GRBSense::LessEqual,
+            rhs: -self.scalar,
             name: None,
         }
     }
