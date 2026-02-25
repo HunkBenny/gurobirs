@@ -84,7 +84,7 @@ impl GRBModel {
         let error = var.add_to_model(*self.inner.0, name_ptr);
         self.get_error(error).unwrap();
         // create GRBVar Rust-object
-        let var = GRBVar::new(self.var_index, self.inner(), name);
+        let var = GRBVar::new(self.var_index, self.inner());
         self.var_index += 1;
         var
     }

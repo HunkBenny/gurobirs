@@ -33,16 +33,17 @@ impl From<GRBVarType> for std::ffi::c_char {
     }
 }
 
+// TODO: Should we implement Clone here? The problem is that GRBModelPtr uses an `Rc`. Is that a
+// good decision?
 #[derive(Clone)]
 pub struct GRBVar {
-    name: Option<CString>,
     index: usize,
     pub(crate) inner: GRBModelPtr,
 }
 
 impl GRBVar {
-    pub fn new(index: usize, inner: GRBModelPtr, name: Option<CString>) -> GRBVar {
-        GRBVar { name, index, inner }
+    pub fn new(index: usize, inner: GRBModelPtr) -> GRBVar {
+        GRBVar { index, inner }
     }
 
     pub fn set<V: VariableSetter>(&self, setter: V, value: V::Value) {
