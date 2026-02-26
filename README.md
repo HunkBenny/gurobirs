@@ -10,7 +10,8 @@ I am using this crate for a paper I am working on, this is a project for in my s
 ### WIP
 This is an active work in progress, a lot of functionality is already present. However, tests are lacking, documentation is lacking, and the code is horrible. For the moment the focus lies on adding tests and documentation. Afterwards a lot of refactoring will be done.
 
-I still need to setup a CI/CD system to make sure that this crate runs on all machines. Currently it is tested on an M2 Macbook Pro running macOS Sequoia 15.7.3.
+I still need to setup a CI/CD system to make sure that this crate runs on all machines. Currently it is tested on an M2 Macbook Pro running macOS Sequoia 15.7.3, and a linux x86 machine running RHEL9.
+
 
 Do not expect this crate to be stable before version 1.0.0 is reached.
 
