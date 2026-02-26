@@ -462,9 +462,10 @@ impl GRBModel {
     }
 }
 
+#[repr(i32)]
 pub enum GRBModelSense {
-    MAXIMIZE,
-    MINIMIZE,
+    MAXIMIZE = -1,
+    MINIMIZE = 1,
 }
 // FIX: call this on object itself instead of associated function
 impl GRBModelSense {
