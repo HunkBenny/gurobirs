@@ -3,7 +3,7 @@
 // This way, we can overload '==', '<=', '>=' operators to create TempConstr
 
 use std::{
-    ffi::{CStr, CString, c_void},
+    ffi::{c_void, CStr, CString},
     ops::Sub,
     ptr::null_mut,
 };
@@ -13,8 +13,8 @@ use crate::{
     ffi,
     model::GRBModelPtr,
     modeling::{
+        expr::{lin_expr::GRBLinExpr, quad_expr::GRBQuadExpr, GRBSense},
         AddAsIndicator, CanBeAddedToCallback, CanBeAddedToModel, IsModelingObject,
-        expr::{GRBSense, lin_expr::GRBLinExpr, quad_expr::GRBQuadExpr},
     },
     prelude::GRBCallbackContext,
     var::GRBVar,
@@ -123,34 +123,34 @@ impl Expr<GRBLinExpr> for GRBLinExpr {
     type Output = TempConstr;
 
     fn eq(self, rhs: GRBLinExpr) -> Self::Output {
-        let rhs = rhs.scalar - self.scalar;
+        let scalar = rhs.scalar - self.scalar;
         let linear_terms = (self - rhs).expr.into_iter().collect::<Vec<_>>();
         TempConstr {
             linear_terms,
             sense: GRBSense::Equal,
-            rhs,
+            rhs: scalar,
             name: None,
         }
     }
 
     fn ge(self, rhs: GRBLinExpr) -> Self::Output {
-        let rhs = rhs.scalar - self.scalar;
+        let scalar = rhs.scalar - self.scalar;
         let linear_terms = (self - rhs).expr.into_iter().collect::<Vec<_>>();
         TempConstr {
             linear_terms,
             sense: GRBSense::GreaterEqual,
-            rhs,
+            rhs: scalar,
             name: None,
         }
     }
 
     fn le(self, rhs: GRBLinExpr) -> Self::Output {
-        let rhs = rhs.scalar - self.scalar;
+        let scalar = rhs.scalar - self.scalar;
         let linear_terms = (self - rhs).expr.into_iter().collect::<Vec<_>>();
         TempConstr {
             linear_terms,
             sense: GRBSense::LessEqual,
-            rhs,
+            rhs: scalar,
             name: None,
         }
     }
@@ -261,63 +261,15 @@ impl Expr<&GRBVar> for GRBLinExpr {
     type Output = TempConstr;
 
     fn eq(self, rhs: &GRBVar) -> Self::Output {
-        let linear_terms = self
-            .expr
-            .into_iter()
-            .map(|(var_idx, coeff)| {
-                if var_idx == rhs.index() {
-                    (var_idx, coeff - 1.0)
-                } else {
-                    (var_idx, coeff)
-                }
-            })
-            .collect::<Vec<_>>();
-        TempConstr {
-            linear_terms,
-            sense: GRBSense::Equal,
-            rhs: -self.scalar,
-            name: None,
-        }
+        self.eq(GRBLinExpr::from(rhs))
     }
 
     fn ge(self, rhs: &GRBVar) -> Self::Output {
-        let linear_terms = self
-            .expr
-            .into_iter()
-            .map(|(var_idx, coeff)| {
-                if var_idx == rhs.index() {
-                    (var_idx, coeff - 1.0)
-                } else {
-                    (var_idx, coeff)
-                }
-            })
-            .collect::<Vec<_>>();
-        TempConstr {
-            linear_terms,
-            sense: GRBSense::GreaterEqual,
-            rhs: -self.scalar,
-            name: None,
-        }
+        self.ge(GRBLinExpr::from(rhs))
     }
 
     fn le(self, rhs: &GRBVar) -> Self::Output {
-        let linear_terms = self
-            .expr
-            .into_iter()
-            .map(|(var_idx, coeff)| {
-                if var_idx == rhs.index() {
-                    (var_idx, coeff - 1.0)
-                } else {
-                    (var_idx, coeff)
-                }
-            })
-            .collect::<Vec<_>>();
-        TempConstr {
-            linear_terms,
-            sense: GRBSense::LessEqual,
-            rhs: -self.scalar,
-            name: None,
-        }
+        self.le(GRBLinExpr::from(rhs))
     }
 }
 
