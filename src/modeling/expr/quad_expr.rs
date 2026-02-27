@@ -240,18 +240,7 @@ impl Mul<&GRBVar> for GRBLinExpr {
     type Output = GRBQuadExpr;
 
     fn mul(self, var: &GRBVar) -> Self::Output {
-        let mut linear_expr = self.scalar * GRBLinExpr::from(var);
-        linear_expr.scalar = 0.0;
-        let mut quad_expr = BTreeMap::new();
-        for (idx, coeff) in self.expr {
-            let key = (idx, var.index());
-            let value = coeff;
-            quad_expr.insert(key, value);
-        }
-        GRBQuadExpr {
-            quad_expr,
-            linear_expr,
-        }
+        GRBLinExpr::from(var) * self
     }
 }
 
@@ -259,13 +248,6 @@ impl Mul<&GRBVar> for &GRBVar {
     type Output = GRBQuadExpr;
 
     fn mul(self, rhs: &GRBVar) -> Self::Output {
-        let quad_expr = BTreeMap::from([((self.index(), rhs.index()), 1.0)]);
-        GRBQuadExpr {
-            quad_expr,
-            linear_expr: GRBLinExpr {
-                expr: BTreeMap::new(),
-                scalar: 0.0,
-            },
-        }
+        GRBLinExpr::from(self) * GRBLinExpr::from(rhs)
     }
 }
