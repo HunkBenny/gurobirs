@@ -17,6 +17,7 @@ use crate::{
     var::GRBVar,
 };
 
+#[cfg_attr(debug_assertions, derive(Debug))]
 pub struct GRBModelPtr(pub(crate) Rc<*mut ffi::GRBmodel>);
 
 impl Drop for GRBModelPtr {

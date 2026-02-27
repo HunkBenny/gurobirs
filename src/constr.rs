@@ -37,6 +37,7 @@ pub struct TempConstr {
     name: Option<CString>,
 }
 
+#[cfg_attr(debug_assertions, derive(Debug))]
 pub struct TempQConstr {
     linear_terms: Vec<(usize, f64)>,
     quadratic_terms: Vec<((usize, usize), f64)>,
@@ -324,11 +325,11 @@ impl Expr<GRBLinExpr> for GRBQuadExpr {
     }
 
     fn ge(self, rhs: GRBLinExpr) -> Self::Output {
-        rhs.ge(self)
+        rhs.le(self)
     }
 
     fn le(self, rhs: GRBLinExpr) -> Self::Output {
-        rhs.le(self)
+        rhs.ge(self)
     }
 }
 

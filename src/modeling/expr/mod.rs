@@ -3,6 +3,7 @@ pub mod lin_expr;
 pub mod nonlin_expr;
 pub mod quad_expr;
 
+#[cfg_attr(debug_assertions, derive(Debug))]
 pub enum GRBSense {
     LessEqual,
     Equal,

@@ -35,6 +35,7 @@ impl From<GRBVarType> for std::ffi::c_char {
 
 // TODO: Should we implement Clone here? The problem is that GRBModelPtr uses an `Rc`. Is that a
 // good decision?
+#[cfg_attr(debug_assertions, derive(Debug))]
 #[derive(Clone)]
 pub struct GRBVar {
     index: usize,
