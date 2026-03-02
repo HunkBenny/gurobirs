@@ -23,7 +23,7 @@ pub struct GRBCallback<C: CallbackTrait> {
 }
 
 pub trait CallbackTrait {
-    fn callback(&self, cb_ctx: GRBCallbackContext);
+    fn callback(&mut self, cb_ctx: GRBCallbackContext);
 }
 
 impl<C: CallbackTrait> GRBCallback<C> {

@@ -5,7 +5,7 @@ use gurobirs::prelude::{
 
 struct MyCallback;
 impl CallbackTrait for MyCallback {
-    fn callback(&self, cb_ctx: GRBCallbackContext) {
+    fn callback(&mut self, cb_ctx: GRBCallbackContext) {
         println!("Callback called from Rust! where = {}", cb_ctx.where_);
     }
 }
