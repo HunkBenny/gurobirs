@@ -3,19 +3,19 @@
 // 2. user uses `model.set_callback(my_callback_fn)` to register the callback.
 // 3. internally, we create a C-compatible function pointer that calls `my_callback_fn`.
 //    This way, we can guarantee that we don't continuously call a callback_function.
-
 use crate::error::check_err;
 use crate::ffi;
 use crate::model::GRBModel;
 use crate::modeling::{CanBeAddedToCallback, IsModelingObject};
 use crate::var::GRBVar;
 use std::ffi::{c_char, CStr};
+use std::fmt::Display;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
 pub struct GRBCallbackContext {
     model: *mut ffi::GRBmodel,
     cb_data: *mut std::ffi::c_void,
-    pub where_: std::ffi::c_int,
+    pub where_: GRBCallbackCodes,
 }
 
 pub struct GRBCallback<C: CallbackTrait> {
@@ -42,7 +42,7 @@ unsafe extern "C" fn c_shim<C: CallbackTrait>(
     let cb_ctx = GRBCallbackContext {
         model,
         cb_data,
-        where_,
+        where_: where_.into(),
     };
     let result = catch_unwind(AssertUnwindSafe(|| unsafe {
         (*wrapper).callback.callback(cb_ctx)
@@ -127,7 +127,7 @@ impl GRBCallbackContext {
         let error = unsafe {
             ffi::GRBcbget(
                 self.cb_data,
-                self.where_,
+                self.where_ as std::ffi::c_int,
                 what,
                 values.as_mut_ptr() as *mut std::ffi::c_void,
             )
@@ -169,7 +169,7 @@ impl GRBCallbackContext {
         let error = unsafe {
             ffi::GRBcbget(
                 self.cb_data,
-                self.where_,
+                self.where_ as std::ffi::c_int,
                 ffi::GRB_CB_MIPNODE_REL,
                 values.as_mut_ptr() as *mut std::ffi::c_void,
             )
@@ -299,6 +299,29 @@ pub enum GRBCallbackCodes {
     MIP,
     SIMPLEX,
     PRESOLVE,
+}
+
+impl Display for GRBCallbackCodes {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                GRBCallbackCodes::POLLING => "POLLING",
+                GRBCallbackCodes::NLBAR => "NLBAR",
+                GRBCallbackCodes::PDHG => "PDHG",
+                GRBCallbackCodes::IIS => "IIS",
+                GRBCallbackCodes::MULTIOBJ => "MULTIOBJ",
+                GRBCallbackCodes::BARRIER => "BARRIER",
+                GRBCallbackCodes::MESSAGE => "MESSAGE",
+                GRBCallbackCodes::MIPNODE => "MIPNODE",
+                GRBCallbackCodes::MIPSOL => "MIPSOL",
+                GRBCallbackCodes::MIP => "MIP",
+                GRBCallbackCodes::SIMPLEX => "SIMPLEX",
+                GRBCallbackCodes::PRESOLVE => "PRESOLVE",
+            }
+        )
+    }
 }
 
 impl From<std::ffi::c_int> for GRBCallbackCodes {
@@ -431,7 +454,7 @@ impl CallbackGet for GRB_WHAT_DOUBLE {
         let error = unsafe {
             ffi::GRBcbget(
                 context.cb_data,
-                context.where_,
+                context.where_ as std::ffi::c_int,
                 (*self).into(),
                 &mut result_p as *mut f64 as *mut std::ffi::c_void,
             )
@@ -452,7 +475,7 @@ impl CallbackGet for GRB_WHAT_INT {
         let error = unsafe {
             ffi::GRBcbget(
                 context.cb_data,
-                context.where_,
+                context.where_ as std::ffi::c_int,
                 (*self).into(),
                 &mut result_p as *mut i32 as *mut std::ffi::c_void,
             )
@@ -473,7 +496,7 @@ impl CallbackGet for GRB_WHAT_STRING {
         let error = unsafe {
             ffi::GRBcbget(
                 context.cb_data,
-                context.where_,
+                context.where_ as std::ffi::c_int,
                 (*self).into(),
                 result_p as *mut std::ffi::c_void,
             )
