@@ -1,17 +1,19 @@
 use std::{
     ffi::{c_char, CStr, CString},
     ptr::{null, null_mut},
+    rc::Rc,
 };
 
 use crate::{error::check_err, ffi};
 
+#[derive(Clone)]
 pub struct GRBEnv {
-    inner: *mut ffi::GRBenv,
+    inner: Rc<*mut ffi::GRBenv>,
 }
 
 impl GRBEnv {
     pub fn inner(&self) -> *mut ffi::GRBenv {
-        self.inner
+        *self.inner
     }
 
     pub fn new(empty: bool, logfilename: Option<&str>) -> Result<GRBEnv, String> {
@@ -29,14 +31,16 @@ impl GRBEnv {
         } else {
             unsafe { ffi::GRBloadenv(&mut env_ptr, logfilename_ptr) }
         };
-        let env = GRBEnv { inner: env_ptr };
+        let env = GRBEnv {
+            inner: Rc::new(env_ptr),
+        };
         env.get_error(error).unwrap();
         Ok(env)
     }
 
     pub fn start(&mut self) -> () {
         unsafe {
-            ffi::GRBstartenv(self.inner);
+            ffi::GRBstartenv(*self.inner);
         }
     }
 
@@ -63,8 +67,12 @@ impl Default for GRBEnv {
 
 impl Drop for GRBEnv {
     fn drop(&mut self) {
+        if Rc::strong_count(&self.inner) > 1 {
+            // If there are other references to the inner pointer, we should not free it yet
+            return;
+        }
         unsafe {
-            ffi::GRBfreeenv(self.inner);
+            ffi::GRBfreeenv(*self.inner);
         }
     }
 }

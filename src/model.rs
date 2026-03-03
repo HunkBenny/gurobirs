@@ -76,7 +76,7 @@ impl GRBModel {
         }
     }
 
-    pub(crate) fn get_env(&self) -> *mut ffi::GRBenv {
+    pub fn get_env(&self) -> *mut ffi::GRBenv {
         unsafe { ffi::GRBgetenv(*self.inner.0) }
     }
 
