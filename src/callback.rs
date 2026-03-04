@@ -519,7 +519,7 @@ impl CallbackGet for GRB_WHAT_STRING {
     }
 }
 
-trait GetSolution {
+pub trait GetSolution {
     type Output;
     fn get_solution(&self, values: &Vec<f64>) -> Self::Output;
 }
@@ -533,6 +533,13 @@ impl GetSolution for GRBVar {
 }
 
 impl<T: GetSolution> GetSolution for &Vec<T> {
+    type Output = Vec<T::Output>;
+
+    fn get_solution(&self, values: &Vec<f64>) -> Self::Output {
+        self.iter().map(|item| item.get_solution(values)).collect()
+    }
+}
+impl<T: GetSolution> GetSolution for Vec<T> {
     type Output = Vec<T::Output>;
 
     fn get_solution(&self, values: &Vec<f64>) -> Self::Output {
