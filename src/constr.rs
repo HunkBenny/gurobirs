@@ -258,6 +258,22 @@ impl Expr<f64> for GRBLinExpr {
     }
 }
 
+impl Expr<&f64> for GRBLinExpr {
+    type Output = TempConstr;
+
+    fn eq(self, rhs: &f64) -> Self::Output {
+        self.eq(*rhs)
+    }
+
+    fn ge(self, rhs: &f64) -> Self::Output {
+        self.ge(*rhs)
+    }
+
+    fn le(self, rhs: &f64) -> Self::Output {
+        self.le(*rhs)
+    }
+}
+
 impl Expr<&GRBVar> for GRBLinExpr {
     type Output = TempConstr;
 
