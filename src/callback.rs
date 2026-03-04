@@ -532,7 +532,7 @@ impl GetSolution for GRBVar {
     }
 }
 
-impl<T: GetSolution> GetSolution for Vec<T> {
+impl<T: GetSolution> GetSolution for &Vec<T> {
     type Output = Vec<T::Output>;
 
     fn get_solution(&self, values: &Vec<f64>) -> Self::Output {
