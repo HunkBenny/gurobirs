@@ -279,6 +279,14 @@ impl Add<f64> for &GRBVar {
     }
 }
 
+impl Add<&f64> for &GRBVar {
+    type Output = GRBLinExpr;
+
+    fn add(self, scalar: &f64) -> Self::Output {
+        self + *scalar
+    }
+}
+
 impl Add<&GRBVar> for &GRBVar {
     type Output = GRBLinExpr;
 
