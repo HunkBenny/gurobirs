@@ -54,14 +54,28 @@ unsafe extern "C" fn c_shim<C: CallbackTrait>(
 }
 
 impl GRBModel {
-    pub fn set_callback<C: CallbackTrait>(&mut self, callback: &mut GRBCallback<C>) {
+    pub fn set_callback<C: CallbackTrait>(
+        &mut self,
+        callback: &mut GRBCallback<C>,
+        wheres: Option<u32>,
+    ) {
         unsafe {
-            // PERF: Check if [GRBsetcallbackfuncadv](https://docs.gurobi.com/projects/optimizer/en/current/reference/c/logging.html#c.GRBsetcallbackfuncadv) could lead to performance improvements in certain scenarios.
-            ffi::GRBsetcallbackfunc(
-                *self.inner.0,
-                Some(c_shim::<C>),
-                callback as *mut _ as *mut std::ffi::c_void,
-            );
+            if let Some(wheres) = wheres {
+                // better for performance
+                ffi::GRBsetcallbackfuncadv(
+                    *self.inner.0,
+                    Some(c_shim::<C>),
+                    callback as *mut _ as *mut std::ffi::c_void,
+                    wheres as std::ffi::c_uint,
+                );
+            } else {
+                // default
+                ffi::GRBsetcallbackfunc(
+                    *self.inner.0,
+                    Some(c_shim::<C>),
+                    callback as *mut _ as *mut std::ffi::c_void,
+                );
+            }
         }
     }
 }
@@ -113,7 +127,7 @@ impl GRBCallbackContext {
     /// This function is rather expensive rn, maybe should add caching?
     /// Caching can be done by checking how many times the callback has been called and only updating
     /// the variable values if the callback is called in a new context.
-    pub fn get_solutions(&mut self, variables: Vec<GRBVar>) -> Vec<f64> {
+    pub fn get_solutions<T: GetSolution>(&mut self, variables: T) -> T::Output {
         let num_vars = self.get_nvars();
         let mut values: Vec<f64> = vec![0.0; num_vars as usize];
         let what = match self.where_.into() {
@@ -134,11 +148,7 @@ impl GRBCallbackContext {
         };
         self.get_error(error).unwrap();
         // now extract the values for the requested variables
-        let mut return_values = Vec::with_capacity(variables.len());
-        for var in &variables {
-            return_values.push(values[var.index()]);
-        }
-        return_values
+        variables.get_solution(&values)
     }
 
     pub fn get_noderels(&mut self, variables: Vec<GRBVar>) -> Vec<f64> {
@@ -506,5 +516,26 @@ impl CallbackGet for GRB_WHAT_STRING {
             .to_string_lossy()
             .into_owned();
         Ok(result_p)
+    }
+}
+
+trait GetSolution {
+    type Output;
+    fn get_solution(&self, values: &Vec<f64>) -> Self::Output;
+}
+
+impl GetSolution for GRBVar {
+    type Output = f64;
+
+    fn get_solution(&self, values: &Vec<f64>) -> Self::Output {
+        values[self.index()]
+    }
+}
+
+impl<T: GetSolution> GetSolution for Vec<T> {
+    type Output = Vec<T::Output>;
+
+    fn get_solution(&self, values: &Vec<f64>) -> Self::Output {
+        self.iter().map(|item| item.get_solution(values)).collect()
     }
 }
