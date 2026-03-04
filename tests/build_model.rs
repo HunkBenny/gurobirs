@@ -34,7 +34,7 @@ fn test_build_model() {
     model.add_constr((&x + &y).le(6.0));
     model.set_objective(obj, GRBModelSense::MAXIMIZE);
     let mut callback = GRBCallback::new(MyCallback);
-    model.set_callback(&mut callback);
+    model.set_callback(&mut callback, None);
     model.optimize();
     println!("x: {}", x.get(GRBDblAttr::X));
     println!("y: {}", y.get(GRBDblAttr::X));
