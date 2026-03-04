@@ -46,6 +46,11 @@ pub struct GRBModel {
 }
 
 impl GRBModel {
+    pub fn update(&mut self) {
+        let error = unsafe { ffi::GRBupdatemodel(*self.inner.0) };
+        self.get_error(error).unwrap();
+    }
+
     pub fn write(&self, filename: &str) {
         let c_filename = CString::new(filename).unwrap();
         let error = unsafe { ffi::GRBwrite(*self.inner.0, c_filename.as_ptr()) };
