@@ -18,7 +18,7 @@ use crate::{
 };
 
 #[cfg_attr(debug_assertions, derive(Debug))]
-pub struct GRBModelPtr(pub(crate) Rc<*mut ffi::GRBmodel>);
+pub struct GRBModelPtr(pub Rc<*mut ffi::GRBmodel>);
 
 impl Drop for GRBModelPtr {
     fn drop(&mut self) {
@@ -42,7 +42,10 @@ impl Clone for GRBModelPtr {
 pub struct GRBModel {
     pub(crate) inner: GRBModelPtr,
     var_index: usize,
-    cons_index: usize,
+    // linear constraints
+    rows_index: usize,
+    qconstraints_index: usize,
+    genconstrs_index: usize,
 }
 
 impl GRBModel {
@@ -77,7 +80,9 @@ impl GRBModel {
         GRBModel {
             inner: GRBModelPtr(Rc::new(model)),
             var_index: 0,
-            cons_index: 0,
+            rows_index: 0,
+            qconstraints_index: 0,
+            genconstrs_index: 0,
         }
     }
 
@@ -114,10 +119,10 @@ impl GRBModel {
         let error = expr.add_to_model(*self.inner.0, name_ptr);
         self.get_error(error).unwrap();
         let constr = GRBConstr {
-            index: self.cons_index,
+            index: self.rows_index,
             inner: self.inner.clone(),
         };
-        self.cons_index += 1;
+        self.rows_index += 1;
         constr
     }
 
@@ -130,10 +135,10 @@ impl GRBModel {
         let error = expr.add_to_model(*self.inner.0, name_ptr);
         self.get_error(error).unwrap();
         let constr = GRBConstr {
-            index: self.cons_index,
+            index: self.qconstraints_index,
             inner: self.inner.clone(),
         };
-        self.cons_index += 1;
+        self.qconstraints_index += 1;
         constr
     }
 
@@ -164,10 +169,10 @@ impl GRBModel {
         self.get_error(error).unwrap();
 
         let cons = GRBConstr {
-            index: self.cons_index,
+            index: self.genconstrs_index,
             inner: self.inner(),
         };
-        self.cons_index += 1;
+        self.genconstrs_index += 1;
         cons
     }
 
@@ -199,10 +204,10 @@ impl GRBModel {
         self.get_error(error).unwrap();
 
         let cons = GRBConstr {
-            index: self.cons_index,
+            index: self.genconstrs_index,
             inner: self.inner(),
         };
-        self.cons_index += 1;
+        self.genconstrs_index += 1;
         cons
     }
 
@@ -219,10 +224,10 @@ impl GRBModel {
         };
         self.get_error(error);
         let cons = GRBConstr {
-            index: self.cons_index,
+            index: self.genconstrs_index,
             inner: self.inner(),
         };
-        self.cons_index += 1;
+        self.genconstrs_index += 1;
         cons
     }
 
@@ -250,10 +255,10 @@ impl GRBModel {
         };
         self.get_error(error).unwrap();
         let cons = GRBConstr {
-            index: self.cons_index,
+            index: self.genconstrs_index,
             inner: self.inner(),
         };
-        self.cons_index += 1;
+        self.genconstrs_index += 1;
         cons
     }
 
@@ -281,10 +286,10 @@ impl GRBModel {
         };
         self.get_error(error).unwrap();
         let cons = GRBConstr {
-            index: self.cons_index,
+            index: self.genconstrs_index,
             inner: self.inner(),
         };
-        self.cons_index += 1;
+        self.genconstrs_index += 1;
         cons
     }
 
@@ -314,10 +319,10 @@ impl GRBModel {
         };
         self.get_error(error).unwrap();
         let cons = GRBConstr {
-            index: self.cons_index,
+            index: self.genconstrs_index,
             inner: self.inner(),
         };
-        self.cons_index += 1;
+        self.genconstrs_index += 1;
         cons
     }
 
@@ -335,10 +340,10 @@ impl GRBModel {
         let error = constr.add_as_indicator(*self.inner.0, binvar, binval, name_ptr);
         self.get_error(error).unwrap();
         let cons = GRBConstr {
-            index: self.cons_index,
+            index: self.genconstrs_index,
             inner: self.inner(),
         };
-        self.cons_index += 1;
+        self.genconstrs_index += 1;
         cons
     }
 
@@ -374,10 +379,10 @@ impl GRBModel {
         };
         self.get_error(error).unwrap();
         let cons = GRBConstr {
-            index: self.cons_index,
+            index: self.genconstrs_index,
             inner: self.inner(),
         };
-        self.cons_index += 1;
+        self.genconstrs_index += 1;
         cons
     }
 
@@ -420,10 +425,10 @@ impl GRBModel {
         };
         self.get_error(error).unwrap();
         let cons = GRBConstr {
-            index: self.cons_index,
+            index: self.genconstrs_index,
             inner: self.inner(),
         };
-        self.cons_index += 1;
+        self.genconstrs_index += 1;
         cons
     }
 
