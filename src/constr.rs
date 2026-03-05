@@ -507,6 +507,14 @@ impl CanBeAddedToCallback for TempConstr {
 }
 
 impl GRBConstr {
+    /// Get raw pointer
+    ///
+    /// # Safety
+    /// This is unsafe because it exposes the raw pointer to the underlying Gurobi model.
+    pub unsafe fn raw(&self) -> *mut ffi::GRBmodel {
+        *self.inner.0
+    }
+
     pub fn get_error(&self, error_code: i32) -> Result<(), String> {
         match check_err(error_code) {
             Err(e) => unsafe {
