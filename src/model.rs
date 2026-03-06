@@ -474,6 +474,14 @@ impl GRBModel {
         self.get_error(error).unwrap();
     }
 
+    pub fn get_list<C, G>(&self, what: G, inds: &Vec<C>) -> Vec<G::Value>
+    where
+        C: IsModelingObject,
+        G: ModelGetterList<C>,
+    {
+        what.get_list(*self.inner.0, inds)
+    }
+
     pub fn get<G: ModelGetter>(&self, what: G) -> G::Value {
         what.get(*self.inner.0)
     }
@@ -553,7 +561,7 @@ where
     C: IsModelingObject,
 {
     type Value;
-    fn get_list(&self, model: *mut ffi::GRBmodel, inds: Vec<C>) -> Vec<Self::Value>;
+    fn get_list(&self, model: *mut ffi::GRBmodel, inds: &Vec<C>) -> Vec<Self::Value>;
 }
 
 // trait used to set model attributes and parameters

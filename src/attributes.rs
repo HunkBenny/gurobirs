@@ -255,7 +255,7 @@ where
 {
     type Value = i32;
 
-    fn get_list(&self, model: *mut ffi::GRBmodel, inds: Vec<C>) -> Vec<Self::Value> {
+    fn get_list(&self, model: *mut ffi::GRBmodel, inds: &Vec<C>) -> Vec<Self::Value> {
         let len = inds.len();
         let mut inds = inds
             .iter()
@@ -630,7 +630,7 @@ where
 {
     type Value = f64;
 
-    fn get_list(&self, model: *mut ffi::GRBmodel, inds: Vec<C>) -> Vec<Self::Value> {
+    fn get_list(&self, model: *mut ffi::GRBmodel, inds: &Vec<C>) -> Vec<Self::Value> {
         let len = inds.len();
         let mut inds = inds
             .iter()
@@ -871,7 +871,7 @@ where
 {
     type Value = String;
 
-    fn get_list(&self, model: *mut ffi::GRBmodel, inds: Vec<C>) -> Vec<Self::Value> {
+    fn get_list(&self, model: *mut ffi::GRBmodel, inds: &Vec<C>) -> Vec<Self::Value> {
         let len = inds.len();
         let mut inds = inds
             .iter()
@@ -1030,7 +1030,7 @@ where
 {
     type Value = char;
 
-    fn get_list(&self, model: *mut ffi::GRBmodel, inds: Vec<C>) -> Vec<Self::Value> {
+    fn get_list(&self, model: *mut ffi::GRBmodel, inds: &Vec<C>) -> Vec<Self::Value> {
         let len = inds.len();
         let mut inds = inds
             .iter()
