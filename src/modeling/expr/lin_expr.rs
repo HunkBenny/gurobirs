@@ -98,6 +98,9 @@ impl Add<GRBLinExpr> for GRBLinExpr {
         self.scalar += rhs.scalar;
         // 2. add expr to self, consuming the other linexpr
         for (var_idx, coeff) in rhs.expr.iter() {
+            if coeff == &0.0 {
+                continue;
+            }
             match self.expr.get_mut(var_idx) {
                 Some(existing_coeff) => {
                     *existing_coeff += coeff;
@@ -118,6 +121,9 @@ impl AddAssign<GRBLinExpr> for GRBLinExpr {
         self.scalar += rhs.scalar;
         // 2. add expr to self, consuming the other linexpr
         for (var_idx, coeff) in rhs.expr.iter() {
+            if coeff == &0.0 {
+                continue;
+            }
             match self.expr.get_mut(var_idx) {
                 Some(existing_coeff) => {
                     *existing_coeff += coeff;
