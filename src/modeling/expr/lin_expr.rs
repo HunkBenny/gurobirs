@@ -208,6 +208,9 @@ impl Mul<f64> for GRBLinExpr {
     type Output = GRBLinExpr;
 
     fn mul(mut self, scalar: f64) -> Self::Output {
+        if scalar == 0.0 || scalar == -0.0 {
+            return GRBLinExpr::new();
+        }
         self.scalar *= scalar;
 
         for (_var_idx, coeff) in self.expr.iter_mut() {
@@ -221,6 +224,9 @@ impl Mul<GRBLinExpr> for f64 {
     type Output = GRBLinExpr;
 
     fn mul(self, expr: GRBLinExpr) -> Self::Output {
+        if self == 0.0 || self == -0.0 {
+            return GRBLinExpr::new();
+        }
         expr * self
     }
 }
@@ -345,6 +351,9 @@ impl Mul<f64> for &GRBVar {
     type Output = GRBLinExpr;
 
     fn mul(self, scalar: f64) -> Self::Output {
+        if scalar == 0.0 || scalar == -0.0 {
+            return GRBLinExpr::new();
+        }
         GRBLinExpr::from(self) * scalar
     }
 }
@@ -353,6 +362,9 @@ impl Mul<&GRBVar> for f64 {
     type Output = GRBLinExpr;
 
     fn mul(self, var: &GRBVar) -> Self::Output {
+        if self == 0.0 || self == -0.0 {
+            return GRBLinExpr::new();
+        }
         var * self
     }
 }
