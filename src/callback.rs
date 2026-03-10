@@ -81,7 +81,8 @@ impl GRBModel {
 }
 
 impl GRBCallbackContext {
-    pub fn get_error(&self, error_code: i32) -> Result<(), String> {
+    /// Get model error
+    pub fn get_merror(&self, error_code: i32) -> Result<(), String> {
         match check_err(error_code) {
             Err(e) => unsafe {
                 Err(format!(
@@ -95,9 +96,24 @@ impl GRBCallbackContext {
         }
     }
 
+    /// Get env error
+    pub fn get_error(&self, error_code: i32) -> Result<(), String> {
+        match check_err(error_code) {
+            Err(e) => unsafe {
+                let env = ffi::GRBgetenv(self.model);
+                Err(format!(
+                    "ERROR CODE {}: {}",
+                    e,
+                    CStr::from_ptr(ffi::GRBgeterrormsg(env) as *mut c_char).to_string_lossy()
+                ))
+            },
+            Ok(_o) => Ok(()),
+        }
+    }
+
     pub fn proceed(&self) {
         let error = unsafe { ffi::GRBcbproceed(self.cb_data) };
-        self.get_error(error).unwrap();
+        self.get_merror(error).unwrap();
     }
 
     pub fn abort(&self) {
@@ -108,7 +124,7 @@ impl GRBCallbackContext {
 
     pub fn add_cut<E: CanBeAddedToCallback>(&mut self, expr: E) {
         let error = expr.add_cut(self);
-        self.get_error(error).unwrap();
+        self.get_merror(error).unwrap();
     }
 
     pub fn add_lazy<E: CanBeAddedToCallback>(&mut self, expr: E) {
@@ -130,7 +146,8 @@ impl GRBCallbackContext {
     pub fn get_solutions<T: GetSolution>(&mut self, variables: T) -> T::Output {
         let num_vars = self.get_nvars();
         let mut values: Vec<f64> = vec![0.0; num_vars as usize];
-        let what = match self.where_.into() {
+        println!("Getting solutions for callback type {}", self.where_);
+        let what = match self.where_ {
             GRBCallbackCodes::MIPSOL => ffi::GRB_CB_MIPSOL_SOL,
             GRBCallbackCodes::MULTIOBJ => ffi::GRB_CB_MULTIOBJ_SOL,
             _ => panic!(
@@ -146,7 +163,7 @@ impl GRBCallbackContext {
                 values.as_mut_ptr() as *mut std::ffi::c_void,
             )
         };
-        self.get_error(error).unwrap();
+        self.get_merror(error).unwrap();
         // now extract the values for the requested variables
         variables.get_solution(&values)
     }
@@ -184,7 +201,7 @@ impl GRBCallbackContext {
                 values.as_mut_ptr() as *mut std::ffi::c_void,
             )
         };
-        self.get_error(error).unwrap();
+        self.get_merror(error).unwrap();
         // now extract the values for the requested variables
         let mut return_values = Vec::with_capacity(variables.len());
         for var in &variables {
@@ -202,7 +219,7 @@ impl GRBCallbackContext {
                 &mut num_vars as *mut i32,
             )
         };
-        self.get_error(error).unwrap();
+        self.get_merror(error).unwrap();
         num_vars
     }
 }
@@ -469,7 +486,7 @@ impl CallbackGet for GRB_WHAT_DOUBLE {
                 &mut result_p as *mut f64 as *mut std::ffi::c_void,
             )
         };
-        context.get_error(error)?;
+        context.get_merror(error)?;
         Ok(result_p)
     }
 }
@@ -490,7 +507,7 @@ impl CallbackGet for GRB_WHAT_INT {
                 &mut result_p as *mut i32 as *mut std::ffi::c_void,
             )
         };
-        context.get_error(error)?;
+        context.get_merror(error)?;
         Ok(result_p)
     }
 }
@@ -511,7 +528,7 @@ impl CallbackGet for GRB_WHAT_STRING {
                 result_p as *mut std::ffi::c_void,
             )
         };
-        context.get_error(error)?;
+        context.get_merror(error)?;
         let result_p = unsafe { CStr::from_ptr(result_p) }
             .to_string_lossy()
             .into_owned();
