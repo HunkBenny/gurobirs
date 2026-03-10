@@ -19,7 +19,7 @@ pub struct GRBCallbackContext {
 }
 
 pub struct GRBCallback<C: CallbackTrait> {
-    callback: C,
+    pub callback: C,
 }
 
 pub trait CallbackTrait {
