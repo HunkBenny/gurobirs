@@ -1,4 +1,4 @@
-// Approach should be to create constr via builder pattern
+// Approach should be to create constr via builder pattera
 // The build method should return a TempConstr that can be added to the model
 // This way, we can overload '==', '<=', '>=' operators to create TempConstr
 
@@ -30,6 +30,7 @@ pub trait ConstrSetter {
     fn set(&self, constr: &GRBConstr, value: Self::Value) -> i32;
 }
 
+#[cfg_attr(debug_assertions, derive(Debug))]
 pub struct TempConstr {
     linear_terms: Vec<(usize, f64)>,
     sense: GRBSense,
@@ -478,13 +479,19 @@ impl CanBeAddedToCallback for TempConstr {
         let (mut inds, mut coeffs) = self.get_linear_inds_and_coeffs();
         // 2. call GRBcbcut
         unsafe {
+            let mut len = inds.len() as std::ffi::c_int;
+            ffi::GRBclean2(
+                &mut len as *mut std::ffi::c_int,
+                inds.as_mut_ptr(),
+                coeffs.as_mut_ptr(),
+            );
             ffi::GRBcbcut(
-                callback as *mut GRBCallbackContext as *mut c_void,
-                inds.len() as i32,
+                callback.cb_data,
+                len,
                 inds.as_mut_ptr(),
                 coeffs.as_mut_ptr(),
                 self.sense.into(),
-                self.rhs,
+                self.rhs as std::ffi::c_double,
             )
         }
     }
@@ -494,13 +501,19 @@ impl CanBeAddedToCallback for TempConstr {
         let (mut inds, mut coeffs) = self.get_linear_inds_and_coeffs();
         // 2. call GRBcbcut
         unsafe {
+            let mut len = inds.len() as std::ffi::c_int;
+            ffi::GRBclean2(
+                &mut len as *mut std::ffi::c_int,
+                inds.as_mut_ptr(),
+                coeffs.as_mut_ptr(),
+            );
             ffi::GRBcblazy(
-                callback as *mut GRBCallbackContext as *mut c_void,
-                inds.len() as i32,
+                callback.cb_data,
+                len,
                 inds.as_mut_ptr(),
                 coeffs.as_mut_ptr(),
                 self.sense.into(),
-                self.rhs,
+                self.rhs as std::ffi::c_double,
             )
         }
     }
