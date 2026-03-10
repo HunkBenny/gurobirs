@@ -32,6 +32,14 @@ impl GRBLinExpr {
             scalar: 0.0,
         }
     }
+
+    pub fn lin_terms(&self) -> impl Iterator<Item = (&usize, &f64)> {
+        self.expr.iter()
+    }
+
+    pub fn scalar_term(&self) -> f64 {
+        self.scalar
+    }
 }
 
 impl Objective for GRBLinExpr {
