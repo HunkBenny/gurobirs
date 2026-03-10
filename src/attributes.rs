@@ -208,7 +208,11 @@ impl ModelGetter for GRBIntAttr {
         let mut value_p = 0;
         let attr_name: &CStr = (*self).into();
         let error = unsafe {
-            ffi::GRBgetintattr(model, attr_name.as_ptr(), value_p as *mut std::ffi::c_int)
+            ffi::GRBgetintattr(
+                model,
+                attr_name.as_ptr(),
+                &mut value_p as *mut std::ffi::c_int,
+            )
         };
         value_p
     }
