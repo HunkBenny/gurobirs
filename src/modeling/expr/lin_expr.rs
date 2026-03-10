@@ -159,7 +159,7 @@ impl Sub<GRBLinExpr> for f64 {
     type Output = GRBLinExpr;
 
     fn sub(self, expr: GRBLinExpr) -> Self::Output {
-        expr - self
+        -1.0 * expr + self
     }
 }
 
@@ -194,6 +194,7 @@ impl Sub<GRBLinExpr> for GRBLinExpr {
 
 impl SubAssign<GRBLinExpr> for GRBLinExpr {
     fn sub_assign(&mut self, rhs: GRBLinExpr) {
+        println!("self: {:?}, rhs: {:?}", self, rhs);
         // 1. add scalar
         self.scalar -= rhs.scalar;
         // 2. add expr to self, consuming the other linexpr
