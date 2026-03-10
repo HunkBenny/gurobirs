@@ -146,7 +146,6 @@ impl GRBCallbackContext {
     pub fn get_solutions<T: GetSolution>(&mut self, variables: T) -> T::Output {
         let num_vars = self.get_nvars();
         let mut values: Vec<f64> = vec![0.0; num_vars as usize];
-        println!("Getting solutions for callback type {}", self.where_);
         let what = match self.where_ {
             GRBCallbackCodes::MIPSOL => ffi::GRB_CB_MIPSOL_SOL,
             GRBCallbackCodes::MULTIOBJ => ffi::GRB_CB_MULTIOBJ_SOL,
