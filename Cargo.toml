@@ -11,3 +11,5 @@ description = "A Rust-API resembling the C++ API of the Gurobi Optimizer."
 [dependencies]
 gurobirs-sys = "0.1.0"
 
+[dev-dependencies]
+rand = "0.10.0"
