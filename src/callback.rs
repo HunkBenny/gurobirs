@@ -19,7 +19,7 @@ pub struct GRBCallbackContext {
 }
 
 pub struct GRBCallback<C: CallbackTrait> {
-    pub callback: C,
+    callback: C,
 }
 
 pub trait CallbackTrait {
@@ -29,6 +29,10 @@ pub trait CallbackTrait {
 impl<C: CallbackTrait> GRBCallback<C> {
     pub fn new(callback: C) -> Self {
         Self { callback }
+    }
+
+    pub fn inner(self) -> C {
+        self.callback
     }
 }
 
