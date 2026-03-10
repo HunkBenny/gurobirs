@@ -191,6 +191,12 @@ impl SubAssign<&GRBVar> for GRBQuadExpr {
     }
 }
 
+impl SubAssign<GRBLinExpr> for GRBQuadExpr {
+    fn sub_assign(&mut self, rhs: GRBLinExpr) {
+        self.linear_expr -= rhs;
+    }
+}
+
 // OVERLOAD MULTIPLICATION
 impl Mul<f64> for GRBQuadExpr {
     type Output = GRBQuadExpr;
