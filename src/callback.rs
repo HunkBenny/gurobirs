@@ -13,8 +13,8 @@ use std::fmt::Display;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
 pub struct GRBCallbackContext {
-    model: *mut ffi::GRBmodel,
-    cb_data: *mut std::ffi::c_void,
+    pub(crate) model: *mut ffi::GRBmodel,
+    pub(crate) cb_data: *mut std::ffi::c_void,
     pub where_: GRBCallbackCodes,
 }
 
