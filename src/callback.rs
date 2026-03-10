@@ -81,6 +81,14 @@ impl GRBModel {
 }
 
 impl GRBCallbackContext {
+    /// Get the raw model pointer
+    ///
+    /// # Safety
+    /// This function is unsafe because it exposes the raw model pointer, which can lead to undefined behavior
+    pub unsafe fn get_model(&self) -> *mut ffi::GRBmodel {
+        self.model
+    }
+
     /// Get model error
     pub fn get_merror(&self, error_code: i32) -> Result<(), String> {
         match check_err(error_code) {
