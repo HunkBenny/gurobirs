@@ -19,12 +19,17 @@ impl GRBEnv {
     pub fn new(empty: bool, logfilename: Option<&str>) -> Result<GRBEnv, String> {
         // Create the GRBenv pointer
         let mut env_ptr = null_mut();
-        // Prepare the logfilename pointer
-        let logfilename_ptr = match logfilename.map(|s| CString::new(s)) {
-            Some(Ok(cstr)) => cstr.as_ptr(),
-            Some(Err(_)) => return Err("Failed to convert logfilename to CString".to_string()),
-            None => null(),
-        };
+        // Prepare the logfilename CString (must live until after the FFI call)
+        let logfilename_cstring = logfilename
+            .map(|s| CString::new(s))
+            .transpose()
+            .map_err(|_| "Failed to convert logfilename to CString".to_string())?;
+
+        let logfilename_ptr = logfilename_cstring
+            .as_ref()
+            .map(|cstr| cstr.as_ptr())
+            .unwrap_or(null());
+
         // Call the appropriate FFI function
         let error = if empty {
             unsafe { ffi::GRBemptyenv(&mut env_ptr) }
