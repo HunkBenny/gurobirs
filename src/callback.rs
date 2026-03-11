@@ -85,6 +85,13 @@ impl GRBModel {
 }
 
 impl GRBCallbackContext {
+    /// Get the raw callback data pointer
+    /// # Safety
+    /// This function is unsafe because it exposes the raw callback data pointer
+    pub unsafe fn get_cbdata(&self) -> *mut std::ffi::c_void {
+        self.cb_data
+    }
+
     /// Get the raw model pointer
     ///
     /// # Safety
