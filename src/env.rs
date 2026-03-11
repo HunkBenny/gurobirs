@@ -43,7 +43,7 @@ impl GRBEnv {
         Ok(env)
     }
 
-    pub fn start(&mut self) -> () {
+    pub fn start(&mut self) {
         unsafe {
             ffi::GRBstartenv(*self.inner);
         }
