@@ -63,7 +63,7 @@ impl GRBModel {
         callback: &mut GRBCallback<C>,
         wheres: Option<u32>,
     ) {
-        unsafe {
+        let error = unsafe {
             if let Some(wheres) = wheres {
                 // better for performance
                 ffi::GRBsetcallbackfuncadv(
@@ -71,16 +71,17 @@ impl GRBModel {
                     Some(c_shim::<C>),
                     callback as *mut _ as *mut std::ffi::c_void,
                     wheres as std::ffi::c_uint,
-                );
+                )
             } else {
                 // default
                 ffi::GRBsetcallbackfunc(
                     *self.inner.0,
                     Some(c_shim::<C>),
                     callback as *mut _ as *mut std::ffi::c_void,
-                );
+                )
             }
-        }
+        };
+        check_err(error).unwrap();
     }
 }
 
