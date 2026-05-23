@@ -71,6 +71,15 @@ impl Add<f64> for GRBQuadExpr {
     }
 }
 
+impl Add<GRBLinExpr> for GRBQuadExpr {
+    type Output = GRBQuadExpr;
+
+    fn add(mut self, lin_expr: GRBLinExpr) -> Self::Output {
+        self.linear_expr += lin_expr;
+        self
+    }
+}
+
 impl Add<GRBQuadExpr> for GRBQuadExpr {
     type Output = GRBQuadExpr;
     fn add(mut self, rhs: GRBQuadExpr) -> Self::Output {

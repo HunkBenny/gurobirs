@@ -6,6 +6,7 @@ use std::{
 use crate::{
     model::GRBModelSense,
     modeling::{IsModelingObject, Objective},
+    prelude::GRBIntAttr,
     var::GRBVar,
 };
 
@@ -44,6 +45,8 @@ impl GRBLinExpr {
 
 impl Objective for GRBLinExpr {
     fn set_as_objective(self, model: &mut crate::prelude::GRBModel, sense: GRBModelSense) {
+        // update model status first. push pending updates
+        model.update();
         // set constant term
         let constant_term = self.scalar;
 
@@ -56,17 +59,23 @@ impl Objective for GRBLinExpr {
         };
         model.get_error(error).unwrap();
         // set coeffs
+        let num_vars = model.get(GRBIntAttr::NUMVARS);
+        let mut coeffs = vec![0.0; num_vars as usize];
+
         for (var_idx, coeff) in self.expr {
-            let error = unsafe {
-                ffi::GRBsetdblattrelement(
-                    *model.inner.0,
-                    ffi::GRB_DBL_ATTR_OBJ.as_ptr(),
-                    var_idx as i32,
-                    coeff,
-                )
-            };
-            model.get_error(error).unwrap();
+            coeffs[var_idx] = coeff;
         }
+
+        let error = unsafe {
+            ffi::GRBsetdblattrarray(
+                *model.inner.0,
+                ffi::GRB_DBL_ATTR_OBJ.as_ptr(),
+                0,
+                coeffs.len() as std::ffi::c_int,
+                coeffs.as_mut_ptr(),
+            )
+        };
+        model.get_error(error).unwrap();
 
         // Set model sense
         let error = unsafe {
