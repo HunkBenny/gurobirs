@@ -65,6 +65,10 @@ impl GRBModel {
     ) {
         let error = unsafe {
             if let Some(wheres) = wheres {
+                println!(
+                    "Setting callback with wheres = {}",
+                    wheres as std::ffi::c_uint,
+                );
                 // better for performance
                 ffi::GRBsetcallbackfuncadv(
                     *self.inner.0,
@@ -332,19 +336,20 @@ pub enum GRB_WHAT_STRING {
 
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
 #[derive(Copy, Clone)]
+#[repr(i32)]
 pub enum GRBCallbackCodes {
-    POLLING,
-    NLBAR,
-    PDHG,
-    IIS,
-    MULTIOBJ,
-    BARRIER,
-    MESSAGE,
-    MIPNODE,
-    MIPSOL,
-    MIP,
-    SIMPLEX,
-    PRESOLVE,
+    POLLING = ffi::GRB_CB_POLLING,
+    NLBAR = ffi::GRB_CB_NLBAR,
+    PDHG = ffi::GRB_CB_PDHG,
+    IIS = ffi::GRB_CB_IIS,
+    MULTIOBJ = ffi::GRB_CB_MULTIOBJ,
+    BARRIER = ffi::GRB_CB_BARRIER,
+    MESSAGE = ffi::GRB_CB_MESSAGE,
+    MIPNODE = ffi::GRB_CB_MIPNODE,
+    MIPSOL = ffi::GRB_CB_MIPSOL,
+    MIP = ffi::GRB_CB_MIP,
+    SIMPLEX = ffi::GRB_CB_SIMPLEX,
+    PRESOLVE = ffi::GRB_CB_PRESOLVE,
 }
 
 impl Display for GRBCallbackCodes {
