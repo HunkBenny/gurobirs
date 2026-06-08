@@ -65,10 +65,6 @@ impl GRBModel {
     ) {
         let error = unsafe {
             if let Some(wheres) = wheres {
-                println!(
-                    "Setting callback with wheres = {}",
-                    wheres as std::ffi::c_uint,
-                );
                 // better for performance
                 ffi::GRBsetcallbackfuncadv(
                     *self.inner.0,
