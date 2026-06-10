@@ -396,6 +396,22 @@ impl Expr<GRBQuadExpr> for GRBQuadExpr {
     }
 }
 
+impl Expr<&f64> for GRBQuadExpr {
+    type Output = TempQConstr;
+
+    fn eq(self, rhs: &f64) -> Self::Output {
+        self.eq(*rhs)
+    }
+
+    fn ge(self, rhs: &f64) -> Self::Output {
+        self.ge(*rhs)
+    }
+
+    fn le(self, rhs: &f64) -> Self::Output {
+        self.le(*rhs)
+    }
+}
+
 impl Expr<&GRBVar> for GRBQuadExpr {
     type Output = TempQConstr;
 
