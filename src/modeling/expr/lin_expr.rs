@@ -90,10 +90,14 @@ impl Objective for GRBLinExpr {
 }
 
 // impl add, mult, sub etc
-impl Add<f64> for GRBLinExpr {
+impl<T> Add<T> for GRBLinExpr
+where
+    T: Into<f64>,
+{
     type Output = GRBLinExpr;
 
-    fn add(self, scalar: f64) -> Self::Output {
+    fn add(self, scalar: T) -> Self::Output {
+        let scalar = scalar.into();
         GRBLinExpr {
             expr: self.expr,
             scalar: self.scalar + scalar,
@@ -101,9 +105,12 @@ impl Add<f64> for GRBLinExpr {
     }
 }
 
-impl AddAssign<f64> for GRBLinExpr {
-    fn add_assign(&mut self, scalar: f64) {
-        self.scalar += scalar;
+impl<T> AddAssign<T> for GRBLinExpr
+where
+    T: Into<f64>,
+{
+    fn add_assign(&mut self, scalar: T) {
+        self.scalar += scalar.into();
     }
 }
 
@@ -153,13 +160,16 @@ impl AddAssign<GRBLinExpr> for GRBLinExpr {
     }
 }
 
-impl Sub<f64> for GRBLinExpr {
+impl<T> Sub<T> for GRBLinExpr
+where
+    T: Into<f64>,
+{
     type Output = GRBLinExpr;
 
-    fn sub(self, scalar: f64) -> Self::Output {
+    fn sub(self, scalar: T) -> Self::Output {
         GRBLinExpr {
             expr: self.expr,
-            scalar: self.scalar - scalar,
+            scalar: self.scalar - scalar.into(),
         }
     }
 }
@@ -172,9 +182,12 @@ impl Sub<GRBLinExpr> for f64 {
     }
 }
 
-impl SubAssign<f64> for GRBLinExpr {
-    fn sub_assign(&mut self, scalar: f64) {
-        self.scalar -= scalar;
+impl<T> SubAssign<T> for GRBLinExpr
+where
+    T: Into<f64>,
+{
+    fn sub_assign(&mut self, scalar: T) {
+        self.scalar -= scalar.into();
     }
 }
 
@@ -221,10 +234,14 @@ impl SubAssign<GRBLinExpr> for GRBLinExpr {
 
 // NOTE: multiplication only makes sense with scalars for linear expressions
 
-impl Mul<f64> for GRBLinExpr {
+impl<T> Mul<T> for GRBLinExpr
+where
+    T: Into<f64>,
+{
     type Output = GRBLinExpr;
 
-    fn mul(mut self, scalar: f64) -> Self::Output {
+    fn mul(mut self, scalar: T) -> Self::Output {
+        let scalar = scalar.into();
         if scalar == 0.0 || scalar == -0.0 {
             return GRBLinExpr::new();
         }
@@ -248,8 +265,12 @@ impl Mul<GRBLinExpr> for f64 {
     }
 }
 
-impl MulAssign<f64> for GRBLinExpr {
-    fn mul_assign(&mut self, scalar: f64) {
+impl<T> MulAssign<T> for GRBLinExpr
+where
+    T: Into<f64>,
+{
+    fn mul_assign(&mut self, scalar: T) {
+        let scalar = scalar.into();
         self.scalar *= scalar;
 
         for (_var_idx, coeff) in self.expr.iter_mut() {
@@ -300,19 +321,14 @@ impl Add<&GRBVar> for f64 {
     }
 }
 
-impl Add<f64> for &GRBVar {
+impl<T> Add<T> for &GRBVar
+where
+    T: Into<f64>,
+{
     type Output = GRBLinExpr;
 
-    fn add(self, scalar: f64) -> Self::Output {
-        GRBLinExpr::from(self) + scalar
-    }
-}
-
-impl Add<&f64> for &GRBVar {
-    type Output = GRBLinExpr;
-
-    fn add(self, scalar: &f64) -> Self::Output {
-        self + *scalar
+    fn add(self, scalar: T) -> Self::Output {
+        GRBLinExpr::from(self) + scalar.into()
     }
 }
 
@@ -355,19 +371,26 @@ impl Sub<&GRBVar> for f64 {
     }
 }
 
-impl Sub<f64> for &GRBVar {
+impl<T> Sub<T> for &GRBVar
+where
+    T: Into<f64>,
+{
     type Output = GRBLinExpr;
 
-    fn sub(self, scalar: f64) -> Self::Output {
+    fn sub(self, scalar: T) -> Self::Output {
         GRBLinExpr::from(self) - scalar
     }
 }
 
 // OVERLOAD MULTIPLICATION
-impl Mul<f64> for &GRBVar {
+impl<T> Mul<T> for &GRBVar
+where
+    T: Into<f64>,
+{
     type Output = GRBLinExpr;
 
-    fn mul(self, scalar: f64) -> Self::Output {
+    fn mul(self, scalar: T) -> Self::Output {
+        let scalar = scalar.into();
         if scalar == 0.0 || scalar == -0.0 {
             return GRBLinExpr::new();
         }
