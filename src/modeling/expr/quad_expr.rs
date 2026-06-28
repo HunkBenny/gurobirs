@@ -266,3 +266,4 @@ impl Mul<&GRBVar> for &GRBVar {
         GRBLinExpr::from(self) * GRBLinExpr::from(rhs)
     }
 }
+// TODO: use macros like lin_expr.rs

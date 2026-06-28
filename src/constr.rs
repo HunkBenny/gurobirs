@@ -2,11 +2,7 @@
 // The build method should return a TempConstr that can be added to the model
 // This way, we can overload '==', '<=', '>=' operators to create TempConstr
 
-use std::{
-    ffi::{c_void, CStr, CString},
-    ops::Sub,
-    ptr::null_mut,
-};
+use std::ffi::{CStr, CString};
 
 use crate::{
     error::check_err,
@@ -222,59 +218,6 @@ impl Expr<GRBQuadExpr> for GRBLinExpr {
     }
 }
 
-impl Expr<f64> for GRBLinExpr {
-    type Output = TempConstr;
-
-    fn eq(self, rhs: f64) -> Self::Output {
-        let rhs = rhs - self.scalar;
-        let linear_terms = self.expr.into_iter().collect::<Vec<_>>();
-        TempConstr {
-            linear_terms,
-            sense: GRBSense::Equal,
-            rhs,
-            name: None,
-        }
-    }
-
-    fn ge(self, rhs: f64) -> Self::Output {
-        let rhs = rhs - self.scalar;
-        let linear_terms = self.expr.into_iter().collect::<Vec<_>>();
-        TempConstr {
-            linear_terms,
-            sense: GRBSense::GreaterEqual,
-            rhs,
-            name: None,
-        }
-    }
-
-    fn le(self, rhs: f64) -> Self::Output {
-        let rhs = rhs - self.scalar;
-        let linear_terms = self.expr.into_iter().collect::<Vec<_>>();
-        TempConstr {
-            linear_terms,
-            sense: GRBSense::LessEqual,
-            rhs,
-            name: None,
-        }
-    }
-}
-
-impl Expr<&f64> for GRBLinExpr {
-    type Output = TempConstr;
-
-    fn eq(self, rhs: &f64) -> Self::Output {
-        self.eq(*rhs)
-    }
-
-    fn ge(self, rhs: &f64) -> Self::Output {
-        self.ge(*rhs)
-    }
-
-    fn le(self, rhs: &f64) -> Self::Output {
-        self.le(*rhs)
-    }
-}
-
 impl Expr<&GRBVar> for GRBLinExpr {
     type Output = TempConstr;
 
@@ -393,22 +336,6 @@ impl Expr<GRBQuadExpr> for GRBQuadExpr {
             rhs: rhs_scalar,
             name: None,
         }
-    }
-}
-
-impl Expr<&f64> for GRBQuadExpr {
-    type Output = TempQConstr;
-
-    fn eq(self, rhs: &f64) -> Self::Output {
-        self.eq(*rhs)
-    }
-
-    fn ge(self, rhs: &f64) -> Self::Output {
-        self.ge(*rhs)
-    }
-
-    fn le(self, rhs: &f64) -> Self::Output {
-        self.le(*rhs)
     }
 }
 
@@ -604,3 +531,70 @@ impl AddAsIndicator for TempConstr {
         }
     }
 }
+
+macro_rules! impl_grblin_expr {
+    ($($t:ty),*) => {
+        $(
+            // 1. Implementation for the owned type (e.g., i32)
+            impl Expr<$t> for GRBLinExpr {
+                type Output = TempConstr;
+
+                fn eq(self, rhs: $t) -> Self::Output {
+                    // Using f64::from is lossless and does what Into<f64> did
+                    let rhs = f64::from(rhs) - self.scalar;
+                    let linear_terms = self.expr.into_iter().collect::<Vec<_>>();
+                    TempConstr {
+                        linear_terms,
+                        sense: GRBSense::Equal,
+                        rhs,
+                        name: None,
+                    }
+                }
+
+                fn ge(self, rhs: $t) -> Self::Output {
+                    let rhs = f64::from(rhs) - self.scalar;
+                    let linear_terms = self.expr.into_iter().collect::<Vec<_>>();
+                    TempConstr { linear_terms, sense: GRBSense::GreaterEqual, rhs, name: None }
+                }
+
+                fn le(self, rhs: $t) -> Self::Output {
+                    let rhs = f64::from(rhs) - self.scalar;
+                    let linear_terms = self.expr.into_iter().collect::<Vec<_>>();
+                    TempConstr { linear_terms, sense: GRBSense::LessEqual, rhs, name: None }
+                }
+            }
+
+            // 2. Implementation for the reference type (e.g., &i32)
+            impl Expr<&$t> for GRBLinExpr {
+                type Output = TempConstr;
+
+                fn eq(self, rhs: &$t) -> Self::Output {
+                    // We dereference (*rhs) here inside the trait implementation
+                    let rhs = f64::from(*rhs) - self.scalar;
+                    let linear_terms = self.expr.into_iter().collect::<Vec<_>>();
+                    TempConstr {
+                        linear_terms,
+                        sense: GRBSense::Equal,
+                        rhs,
+                        name: None,
+                    }
+                }
+
+                fn ge(self, rhs: &$t) -> Self::Output {
+                    let rhs = f64::from(*rhs) - self.scalar;
+                    let linear_terms = self.expr.into_iter().collect::<Vec<_>>();
+                    TempConstr { linear_terms, sense: GRBSense::GreaterEqual, rhs, name: None }
+                }
+
+                fn le(self, rhs: &$t) -> Self::Output {
+                    let rhs = f64::from(*rhs) - self.scalar;
+                    let linear_terms = self.expr.into_iter().collect::<Vec<_>>();
+                    TempConstr { linear_terms, sense: GRBSense::LessEqual, rhs, name: None }
+                }
+            }
+        )*
+    };
+}
+
+// Generate the implementations for all standard number types that easily convert to f64
+impl_grblin_expr!(i8, i16, i32, u8, u16, u32, f64);

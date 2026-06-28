@@ -90,30 +90,6 @@ impl Objective for GRBLinExpr {
 }
 
 // impl add, mult, sub etc
-impl<T> Add<T> for GRBLinExpr
-where
-    T: Into<f64>,
-{
-    type Output = GRBLinExpr;
-
-    fn add(self, scalar: T) -> Self::Output {
-        let scalar = scalar.into();
-        GRBLinExpr {
-            expr: self.expr,
-            scalar: self.scalar + scalar,
-        }
-    }
-}
-
-impl<T> AddAssign<T> for GRBLinExpr
-where
-    T: Into<f64>,
-{
-    fn add_assign(&mut self, scalar: T) {
-        self.scalar += scalar.into();
-    }
-}
-
 impl Add<GRBLinExpr> for GRBLinExpr {
     type Output = GRBLinExpr;
     // TODO: fix this to create a new linexpr
@@ -160,34 +136,11 @@ impl AddAssign<GRBLinExpr> for GRBLinExpr {
     }
 }
 
-impl<T> Sub<T> for GRBLinExpr
-where
-    T: Into<f64>,
-{
-    type Output = GRBLinExpr;
-
-    fn sub(self, scalar: T) -> Self::Output {
-        GRBLinExpr {
-            expr: self.expr,
-            scalar: self.scalar - scalar.into(),
-        }
-    }
-}
-
 impl Sub<GRBLinExpr> for f64 {
     type Output = GRBLinExpr;
 
     fn sub(self, expr: GRBLinExpr) -> Self::Output {
         -1.0 * expr + self
-    }
-}
-
-impl<T> SubAssign<T> for GRBLinExpr
-where
-    T: Into<f64>,
-{
-    fn sub_assign(&mut self, scalar: T) {
-        self.scalar -= scalar.into();
     }
 }
 
@@ -234,26 +187,6 @@ impl SubAssign<GRBLinExpr> for GRBLinExpr {
 
 // NOTE: multiplication only makes sense with scalars for linear expressions
 
-impl<T> Mul<T> for GRBLinExpr
-where
-    T: Into<f64>,
-{
-    type Output = GRBLinExpr;
-
-    fn mul(mut self, scalar: T) -> Self::Output {
-        let scalar = scalar.into();
-        if scalar == 0.0 || scalar == -0.0 {
-            return GRBLinExpr::new();
-        }
-        self.scalar *= scalar;
-
-        for (_var_idx, coeff) in self.expr.iter_mut() {
-            *coeff *= scalar;
-        }
-        self
-    }
-}
-
 impl Mul<GRBLinExpr> for f64 {
     type Output = GRBLinExpr;
 
@@ -262,20 +195,6 @@ impl Mul<GRBLinExpr> for f64 {
             return GRBLinExpr::new();
         }
         expr * self
-    }
-}
-
-impl<T> MulAssign<T> for GRBLinExpr
-where
-    T: Into<f64>,
-{
-    fn mul_assign(&mut self, scalar: T) {
-        let scalar = scalar.into();
-        self.scalar *= scalar;
-
-        for (_var_idx, coeff) in self.expr.iter_mut() {
-            *coeff *= scalar;
-        }
     }
 }
 
@@ -321,17 +240,6 @@ impl Add<&GRBVar> for f64 {
     }
 }
 
-impl<T> Add<T> for &GRBVar
-where
-    T: Into<f64>,
-{
-    type Output = GRBLinExpr;
-
-    fn add(self, scalar: T) -> Self::Output {
-        GRBLinExpr::from(self) + scalar.into()
-    }
-}
-
 impl Add<&GRBVar> for &GRBVar {
     type Output = GRBLinExpr;
 
@@ -371,32 +279,7 @@ impl Sub<&GRBVar> for f64 {
     }
 }
 
-impl<T> Sub<T> for &GRBVar
-where
-    T: Into<f64>,
-{
-    type Output = GRBLinExpr;
-
-    fn sub(self, scalar: T) -> Self::Output {
-        GRBLinExpr::from(self) - scalar
-    }
-}
-
 // OVERLOAD MULTIPLICATION
-impl<T> Mul<T> for &GRBVar
-where
-    T: Into<f64>,
-{
-    type Output = GRBLinExpr;
-
-    fn mul(self, scalar: T) -> Self::Output {
-        let scalar = scalar.into();
-        if scalar == 0.0 || scalar == -0.0 {
-            return GRBLinExpr::new();
-        }
-        GRBLinExpr::from(self) * scalar
-    }
-}
 
 impl Mul<&GRBVar> for f64 {
     type Output = GRBLinExpr;
@@ -408,3 +291,238 @@ impl Mul<&GRBVar> for f64 {
         var * self
     }
 }
+
+macro_rules! impl_grblinexpr_math_ops {
+    ($($t:ty),*) => {
+        $(
+            // -----------------------------------------
+            // 1. Add (Owned and Borrowed)
+            // -----------------------------------------
+
+            // Owned
+            impl Add<$t> for GRBLinExpr {
+                type Output = GRBLinExpr;
+
+                fn add(self, scalar: $t) -> Self::Output {
+                    let scalar_f64 = f64::from(scalar);
+                    GRBLinExpr {
+                        expr: self.expr, // self is consumed, so we can just move expr
+                        scalar: self.scalar + scalar_f64,
+                    }
+                }
+            }
+
+            // Borrowed
+            impl Add<&$t> for GRBLinExpr {
+                type Output = GRBLinExpr;
+
+                fn add(self, scalar: &$t) -> Self::Output {
+                    // Dereference the scalar before converting to f64
+                    let scalar_f64 = f64::from(*scalar);
+                    GRBLinExpr {
+                        expr: self.expr,
+                        scalar: self.scalar + scalar_f64,
+                    }
+                }
+            }
+
+            // -----------------------------------------
+            // 2. AddAssign (Owned and Borrowed)
+            // -----------------------------------------
+
+            // Owned
+            impl AddAssign<$t> for GRBLinExpr {
+                fn add_assign(&mut self, scalar: $t) {
+                    self.scalar += f64::from(scalar);
+                }
+            }
+
+            // Borrowed
+            impl AddAssign<&$t> for GRBLinExpr {
+                fn add_assign(&mut self, scalar: &$t) {
+                    // Dereference the scalar before adding
+                    self.scalar += f64::from(*scalar);
+                }
+            }
+
+            // -----------------------------------------
+            // 3. Sub (Owned and Borrowed)
+            // -----------------------------------------
+
+            // Owned
+            impl Sub<$t> for GRBLinExpr {
+                type Output = GRBLinExpr;
+
+                fn sub(self, scalar: $t) -> Self::Output {
+                    let scalar_f64 = f64::from(scalar);
+                    GRBLinExpr {
+                        expr: self.expr, // self is consumed, so we can just move expr
+                        scalar: self.scalar - scalar_f64,
+                    }
+                }
+            }
+
+            // Borrowed
+            impl Sub<&$t> for GRBLinExpr {
+                type Output = GRBLinExpr;
+
+                fn sub(self, scalar: &$t) -> Self::Output {
+                    // Dereference the scalar before converting to f64
+                    let scalar_f64 = f64::from(*scalar);
+                    GRBLinExpr {
+                        expr: self.expr,
+                        scalar: self.scalar - scalar_f64,
+                    }
+                }
+            }
+
+            // -----------------------------------------
+            // 4. SubAssign (Owned and Borrowed)
+            // -----------------------------------------
+            // Owned
+            impl SubAssign<$t> for GRBLinExpr {
+                fn sub_assign(&mut self, scalar: $t) {
+                    self.scalar -= f64::from(scalar);
+                }
+            }
+
+            // Borrowed
+            impl SubAssign<&$t> for GRBLinExpr {
+                fn sub_assign(&mut self, scalar: &$t) {
+                    // Dereference the scalar before adding
+                    self.scalar -= f64::from(*scalar);
+                }
+            }
+
+            // -----------------------------------------
+            // 5. Mul (Owned and Borrowed)
+            // -----------------------------------------
+            // Owned
+            impl Mul<$t> for GRBLinExpr {
+                type Output = GRBLinExpr;
+
+                fn mul(mut self, scalar: $t) -> Self::Output {
+                    let scalar = f64::from(scalar);
+                    if scalar == 0.0 || scalar == -0.0 {
+                        return GRBLinExpr::new();
+                    }
+                    self.scalar *= scalar;
+
+                    for (_var_idx, coeff) in self.expr.iter_mut() {
+                        *coeff *= scalar;
+                    }
+                    self
+                }
+            }
+            // Borrowed
+            impl Mul<&$t> for GRBLinExpr {
+                type Output = GRBLinExpr;
+
+                fn mul(mut self, scalar: &$t) -> Self::Output {
+                    let scalar = f64::from(*scalar);
+                    if scalar == 0.0 || scalar == -0.0 {
+                        return GRBLinExpr::new();
+                    }
+                    self.scalar *= scalar;
+
+                    for (_var_idx, coeff) in self.expr.iter_mut() {
+                        *coeff *= scalar;
+                    }
+                    self
+                }
+            }
+            // -----------------------------------------
+            // 6. MulAssign (Owned and Borrowed)
+            // -----------------------------------------
+            // Owned
+            impl MulAssign<$t> for GRBLinExpr
+            {
+                fn mul_assign(&mut self, scalar: $t) {
+                    let scalar = f64::from(scalar);
+                    self.scalar *= scalar;
+
+                    for (_var_idx, coeff) in self.expr.iter_mut() {
+                        *coeff *= scalar;
+                    }
+                }
+            }
+            // Borrowed
+            impl MulAssign<&$t> for GRBLinExpr
+            {
+                fn mul_assign(&mut self, scalar: &$t) {
+                    let scalar = f64::from(*scalar);
+                    self.scalar *= scalar;
+
+                    for (_var_idx, coeff) in self.expr.iter_mut() {
+                        *coeff *= scalar;
+                    }
+                }
+            }
+        )*
+    };
+}
+
+// Generate the implementations!
+impl_grblinexpr_math_ops!(i8, i16, i32, u8, u16, u32, f64);
+
+macro_rules! impl_grbvar_math_ops {
+    ($($t:ty),*) => {
+        $(
+            // 1. &GRBVar + &$t -> GRBLinExpr
+            // This specifically satisfies your failing trait bound!
+            impl std::ops::Add<&$t> for &GRBVar {
+                type Output = GRBLinExpr;
+
+                fn add(self, scalar: &$t) -> Self::Output {
+                    // Convert the GRBVar into a GRBLinExpr here.
+                    // Assuming self.expr is a collection of (Variable, Coefficient):
+                    GRBLinExpr::from(self) + f64::from(*scalar)
+                }
+            }
+
+            // 2. &GRBVar + $t -> GRBLinExpr
+            // For good measure, so you can do `&my_var + 42` directly
+            impl std::ops::Add<$t> for &GRBVar {
+                type Output = GRBLinExpr;
+
+                fn add(self, scalar: $t) -> Self::Output {
+                    GRBLinExpr::from(self) + f64::from(scalar)
+                }
+            }
+
+            // 3. &GRBVar * $t -> GRBLinExpr
+            impl std::ops::Mul<$t> for &GRBVar
+            {
+                type Output = GRBLinExpr;
+
+                fn mul(self, scalar: $t) -> Self::Output {
+                    let scalar = f64::from(scalar);
+                    if scalar == 0.0 || scalar == -0.0 {
+                        return GRBLinExpr::new();
+                    }
+                    GRBLinExpr::from(self) * scalar
+                }
+            }
+
+            // 4. &GRBVar * $t -> GRBLinExpr
+            impl std::ops::Mul<&$t> for &GRBVar
+            {
+                type Output = GRBLinExpr;
+
+                fn mul(self, scalar: &$t) -> Self::Output {
+                    let scalar = f64::from(*scalar);
+                    if scalar == 0.0 || scalar == -0.0 {
+                        return GRBLinExpr::new();
+                    }
+                    GRBLinExpr::from(self) * scalar
+                }
+            }
+        )*
+    };
+}
+
+// Generate the implementations
+impl_grbvar_math_ops!(i8, i16, i32, u8, u16, u32, f64);
+
+// TODO: Implement Sub, SubAssign, Mul, MulAssign for the same types as above
+// Also, make sure both sides are covered
