@@ -234,49 +234,6 @@ impl Expr<&GRBVar> for GRBLinExpr {
     }
 }
 
-impl Expr<f64> for GRBQuadExpr {
-    type Output = TempQConstr;
-
-    fn eq(self, rhs: f64) -> Self::Output {
-        let rhs = rhs - self.linear_expr.scalar;
-        let linear_terms = self.linear_expr.expr.into_iter().collect::<Vec<_>>();
-        let quadratic_terms = self.quad_expr.into_iter().collect::<Vec<_>>();
-        TempQConstr {
-            linear_terms,
-            quadratic_terms,
-            sense: GRBSense::Equal,
-            rhs,
-            name: None,
-        }
-    }
-
-    fn ge(self, rhs: f64) -> Self::Output {
-        let rhs = rhs - self.linear_expr.scalar;
-        let linear_terms = self.linear_expr.expr.into_iter().collect::<Vec<_>>();
-        let quadratic_terms = self.quad_expr.into_iter().collect::<Vec<_>>();
-        TempQConstr {
-            linear_terms,
-            quadratic_terms,
-            sense: GRBSense::GreaterEqual,
-            rhs,
-            name: None,
-        }
-    }
-
-    fn le(self, rhs: f64) -> Self::Output {
-        let rhs = rhs - self.linear_expr.scalar;
-        let linear_terms = self.linear_expr.expr.into_iter().collect::<Vec<_>>();
-        let quadratic_terms = self.quad_expr.into_iter().collect::<Vec<_>>();
-        TempQConstr {
-            linear_terms,
-            quadratic_terms,
-            sense: GRBSense::LessEqual,
-            rhs,
-            name: None,
-        }
-    }
-}
-
 impl Expr<GRBLinExpr> for GRBQuadExpr {
     type Output = TempQConstr;
 
@@ -598,3 +555,97 @@ macro_rules! impl_grblin_expr {
 
 // Generate the implementations for all standard number types that easily convert to f64
 impl_grblin_expr!(i8, i16, i32, u8, u16, u32, f64);
+
+macro_rules! impl_grbquad_expr {
+    ($($t:ty),*) => {
+        $(
+             impl Expr<$t> for GRBQuadExpr {
+                type Output = TempQConstr;
+
+                fn eq(self, rhs: $t) -> Self::Output {
+                    let rhs = f64::from(rhs) - self.linear_expr.scalar;
+                    let linear_terms = self.linear_expr.expr.into_iter().collect::<Vec<_>>();
+                    let quadratic_terms = self.quad_expr.into_iter().collect::<Vec<_>>();
+                    TempQConstr {
+                        linear_terms,
+                        quadratic_terms,
+                        sense: GRBSense::Equal,
+                        rhs,
+                        name: None,
+                    }
+                }
+
+                fn ge(self, rhs: $t) -> Self::Output {
+                    let rhs = f64::from(rhs) - self.linear_expr.scalar;
+                    let linear_terms = self.linear_expr.expr.into_iter().collect::<Vec<_>>();
+                    let quadratic_terms = self.quad_expr.into_iter().collect::<Vec<_>>();
+                    TempQConstr {
+                        linear_terms,
+                        quadratic_terms,
+                        sense: GRBSense::GreaterEqual,
+                        rhs,
+                        name: None,
+                    }
+                }
+
+                fn le(self, rhs: $t) -> Self::Output {
+                    let rhs = f64::from(rhs) - self.linear_expr.scalar;
+                    let linear_terms = self.linear_expr.expr.into_iter().collect::<Vec<_>>();
+                    let quadratic_terms = self.quad_expr.into_iter().collect::<Vec<_>>();
+                    TempQConstr {
+                        linear_terms,
+                        quadratic_terms,
+                        sense: GRBSense::LessEqual,
+                        rhs,
+                        name: None,
+                    }
+                }
+            }
+
+            impl Expr<&$t> for GRBQuadExpr {
+                type Output = TempQConstr;
+
+                fn eq(self, rhs: &$t) -> Self::Output {
+                    let rhs = f64::from(*rhs) - self.linear_expr.scalar;
+                    let linear_terms = self.linear_expr.expr.into_iter().collect::<Vec<_>>();
+                    let quadratic_terms = self.quad_expr.into_iter().collect::<Vec<_>>();
+                    TempQConstr {
+                        linear_terms,
+                        quadratic_terms,
+                        sense: GRBSense::Equal,
+                        rhs,
+                        name: None,
+                    }
+                }
+
+                fn ge(self, rhs: &$t) -> Self::Output {
+                    let rhs = f64::from(*rhs) - self.linear_expr.scalar;
+                    let linear_terms = self.linear_expr.expr.into_iter().collect::<Vec<_>>();
+                    let quadratic_terms = self.quad_expr.into_iter().collect::<Vec<_>>();
+                    TempQConstr {
+                        linear_terms,
+                        quadratic_terms,
+                        sense: GRBSense::GreaterEqual,
+                        rhs,
+                        name: None,
+                    }
+                }
+
+                fn le(self, rhs: &$t) -> Self::Output {
+                    let rhs = f64::from(*rhs) - self.linear_expr.scalar;
+                    let linear_terms = self.linear_expr.expr.into_iter().collect::<Vec<_>>();
+                    let quadratic_terms = self.quad_expr.into_iter().collect::<Vec<_>>();
+                    TempQConstr {
+                        linear_terms,
+                        quadratic_terms,
+                        sense: GRBSense::LessEqual,
+                        rhs,
+                        name: None,
+                    }
+                }
+            }
+        )*
+    };
+}
+
+impl_grbquad_expr!(i8, i16, i32, u8, u16, u32, f64);
