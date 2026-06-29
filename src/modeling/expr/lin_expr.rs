@@ -136,14 +136,6 @@ impl AddAssign<GRBLinExpr> for GRBLinExpr {
     }
 }
 
-impl Sub<GRBLinExpr> for f64 {
-    type Output = GRBLinExpr;
-
-    fn sub(self, expr: GRBLinExpr) -> Self::Output {
-        -1.0 * expr + self
-    }
-}
-
 impl Sub<GRBLinExpr> for GRBLinExpr {
     type Output = GRBLinExpr;
     //TODO: fix this to create a new linexpr
@@ -185,19 +177,6 @@ impl SubAssign<GRBLinExpr> for GRBLinExpr {
     }
 }
 
-// NOTE: multiplication only makes sense with scalars for linear expressions
-
-impl Mul<GRBLinExpr> for f64 {
-    type Output = GRBLinExpr;
-
-    fn mul(self, expr: GRBLinExpr) -> Self::Output {
-        if self == 0.0 || self == -0.0 {
-            return GRBLinExpr::new();
-        }
-        expr * self
-    }
-}
-
 // NOTE: OPERATOR OVERLOADING FOR GRBVar:
 // Create possibility to make LinExpr from GRBvar;
 
@@ -229,14 +208,6 @@ impl Add<GRBLinExpr> for &GRBVar {
 impl AddAssign<&GRBVar> for GRBLinExpr {
     fn add_assign(&mut self, var: &GRBVar) {
         *self += GRBLinExpr::from(var);
-    }
-}
-
-impl Add<&GRBVar> for f64 {
-    type Output = GRBLinExpr;
-
-    fn add(self, var: &GRBVar) -> Self::Output {
-        GRBLinExpr::from(var) + self
     }
 }
 
@@ -281,17 +252,6 @@ impl Sub<&GRBVar> for f64 {
 
 // OVERLOAD MULTIPLICATION
 
-impl Mul<&GRBVar> for f64 {
-    type Output = GRBLinExpr;
-
-    fn mul(self, var: &GRBVar) -> Self::Output {
-        if self == 0.0 || self == -0.0 {
-            return GRBLinExpr::new();
-        }
-        var * self
-    }
-}
-
 macro_rules! impl_grblinexpr_math_ops {
     ($($t:ty),*) => {
         $(
@@ -312,6 +272,14 @@ macro_rules! impl_grblinexpr_math_ops {
                 }
             }
 
+            impl Add<GRBLinExpr> for $t {
+                type Output = GRBLinExpr;
+
+                fn add(self, expr: GRBLinExpr) -> Self::Output {
+                    expr + self
+                }
+            }
+
             // Borrowed
             impl Add<&$t> for GRBLinExpr {
                 type Output = GRBLinExpr;
@@ -323,6 +291,14 @@ macro_rules! impl_grblinexpr_math_ops {
                         expr: self.expr,
                         scalar: self.scalar + scalar_f64,
                     }
+                }
+            }
+
+            impl Add<GRBLinExpr> for &$t {
+                type Output = GRBLinExpr;
+
+                fn add(self, expr: GRBLinExpr) -> Self::Output {
+                    expr + *self
                 }
             }
 
@@ -362,6 +338,14 @@ macro_rules! impl_grblinexpr_math_ops {
                 }
             }
 
+            impl Sub<GRBLinExpr> for $t {
+                type Output = GRBLinExpr;
+
+                fn sub(self, expr: GRBLinExpr) -> Self::Output {
+                    - 1.0 * expr + self
+                 }
+            }
+
             // Borrowed
             impl Sub<&$t> for GRBLinExpr {
                 type Output = GRBLinExpr;
@@ -374,6 +358,14 @@ macro_rules! impl_grblinexpr_math_ops {
                         scalar: self.scalar - scalar_f64,
                     }
                 }
+            }
+
+            impl Sub<GRBLinExpr> for &$t {
+                type Output = GRBLinExpr;
+
+                fn sub(self, expr: GRBLinExpr) -> Self::Output {
+                    - 1.0 * expr + *self
+                 }
             }
 
             // -----------------------------------------
@@ -414,6 +406,15 @@ macro_rules! impl_grblinexpr_math_ops {
                     self
                 }
             }
+
+            impl Mul<GRBLinExpr> for $t {
+                type Output = GRBLinExpr;
+
+                fn mul(mut self, expr: GRBLinExpr) -> Self::Output {
+                    expr * self
+                }
+            }
+
             // Borrowed
             impl Mul<&$t> for GRBLinExpr {
                 type Output = GRBLinExpr;
@@ -429,6 +430,14 @@ macro_rules! impl_grblinexpr_math_ops {
                         *coeff *= scalar;
                     }
                     self
+                }
+            }
+
+            impl Mul<GRBLinExpr> for &$t {
+                type Output = GRBLinExpr;
+
+                fn mul(self, expr: GRBLinExpr) -> Self::Output {
+                    expr * *self
                 }
             }
             // -----------------------------------------
@@ -480,6 +489,14 @@ macro_rules! impl_grbvar_math_ops {
                 }
             }
 
+            impl std::ops::Add<&GRBVar> for $t {
+                type Output = GRBLinExpr;
+
+                fn add(self, var: &GRBVar) -> Self::Output {
+                    var + self
+                }
+            }
+
             // 2. &GRBVar + $t -> GRBLinExpr
             // For good measure, so you can do `&my_var + 42` directly
             impl std::ops::Add<$t> for &GRBVar {
@@ -487,6 +504,14 @@ macro_rules! impl_grbvar_math_ops {
 
                 fn add(self, scalar: $t) -> Self::Output {
                     GRBLinExpr::from(self) + f64::from(scalar)
+                }
+            }
+
+            impl std::ops::Add<&GRBVar> for &$t {
+                type Output = GRBLinExpr;
+
+                fn add(self, var: &GRBVar) -> Self::Output {
+                    var + *self
                 }
             }
 
@@ -504,6 +529,15 @@ macro_rules! impl_grbvar_math_ops {
                 }
             }
 
+            impl std::ops::Mul<&GRBVar> for $t
+            {
+                type Output = GRBLinExpr;
+
+                fn mul(self, var: &GRBVar) -> Self::Output {
+                    var * self
+                }
+            }
+
             // 4. &GRBVar * $t -> GRBLinExpr
             impl std::ops::Mul<&$t> for &GRBVar
             {
@@ -517,12 +551,18 @@ macro_rules! impl_grbvar_math_ops {
                     GRBLinExpr::from(self) * scalar
                 }
             }
+
+            impl std::ops::Mul<&GRBVar> for &$t
+            {
+                type Output = GRBLinExpr;
+
+                fn mul(self, var: &GRBVar) -> Self::Output {
+                    var * *self
+                }
+            }
         )*
     };
 }
 
 // Generate the implementations
 impl_grbvar_math_ops!(i8, i16, i32, u8, u16, u32, f64);
-
-// TODO: Implement Sub, SubAssign, Mul, MulAssign for the same types as above
-// Also, make sure both sides are covered
