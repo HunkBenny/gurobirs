@@ -3,6 +3,8 @@
 // This way, we can overload '==', '<=', '>=' operators to create TempConstr
 
 use std::ffi::{CStr, CString};
+use std::fmt;
+use std::ptr::null_mut;
 
 use crate::{
     error::check_err,
@@ -94,6 +96,89 @@ impl TempQConstr {
     pub fn name(mut self, name: &str) -> Self {
         self.name = Some(CString::new(name).unwrap());
         self
+    }
+}
+
+pub trait FormatConstr {
+    fn format_constr_with_model(&self, model: *mut ffi::GRBmodel) -> String;
+}
+
+impl FormatConstr for TempConstr {
+    fn format_constr_with_model(&self, model: *mut ffi::GRBmodel) -> String {
+        unsafe {
+            let mut terms = Vec::new();
+            for (var_idx, coeff) in &self.linear_terms {
+                let mut value_p = null_mut();
+                ffi::GRBgetstrattrelement(
+                    model,
+                    ffi::GRB_STR_ATTR_VARNAME.as_ptr(),
+                    *var_idx as std::ffi::c_int,
+                    &mut value_p,
+                );
+                let var_name = CStr::from_ptr(value_p).to_str().unwrap();
+                terms.push(format!("{}*{}", coeff, var_name));
+            }
+            let lhs = if terms.is_empty() {
+                "0".to_string()
+            } else {
+                terms.join(" + ")
+            };
+            let sense_str = match self.sense {
+                GRBSense::LessEqual => "<=",
+                GRBSense::Equal => "==",
+                GRBSense::GreaterEqual => ">=",
+            };
+            format!("{} {} {}", lhs, sense_str, self.rhs)
+        }
+    }
+}
+
+impl FormatConstr for TempQConstr {
+    fn format_constr_with_model(&self, model: *mut ffi::GRBmodel) -> String {
+        unsafe {
+            let mut terms = Vec::new();
+            for ((var_idx1, var_idx2), coeff) in &self.quadratic_terms {
+                let mut value_p1 = null_mut();
+                ffi::GRBgetstrattrelement(
+                    model,
+                    ffi::GRB_STR_ATTR_VARNAME.as_ptr(),
+                    *var_idx1 as std::ffi::c_int,
+                    &mut value_p1,
+                );
+                let var_name1 = CStr::from_ptr(value_p1).to_str().unwrap();
+                let mut value_p2 = null_mut();
+                ffi::GRBgetstrattrelement(
+                    model,
+                    ffi::GRB_STR_ATTR_VARNAME.as_ptr(),
+                    *var_idx2 as std::ffi::c_int,
+                    &mut value_p2,
+                );
+                let var_name2 = CStr::from_ptr(value_p2).to_str().unwrap();
+                terms.push(format!("{}*{}*{}", coeff, var_name1, var_name2));
+            }
+            for (var_idx, coeff) in &self.linear_terms {
+                let mut value_p = null_mut();
+                ffi::GRBgetstrattrelement(
+                    model,
+                    ffi::GRB_STR_ATTR_VARNAME.as_ptr(),
+                    *var_idx as std::ffi::c_int,
+                    &mut value_p,
+                );
+                let var_name = CStr::from_ptr(value_p).to_str().unwrap();
+                terms.push(format!("{}*{}", coeff, var_name));
+            }
+            let lhs = if terms.is_empty() {
+                "0".to_string()
+            } else {
+                terms.join(" + ")
+            };
+            let sense_str = match self.sense {
+                GRBSense::LessEqual => "<=",
+                GRBSense::Equal => "==",
+                GRBSense::GreaterEqual => ">=",
+            };
+            format!("{} {} {}", lhs, sense_str, self.rhs)
+        }
     }
 }
 

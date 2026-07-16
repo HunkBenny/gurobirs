@@ -1,6 +1,7 @@
 pub use crate::attributes::{GRBCharAttr, GRBDblAttr, GRBIntAttr, GRBStrAttr};
 pub use crate::callback::{CallbackTrait, GRBCallback, GRBCallbackCodes, GRBCallbackContext};
 pub use crate::constr::Expr;
+pub use crate::constr::FormatConstr;
 pub use crate::constr::GRBConstr;
 pub use crate::constr::{TempConstr, TempQConstr};
 pub use crate::env::GRBEnv;
