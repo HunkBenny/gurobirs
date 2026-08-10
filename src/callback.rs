@@ -69,7 +69,6 @@ unsafe extern "C" fn c_shim<C: CallbackTrait>(
                 &mut _objval_p as *mut std::ffi::c_double,
             );
             check_err(error).unwrap();
-            println!("Callback solution set with objval: {}", _objval_p);
         }
     }
 
