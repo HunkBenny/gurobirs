@@ -12,10 +12,17 @@ use std::ffi::{c_char, CStr};
 use std::fmt::Display;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
+/// A struct that represents the context of a Gurobi callback. It contains the model, callback data, and the type of callback being executed.
+/// * `model`: pointer to the Gurobi model
+/// * `cb_data`: data used by gurobi internally for callback
+/// * `where_`: location where callback is called
+/// * `solution`: optional vector of solution values for the variables at the current callback context (if not None, then we load solution in)
 pub struct GRBCallbackContext {
     pub(crate) model: *mut ffi::GRBmodel,
     pub(crate) cb_data: *mut std::ffi::c_void,
     pub where_: GRBCallbackCodes,
+    // TODO: setsolution needs to be added
+    pub(crate) solution: Option<Vec<f64>>,
 }
 
 pub struct GRBCallback<C: CallbackTrait> {
@@ -23,7 +30,7 @@ pub struct GRBCallback<C: CallbackTrait> {
 }
 
 pub trait CallbackTrait {
-    fn callback(&mut self, cb_ctx: GRBCallbackContext);
+    fn callback(&mut self, cb_ctx: &mut GRBCallbackContext);
 }
 
 impl<C: CallbackTrait> GRBCallback<C> {
@@ -43,14 +50,29 @@ unsafe extern "C" fn c_shim<C: CallbackTrait>(
     user_data: *mut std::ffi::c_void,
 ) -> i32 {
     let wrapper = user_data as *mut GRBCallback<C>;
-    let cb_ctx = GRBCallbackContext {
+    let mut cb_ctx = GRBCallbackContext {
         model,
         cb_data,
         where_: where_.into(),
+        solution: None,
     };
     let result = catch_unwind(AssertUnwindSafe(|| unsafe {
-        (*wrapper).callback.callback(cb_ctx)
+        (*wrapper).callback.callback(&mut cb_ctx)
     }));
+
+    if let Some(mut solution) = cb_ctx.solution {
+        unsafe {
+            let mut _objval_p = 0.0;
+            let error = ffi::GRBcbsolution(
+                cb_data,
+                solution.as_mut_ptr() as *mut std::ffi::c_double,
+                &mut _objval_p as *mut std::ffi::c_double,
+            );
+            check_err(error).unwrap();
+            println!("Callback solution set with objval: {}", _objval_p);
+        }
+    }
+
     match result {
         Ok(_) => 0,
         Err(_) => ffi::GRB_ERROR_CALLBACK,
@@ -185,6 +207,16 @@ impl GRBCallbackContext {
         self.get_merror(error).unwrap();
         // now extract the values for the requested variables
         variables.get_solution(&values)
+    }
+
+    pub fn set_solutions<V: SetSolution>(&mut self, vars: V, val: V::Value) {
+        if self.solution.is_none() {
+            let num_vars = self.get_nvars();
+            self.solution = Some(vec![ffi::GRB_UNDEFINED; num_vars as usize])
+        }
+        if let Some(solution) = self.solution.as_mut() {
+            vars.set_solution(solution, val);
+        }
     }
 
     pub fn get_noderels(&mut self, variables: Vec<GRBVar>) -> Vec<f64> {
@@ -581,5 +613,60 @@ impl<T: GetSolution> GetSolution for Vec<T> {
 
     fn get_solution(&self, values: &Vec<f64>) -> Self::Output {
         self.iter().map(|item| item.get_solution(values)).collect()
+    }
+}
+
+pub trait SetSolution {
+    type Value;
+    fn set_solution(&self, solution: &mut Vec<f64>, val: Self::Value);
+}
+
+impl SetSolution for GRBVar {
+    type Value = f64;
+
+    fn set_solution(&self, solution: &mut Vec<f64>, val: Self::Value) {
+        solution[self.index()] = val;
+    }
+}
+
+impl SetSolution for &GRBVar {
+    type Value = f64;
+
+    fn set_solution(&self, solution: &mut Vec<f64>, val: Self::Value) {
+        solution[self.index()] = val;
+    }
+}
+
+impl<T: SetSolution> SetSolution for Vec<T> {
+    type Value = Vec<T::Value>;
+
+    fn set_solution(&self, solution: &mut Vec<f64>, val: Self::Value) {
+        assert_eq!(
+            self.len(),
+            val.len(),
+            "Number of variables ({}) does not match number of values ({})",
+            self.len(),
+            val.len()
+        );
+        for (var, v) in self.iter().zip(val) {
+            var.set_solution(solution, v);
+        }
+    }
+}
+
+impl<T: SetSolution> SetSolution for &Vec<T> {
+    type Value = Vec<T::Value>;
+
+    fn set_solution(&self, solution: &mut Vec<f64>, val: Self::Value) {
+        assert_eq!(
+            self.len(),
+            val.len(),
+            "Number of variables ({}) does not match number of values ({})",
+            self.len(),
+            val.len()
+        );
+        for (var, v) in self.iter().zip(val) {
+            var.set_solution(solution, v);
+        }
     }
 }
