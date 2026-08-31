@@ -173,7 +173,7 @@ impl GRBCallbackContext {
         self.get_error(error).unwrap();
     }
 
-    pub fn get_info<G: GRBCallbackGet>(
+    pub fn get<G: GRBCallbackGet>(
         &mut self,
         what: G,
     ) -> Result<G::Output, Box<dyn std::error::Error>> {
@@ -231,7 +231,7 @@ impl GRBCallbackContext {
 
         // check if optimally solved
         let optimally_solved = self
-            .get_info(GRB_WHAT_INT::MIPNODE_STATUS)
+            .get(GRBWhatInt::MIPNODE_STATUS)
             .expect("Failed to get MIPNODE_STATUS");
         if optimally_solved != ffi::GRB_OPTIMAL {
             panic!(
@@ -276,7 +276,7 @@ impl GRBCallbackContext {
 
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
 #[derive(Copy, Clone)]
-pub enum GRB_WHAT_DOUBLE {
+pub enum GRBWhatDbl {
     RUNTIME,
     WORK,
     MEMUSED,
@@ -323,7 +323,7 @@ pub enum GRB_WHAT_DOUBLE {
 
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
 #[derive(Copy, Clone)]
-pub enum GRB_WHAT_INT {
+pub enum GRBWhatInt {
     PRE_COLDEL,
     PRE_ROWDEL,
     PRE_SENCHG,
@@ -357,7 +357,7 @@ pub enum GRB_WHAT_INT {
 
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
 #[derive(Copy, Clone)]
-pub enum GRB_WHAT_STRING {
+pub enum GRBWhatString {
     MSG_STRING,
 }
 
@@ -422,95 +422,95 @@ impl From<std::ffi::c_int> for GRBCallbackCodes {
     }
 }
 
-impl From<GRB_WHAT_DOUBLE> for std::ffi::c_int {
-    fn from(value: GRB_WHAT_DOUBLE) -> Self {
+impl From<GRBWhatDbl> for std::ffi::c_int {
+    fn from(value: GRBWhatDbl) -> Self {
         match value {
-            GRB_WHAT_DOUBLE::RUNTIME => ffi::GRB_CB_RUNTIME,
-            GRB_WHAT_DOUBLE::WORK => ffi::GRB_CB_WORK,
-            GRB_WHAT_DOUBLE::MEMUSED => ffi::GRB_CB_MEMUSED,
-            GRB_WHAT_DOUBLE::MAXMEMUSED => ffi::GRB_CB_MAXMEMUSED,
-            GRB_WHAT_DOUBLE::SPX_ITRCNT => ffi::GRB_CB_SPX_ITRCNT,
-            GRB_WHAT_DOUBLE::SPX_OBJVAL => ffi::GRB_CB_SPX_OBJVAL,
-            GRB_WHAT_DOUBLE::SPX_PRIMINF => ffi::GRB_CB_SPX_PRIMINF,
-            GRB_WHAT_DOUBLE::SPX_DUALINF => ffi::GRB_CB_SPX_DUALINF,
-            GRB_WHAT_DOUBLE::MIP_OBJBST => ffi::GRB_CB_MIP_OBJBST,
-            GRB_WHAT_DOUBLE::MIP_OBJBND => ffi::GRB_CB_MIP_OBJBND,
-            GRB_WHAT_DOUBLE::MIP_NODCNT => ffi::GRB_CB_MIP_NODCNT,
-            GRB_WHAT_DOUBLE::MIP_NODLFT => ffi::GRB_CB_MIP_NODLFT,
-            GRB_WHAT_DOUBLE::MIP_ITRCNT => ffi::GRB_CB_MIP_ITRCNT,
-            GRB_WHAT_DOUBLE::MIPSOL_OBJ => ffi::GRB_CB_MIPSOL_OBJ,
-            GRB_WHAT_DOUBLE::MIPSOL_OBJBST => ffi::GRB_CB_MIPSOL_OBJBST,
-            GRB_WHAT_DOUBLE::MIPSOL_OBJBND => ffi::GRB_CB_MIPSOL_OBJBND,
-            GRB_WHAT_DOUBLE::MIPSOL_NODCNT => ffi::GRB_CB_MIPSOL_NODCNT,
-            GRB_WHAT_DOUBLE::MIPNODE_OBJBST => ffi::GRB_CB_MIPNODE_OBJBST,
-            GRB_WHAT_DOUBLE::MIPNODE_OBJBND => ffi::GRB_CB_MIPNODE_OBJBND,
-            GRB_WHAT_DOUBLE::MIPNODE_NODCNT => ffi::GRB_CB_MIPNODE_NODCNT,
-            GRB_WHAT_DOUBLE::BARRIER_PRIMOBJ => ffi::GRB_CB_BARRIER_PRIMOBJ,
-            GRB_WHAT_DOUBLE::BARRIER_DUALOBJ => ffi::GRB_CB_BARRIER_DUALOBJ,
-            GRB_WHAT_DOUBLE::BARRIER_PRIMINF => ffi::GRB_CB_BARRIER_PRIMINF,
-            GRB_WHAT_DOUBLE::BARRIER_DUALINF => ffi::GRB_CB_BARRIER_DUALINF,
-            GRB_WHAT_DOUBLE::BARRIER_COMPL => ffi::GRB_CB_BARRIER_COMPL,
-            GRB_WHAT_DOUBLE::MULTIOBJ_OBJBST => ffi::GRB_CB_MULTIOBJ_OBJBST,
-            GRB_WHAT_DOUBLE::MULTIOBJ_OBJBND => ffi::GRB_CB_MULTIOBJ_OBJBND,
-            GRB_WHAT_DOUBLE::MULTIOBJ_MIPGAP => ffi::GRB_CB_MULTIOBJ_MIPGAP,
-            GRB_WHAT_DOUBLE::MULTIOBJ_ITRCNT => ffi::GRB_CB_MULTIOBJ_ITRCNT,
-            GRB_WHAT_DOUBLE::MULTIOBJ_NODCNT => ffi::GRB_CB_MULTIOBJ_NODCNT,
-            GRB_WHAT_DOUBLE::MULTIOBJ_NODLFT => ffi::GRB_CB_MULTIOBJ_NODLFT,
-            GRB_WHAT_DOUBLE::MULTIOBJ_RUNTIME => ffi::GRB_CB_MULTIOBJ_RUNTIME,
-            GRB_WHAT_DOUBLE::MULTIOBJ_WORK => ffi::GRB_CB_MULTIOBJ_WORK,
-            GRB_WHAT_DOUBLE::PDHG_PRIMOBJ => ffi::GRB_CB_PDHG_PRIMOBJ,
-            GRB_WHAT_DOUBLE::PDHG_DUALOBJ => ffi::GRB_CB_PDHG_DUALOBJ,
-            GRB_WHAT_DOUBLE::PDHG_PRIMINF => ffi::GRB_CB_PDHG_PRIMINF,
-            GRB_WHAT_DOUBLE::PDHG_DUALINF => ffi::GRB_CB_PDHG_DUALINF,
-            GRB_WHAT_DOUBLE::PDHG_COMPL => ffi::GRB_CB_PDHG_COMPL,
-            GRB_WHAT_DOUBLE::NLBAR_PRIMOBJ => ffi::GRB_CB_NLBAR_PRIMOBJ,
-            GRB_WHAT_DOUBLE::NLBAR_PRIMINF => ffi::GRB_CB_NLBAR_PRIMINF,
-            GRB_WHAT_DOUBLE::NLBAR_DUALINF => ffi::GRB_CB_NLBAR_DUALINF,
-            GRB_WHAT_DOUBLE::NLBAR_COMPL => ffi::GRB_CB_NLBAR_COMPL,
+            GRBWhatDbl::RUNTIME => ffi::GRB_CB_RUNTIME,
+            GRBWhatDbl::WORK => ffi::GRB_CB_WORK,
+            GRBWhatDbl::MEMUSED => ffi::GRB_CB_MEMUSED,
+            GRBWhatDbl::MAXMEMUSED => ffi::GRB_CB_MAXMEMUSED,
+            GRBWhatDbl::SPX_ITRCNT => ffi::GRB_CB_SPX_ITRCNT,
+            GRBWhatDbl::SPX_OBJVAL => ffi::GRB_CB_SPX_OBJVAL,
+            GRBWhatDbl::SPX_PRIMINF => ffi::GRB_CB_SPX_PRIMINF,
+            GRBWhatDbl::SPX_DUALINF => ffi::GRB_CB_SPX_DUALINF,
+            GRBWhatDbl::MIP_OBJBST => ffi::GRB_CB_MIP_OBJBST,
+            GRBWhatDbl::MIP_OBJBND => ffi::GRB_CB_MIP_OBJBND,
+            GRBWhatDbl::MIP_NODCNT => ffi::GRB_CB_MIP_NODCNT,
+            GRBWhatDbl::MIP_NODLFT => ffi::GRB_CB_MIP_NODLFT,
+            GRBWhatDbl::MIP_ITRCNT => ffi::GRB_CB_MIP_ITRCNT,
+            GRBWhatDbl::MIPSOL_OBJ => ffi::GRB_CB_MIPSOL_OBJ,
+            GRBWhatDbl::MIPSOL_OBJBST => ffi::GRB_CB_MIPSOL_OBJBST,
+            GRBWhatDbl::MIPSOL_OBJBND => ffi::GRB_CB_MIPSOL_OBJBND,
+            GRBWhatDbl::MIPSOL_NODCNT => ffi::GRB_CB_MIPSOL_NODCNT,
+            GRBWhatDbl::MIPNODE_OBJBST => ffi::GRB_CB_MIPNODE_OBJBST,
+            GRBWhatDbl::MIPNODE_OBJBND => ffi::GRB_CB_MIPNODE_OBJBND,
+            GRBWhatDbl::MIPNODE_NODCNT => ffi::GRB_CB_MIPNODE_NODCNT,
+            GRBWhatDbl::BARRIER_PRIMOBJ => ffi::GRB_CB_BARRIER_PRIMOBJ,
+            GRBWhatDbl::BARRIER_DUALOBJ => ffi::GRB_CB_BARRIER_DUALOBJ,
+            GRBWhatDbl::BARRIER_PRIMINF => ffi::GRB_CB_BARRIER_PRIMINF,
+            GRBWhatDbl::BARRIER_DUALINF => ffi::GRB_CB_BARRIER_DUALINF,
+            GRBWhatDbl::BARRIER_COMPL => ffi::GRB_CB_BARRIER_COMPL,
+            GRBWhatDbl::MULTIOBJ_OBJBST => ffi::GRB_CB_MULTIOBJ_OBJBST,
+            GRBWhatDbl::MULTIOBJ_OBJBND => ffi::GRB_CB_MULTIOBJ_OBJBND,
+            GRBWhatDbl::MULTIOBJ_MIPGAP => ffi::GRB_CB_MULTIOBJ_MIPGAP,
+            GRBWhatDbl::MULTIOBJ_ITRCNT => ffi::GRB_CB_MULTIOBJ_ITRCNT,
+            GRBWhatDbl::MULTIOBJ_NODCNT => ffi::GRB_CB_MULTIOBJ_NODCNT,
+            GRBWhatDbl::MULTIOBJ_NODLFT => ffi::GRB_CB_MULTIOBJ_NODLFT,
+            GRBWhatDbl::MULTIOBJ_RUNTIME => ffi::GRB_CB_MULTIOBJ_RUNTIME,
+            GRBWhatDbl::MULTIOBJ_WORK => ffi::GRB_CB_MULTIOBJ_WORK,
+            GRBWhatDbl::PDHG_PRIMOBJ => ffi::GRB_CB_PDHG_PRIMOBJ,
+            GRBWhatDbl::PDHG_DUALOBJ => ffi::GRB_CB_PDHG_DUALOBJ,
+            GRBWhatDbl::PDHG_PRIMINF => ffi::GRB_CB_PDHG_PRIMINF,
+            GRBWhatDbl::PDHG_DUALINF => ffi::GRB_CB_PDHG_DUALINF,
+            GRBWhatDbl::PDHG_COMPL => ffi::GRB_CB_PDHG_COMPL,
+            GRBWhatDbl::NLBAR_PRIMOBJ => ffi::GRB_CB_NLBAR_PRIMOBJ,
+            GRBWhatDbl::NLBAR_PRIMINF => ffi::GRB_CB_NLBAR_PRIMINF,
+            GRBWhatDbl::NLBAR_DUALINF => ffi::GRB_CB_NLBAR_DUALINF,
+            GRBWhatDbl::NLBAR_COMPL => ffi::GRB_CB_NLBAR_COMPL,
         }
     }
 }
 
-impl From<GRB_WHAT_INT> for std::ffi::c_int {
-    fn from(value: GRB_WHAT_INT) -> Self {
+impl From<GRBWhatInt> for std::ffi::c_int {
+    fn from(value: GRBWhatInt) -> Self {
         match value {
-            GRB_WHAT_INT::PRE_COLDEL => ffi::GRB_CB_PRE_COLDEL,
-            GRB_WHAT_INT::PRE_ROWDEL => ffi::GRB_CB_PRE_ROWDEL,
-            GRB_WHAT_INT::PRE_SENCHG => ffi::GRB_CB_PRE_SENCHG,
-            GRB_WHAT_INT::PRE_BNDCHG => ffi::GRB_CB_PRE_BNDCHG,
-            GRB_WHAT_INT::PRE_COECHG => ffi::GRB_CB_PRE_COECHG,
-            GRB_WHAT_INT::SPX_ISPERT => ffi::GRB_CB_SPX_ISPERT,
-            GRB_WHAT_INT::MIP_SOLCNT => ffi::GRB_CB_MIP_SOLCNT,
-            GRB_WHAT_INT::MIP_CUTCNT => ffi::GRB_CB_MIP_CUTCNT,
-            GRB_WHAT_INT::MIP_OPENSCENARIOS => ffi::GRB_CB_MIP_OPENSCENARIOS,
-            GRB_WHAT_INT::MIP_PHASE => ffi::GRB_CB_MIP_PHASE,
-            GRB_WHAT_INT::MIPSOL_SOLCNT => ffi::GRB_CB_MIPSOL_SOLCNT,
-            GRB_WHAT_INT::MIPSOL_OPENSCENARIOS => ffi::GRB_CB_MIPSOL_OPENSCENARIOS,
-            GRB_WHAT_INT::MIPSOL_PHASE => ffi::GRB_CB_MIPSOL_PHASE,
-            GRB_WHAT_INT::MIPNODE_STATUS => ffi::GRB_CB_MIPNODE_STATUS,
-            GRB_WHAT_INT::MIPNODE_SOLCNT => ffi::GRB_CB_MIPNODE_SOLCNT,
-            GRB_WHAT_INT::MIPNODE_OPENSCENARIOS => ffi::GRB_CB_MIPNODE_OPENSCENARIOS,
-            GRB_WHAT_INT::MIPNODE_PHASE => ffi::GRB_CB_MIPNODE_PHASE,
-            GRB_WHAT_INT::BARRIER_ITRCNT => ffi::GRB_CB_BARRIER_ITRCNT,
-            GRB_WHAT_INT::MULTIOBJ_OBJCNT => ffi::GRB_CB_MULTIOBJ_OBJCNT,
-            GRB_WHAT_INT::MULTIOBJ_SOLCNT => ffi::GRB_CB_MULTIOBJ_SOLCNT,
-            GRB_WHAT_INT::MULTIOBJ_STATUS => ffi::GRB_CB_MULTIOBJ_STATUS,
-            GRB_WHAT_INT::IIS_CONSTRMIN => ffi::GRB_CB_IIS_CONSTRMIN,
-            GRB_WHAT_INT::IIS_CONSTRMAX => ffi::GRB_CB_IIS_CONSTRMAX,
-            GRB_WHAT_INT::IIS_CONSTRGUESS => ffi::GRB_CB_IIS_CONSTRGUESS,
-            GRB_WHAT_INT::IIS_BOUNDMIN => ffi::GRB_CB_IIS_BOUNDMIN,
-            GRB_WHAT_INT::IIS_BOUNDMAX => ffi::GRB_CB_IIS_BOUNDMAX,
-            GRB_WHAT_INT::IIS_BOUNDGUESS => ffi::GRB_CB_IIS_BOUNDGUESS,
-            GRB_WHAT_INT::PDHG_ITRCNT => ffi::GRB_CB_PDHG_ITRCNT,
-            GRB_WHAT_INT::NLBAR_ITRCNT => ffi::GRB_CB_NLBAR_ITRCNT,
+            GRBWhatInt::PRE_COLDEL => ffi::GRB_CB_PRE_COLDEL,
+            GRBWhatInt::PRE_ROWDEL => ffi::GRB_CB_PRE_ROWDEL,
+            GRBWhatInt::PRE_SENCHG => ffi::GRB_CB_PRE_SENCHG,
+            GRBWhatInt::PRE_BNDCHG => ffi::GRB_CB_PRE_BNDCHG,
+            GRBWhatInt::PRE_COECHG => ffi::GRB_CB_PRE_COECHG,
+            GRBWhatInt::SPX_ISPERT => ffi::GRB_CB_SPX_ISPERT,
+            GRBWhatInt::MIP_SOLCNT => ffi::GRB_CB_MIP_SOLCNT,
+            GRBWhatInt::MIP_CUTCNT => ffi::GRB_CB_MIP_CUTCNT,
+            GRBWhatInt::MIP_OPENSCENARIOS => ffi::GRB_CB_MIP_OPENSCENARIOS,
+            GRBWhatInt::MIP_PHASE => ffi::GRB_CB_MIP_PHASE,
+            GRBWhatInt::MIPSOL_SOLCNT => ffi::GRB_CB_MIPSOL_SOLCNT,
+            GRBWhatInt::MIPSOL_OPENSCENARIOS => ffi::GRB_CB_MIPSOL_OPENSCENARIOS,
+            GRBWhatInt::MIPSOL_PHASE => ffi::GRB_CB_MIPSOL_PHASE,
+            GRBWhatInt::MIPNODE_STATUS => ffi::GRB_CB_MIPNODE_STATUS,
+            GRBWhatInt::MIPNODE_SOLCNT => ffi::GRB_CB_MIPNODE_SOLCNT,
+            GRBWhatInt::MIPNODE_OPENSCENARIOS => ffi::GRB_CB_MIPNODE_OPENSCENARIOS,
+            GRBWhatInt::MIPNODE_PHASE => ffi::GRB_CB_MIPNODE_PHASE,
+            GRBWhatInt::BARRIER_ITRCNT => ffi::GRB_CB_BARRIER_ITRCNT,
+            GRBWhatInt::MULTIOBJ_OBJCNT => ffi::GRB_CB_MULTIOBJ_OBJCNT,
+            GRBWhatInt::MULTIOBJ_SOLCNT => ffi::GRB_CB_MULTIOBJ_SOLCNT,
+            GRBWhatInt::MULTIOBJ_STATUS => ffi::GRB_CB_MULTIOBJ_STATUS,
+            GRBWhatInt::IIS_CONSTRMIN => ffi::GRB_CB_IIS_CONSTRMIN,
+            GRBWhatInt::IIS_CONSTRMAX => ffi::GRB_CB_IIS_CONSTRMAX,
+            GRBWhatInt::IIS_CONSTRGUESS => ffi::GRB_CB_IIS_CONSTRGUESS,
+            GRBWhatInt::IIS_BOUNDMIN => ffi::GRB_CB_IIS_BOUNDMIN,
+            GRBWhatInt::IIS_BOUNDMAX => ffi::GRB_CB_IIS_BOUNDMAX,
+            GRBWhatInt::IIS_BOUNDGUESS => ffi::GRB_CB_IIS_BOUNDGUESS,
+            GRBWhatInt::PDHG_ITRCNT => ffi::GRB_CB_PDHG_ITRCNT,
+            GRBWhatInt::NLBAR_ITRCNT => ffi::GRB_CB_NLBAR_ITRCNT,
         }
     }
 }
 
-impl From<GRB_WHAT_STRING> for std::ffi::c_int {
-    fn from(value: GRB_WHAT_STRING) -> Self {
+impl From<GRBWhatString> for std::ffi::c_int {
+    fn from(value: GRBWhatString) -> Self {
         match value {
-            GRB_WHAT_STRING::MSG_STRING => ffi::GRB_CB_MSG_STRING,
+            GRBWhatString::MSG_STRING => ffi::GRB_CB_MSG_STRING,
         }
     }
 }
@@ -521,7 +521,7 @@ pub trait GRBCallbackGet {
         -> Result<Self::Output, Box<dyn std::error::Error>>;
 }
 
-impl GRBCallbackGet for GRB_WHAT_DOUBLE {
+impl GRBCallbackGet for GRBWhatDbl {
     type Output = f64;
 
     fn get(
@@ -542,7 +542,7 @@ impl GRBCallbackGet for GRB_WHAT_DOUBLE {
     }
 }
 
-impl GRBCallbackGet for GRB_WHAT_INT {
+impl GRBCallbackGet for GRBWhatInt {
     type Output = i32;
 
     fn get(
@@ -563,7 +563,7 @@ impl GRBCallbackGet for GRB_WHAT_INT {
     }
 }
 
-impl GRBCallbackGet for GRB_WHAT_STRING {
+impl GRBCallbackGet for GRBWhatString {
     type Output = String;
 
     fn get(
