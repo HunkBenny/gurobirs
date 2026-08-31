@@ -173,7 +173,7 @@ impl GRBCallbackContext {
         self.get_error(error).unwrap();
     }
 
-    pub fn get_info<G: CallbackGet>(
+    pub fn get_info<G: GRBCallbackGet>(
         &mut self,
         what: G,
     ) -> Result<G::Output, Box<dyn std::error::Error>> {
@@ -514,14 +514,14 @@ impl From<GRB_WHAT_STRING> for std::ffi::c_int {
         }
     }
 }
-pub trait CallbackGet {
+pub trait GRBCallbackGet {
     type Output;
 
     fn get(&self, context: &GRBCallbackContext)
         -> Result<Self::Output, Box<dyn std::error::Error>>;
 }
 
-impl CallbackGet for GRB_WHAT_DOUBLE {
+impl GRBCallbackGet for GRB_WHAT_DOUBLE {
     type Output = f64;
 
     fn get(
@@ -542,7 +542,7 @@ impl CallbackGet for GRB_WHAT_DOUBLE {
     }
 }
 
-impl CallbackGet for GRB_WHAT_INT {
+impl GRBCallbackGet for GRB_WHAT_INT {
     type Output = i32;
 
     fn get(
@@ -563,7 +563,7 @@ impl CallbackGet for GRB_WHAT_INT {
     }
 }
 
-impl CallbackGet for GRB_WHAT_STRING {
+impl GRBCallbackGet for GRB_WHAT_STRING {
     type Output = String;
 
     fn get(
