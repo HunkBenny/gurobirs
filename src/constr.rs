@@ -1,7 +1,3 @@
-// Approach should be to create constr via builder pattera
-// The build method should return a TempConstr that can be added to the model
-// This way, we can overload '==', '<=', '>=' operators to create TempConstr
-
 use std::ffi::{CStr, CString};
 use std::fmt;
 use std::ptr::null_mut;
@@ -9,7 +5,7 @@ use std::ptr::null_mut;
 use crate::{
     error::check_err,
     ffi,
-    model::GRBModelPtr,
+    model::GRBModelInner,
     modeling::{
         expr::{lin_expr::GRBLinExpr, quad_expr::GRBQuadExpr, GRBSense},
         AddAsIndicator, CanBeAddedToCallback, CanBeAddedToModel, IsModelingObject,
@@ -20,12 +16,12 @@ use crate::{
 
 pub trait ConstrGetter {
     type Value;
-    fn get(&self, constr: &GRBConstr) -> Self::Value;
+    fn get(&self, constr: &GRBConstr<'_>) -> Self::Value;
 }
 
 pub trait ConstrSetter {
     type Value;
-    fn set(&self, constr: &GRBConstr, value: Self::Value) -> i32;
+    fn set(&self, constr: &GRBConstr<'_>, value: Self::Value) -> i32;
 }
 
 #[cfg_attr(debug_assertions, derive(Debug))]
@@ -49,7 +45,6 @@ impl TempConstr {
     pub fn get_linear_inds_and_coeffs(&self) -> (Vec<std::ffi::c_int>, Vec<std::ffi::c_double>) {
         let mut linear_terms_inds = Vec::new();
         let mut linear_terms_coeffs = Vec::new();
-        // linear terms
         for (var_idx, coeff) in self.linear_terms.iter() {
             linear_terms_inds.push(*var_idx as std::ffi::c_int);
             linear_terms_coeffs.push(*coeff as std::ffi::c_double);
@@ -70,7 +65,6 @@ impl TempQConstr {
     ) -> (Vec<i32>, Vec<f64>, Vec<i32>, Vec<i32>, Vec<f64>) {
         let mut linear_terms_inds = Vec::new();
         let mut linear_terms_coeffs = Vec::new();
-        // linear terms
         for (var_idx, coeff) in self.linear_terms.iter() {
             linear_terms_inds.push(*var_idx as i32);
             linear_terms_coeffs.push(*coeff);
@@ -83,7 +77,6 @@ impl TempQConstr {
             quadratic_terms_inds_cols.push(*var_idx2 as i32);
             quadratic_terms_coeffs.push(*coeff);
         }
-        // quadratic terms
         (
             linear_terms_inds,
             linear_terms_coeffs,
@@ -182,18 +175,6 @@ impl FormatConstr for TempQConstr {
     }
 }
 
-/* TODO: The constraint adding API should be as follows:
-    ```rust
-    ....
-    model.add_constr(
-        (2.0 * x + lin_expr1 * 2.0 + 3.0).eq(x * y * 3.0 - 5.0 + lin_expr2 * 4.0)
-    ).name("my_super_duper_difficult_constraint");
-    ....
-    ```
-    Thus a trait needs to be created that takes ANY RHS and does the correct transformations to turn them into constraints.
-*/
-
-/// Trait that allows LinExpr to become constraint
 pub trait Expr<Rhs>: Sized {
     type Output;
 
@@ -303,18 +284,34 @@ impl Expr<GRBQuadExpr> for GRBLinExpr {
     }
 }
 
-impl Expr<&GRBVar> for GRBLinExpr {
+impl Expr<&GRBVar<'_>> for GRBLinExpr {
     type Output = TempConstr;
 
-    fn eq(self, rhs: &GRBVar) -> Self::Output {
+    fn eq(self, rhs: &GRBVar<'_>) -> Self::Output {
         self.eq(GRBLinExpr::from(rhs))
     }
 
-    fn ge(self, rhs: &GRBVar) -> Self::Output {
+    fn ge(self, rhs: &GRBVar<'_>) -> Self::Output {
         self.ge(GRBLinExpr::from(rhs))
     }
 
-    fn le(self, rhs: &GRBVar) -> Self::Output {
+    fn le(self, rhs: &GRBVar<'_>) -> Self::Output {
+        self.le(GRBLinExpr::from(rhs))
+    }
+}
+
+impl Expr<GRBVar<'_>> for GRBLinExpr {
+    type Output = TempConstr;
+
+    fn eq(self, rhs: GRBVar<'_>) -> Self::Output {
+        self.eq(GRBLinExpr::from(rhs))
+    }
+
+    fn ge(self, rhs: GRBVar<'_>) -> Self::Output {
+        self.ge(GRBLinExpr::from(rhs))
+    }
+
+    fn le(self, rhs: GRBVar<'_>) -> Self::Output {
         self.le(GRBLinExpr::from(rhs))
     }
 }
@@ -381,20 +378,39 @@ impl Expr<GRBQuadExpr> for GRBQuadExpr {
     }
 }
 
-impl Expr<&GRBVar> for GRBQuadExpr {
+impl Expr<&GRBVar<'_>> for GRBQuadExpr {
     type Output = TempQConstr;
 
-    fn eq(self, rhs: &GRBVar) -> Self::Output {
+    fn eq(self, rhs: &GRBVar<'_>) -> Self::Output {
         let rhs = GRBLinExpr::from(rhs);
         self.eq(rhs)
     }
 
-    fn ge(self, rhs: &GRBVar) -> Self::Output {
+    fn ge(self, rhs: &GRBVar<'_>) -> Self::Output {
         let rhs = GRBLinExpr::from(rhs);
         self.ge(rhs)
     }
 
-    fn le(self, rhs: &GRBVar) -> Self::Output {
+    fn le(self, rhs: &GRBVar<'_>) -> Self::Output {
+        let rhs = GRBLinExpr::from(rhs);
+        self.le(rhs)
+    }
+}
+
+impl Expr<GRBVar<'_>> for GRBQuadExpr {
+    type Output = TempQConstr;
+
+    fn eq(self, rhs: GRBVar<'_>) -> Self::Output {
+        let rhs = GRBLinExpr::from(rhs);
+        self.eq(rhs)
+    }
+
+    fn ge(self, rhs: GRBVar<'_>) -> Self::Output {
+        let rhs = GRBLinExpr::from(rhs);
+        self.ge(rhs)
+    }
+
+    fn le(self, rhs: GRBVar<'_>) -> Self::Output {
         let rhs = GRBLinExpr::from(rhs);
         self.le(rhs)
     }
@@ -402,10 +418,8 @@ impl Expr<&GRBVar> for GRBQuadExpr {
 
 impl CanBeAddedToModel for TempConstr {
     fn add_to_model(self, model: *mut ffi::GRBmodel, name: *const std::ffi::c_char) -> i32 {
-        // 1. collect indices and coefficients
         let (mut inds_linear, mut coeffs_linear) = self.get_linear_inds_and_coeffs();
 
-        // 3. call GRBaddconstr or GRBaddqconstr based on presence of quadratic terms
         unsafe {
             ffi::GRBaddconstr(
                 model,
@@ -426,7 +440,6 @@ impl CanBeAddedToModel for TempConstr {
 
 impl CanBeAddedToModel for TempQConstr {
     fn add_to_model(self, model: *mut ffi::GRBmodel, name: *const std::ffi::c_char) -> i32 {
-        // 1. collect indices and coefficients
         let (
             mut inds_linear,
             mut coeffs_linear,
@@ -435,7 +448,6 @@ impl CanBeAddedToModel for TempQConstr {
             mut coeffs_nonlinear,
         ) = self.get_quadratic_inds_and_coeffs();
 
-        // 3. call GRBaddconstr or GRBaddqconstr based on presence of quadratic terms
         unsafe {
             ffi::GRBaddqconstr(
                 model,
@@ -460,9 +472,7 @@ impl CanBeAddedToModel for TempQConstr {
 
 impl CanBeAddedToCallback for TempConstr {
     fn add_cut(self, callback: &mut GRBCallbackContext) -> i32 {
-        // 1. collect indices and coefficients
         let (mut inds, mut coeffs) = self.get_linear_inds_and_coeffs();
-        // 2. call GRBcbcut
         unsafe {
             let mut len = inds.len() as std::ffi::c_int;
             ffi::GRBclean2(
@@ -482,9 +492,7 @@ impl CanBeAddedToCallback for TempConstr {
     }
 
     fn add_lazy(self, callback: &mut GRBCallbackContext) -> i32 {
-        // 1. collect indices and coefficients
         let (mut inds, mut coeffs) = self.get_linear_inds_and_coeffs();
-        // 2. call GRBcbcut
         unsafe {
             let mut len = inds.len() as std::ffi::c_int;
             ffi::GRBclean2(
@@ -504,13 +512,18 @@ impl CanBeAddedToCallback for TempConstr {
     }
 }
 
-impl GRBConstr {
+pub struct GRBConstr<'a> {
+    pub index: usize,
+    pub(crate) inner: &'a GRBModelInner,
+}
+
+impl<'a> GRBConstr<'a> {
     /// Get raw pointer
     ///
     /// # Safety
     /// This is unsafe because it exposes the raw pointer to the underlying Gurobi model.
     pub unsafe fn raw(&self) -> *mut ffi::GRBmodel {
-        *self.inner.0
+        self.inner.model
     }
 
     pub fn get_error(&self, error_code: i32) -> Result<(), String> {
@@ -519,7 +532,7 @@ impl GRBConstr {
                 Err(format!(
                     "ERROR CODE {}: {}",
                     e,
-                    CStr::from_ptr(ffi::GRBgetmerrormsg(*self.inner.0) as *mut std::ffi::c_char)
+                    CStr::from_ptr(ffi::GRBgetmerrormsg(self.inner.model) as *mut std::ffi::c_char)
                         .to_string_lossy()
                 ))
             },
@@ -537,12 +550,7 @@ impl GRBConstr {
     }
 }
 
-pub struct GRBConstr {
-    pub index: usize,
-    pub(crate) inner: GRBModelPtr,
-}
-
-impl IsModelingObject for GRBConstr {
+impl IsModelingObject for GRBConstr<'_> {
     fn index(&self) -> usize {
         self.index
     }
@@ -552,7 +560,7 @@ impl AddAsIndicator for TempConstr {
     fn add_as_indicator(
         self,
         model: *mut ffi::GRBmodel,
-        binvar: crate::prelude::GRBVar,
+        binvar: crate::prelude::GRBVar<'_>,
         binval: i8,
         name: *const std::ffi::c_char,
     ) -> i32 {
@@ -577,12 +585,10 @@ impl AddAsIndicator for TempConstr {
 macro_rules! impl_grblin_expr {
     ($($t:ty),*) => {
         $(
-            // 1. Implementation for the owned type (e.g., i32)
             impl Expr<$t> for GRBLinExpr {
                 type Output = TempConstr;
 
                 fn eq(self, rhs: $t) -> Self::Output {
-                    // Using f64::from is lossless and does what Into<f64> did
                     let rhs = f64::from(rhs) - self.scalar;
                     let linear_terms = self.expr.into_iter().collect::<Vec<_>>();
                     TempConstr {
@@ -606,12 +612,10 @@ macro_rules! impl_grblin_expr {
                 }
             }
 
-            // 2. Implementation for the reference type (e.g., &i32)
             impl Expr<&$t> for GRBLinExpr {
                 type Output = TempConstr;
 
                 fn eq(self, rhs: &$t) -> Self::Output {
-                    // We dereference (*rhs) here inside the trait implementation
                     let rhs = f64::from(*rhs) - self.scalar;
                     let linear_terms = self.expr.into_iter().collect::<Vec<_>>();
                     TempConstr {
@@ -638,7 +642,6 @@ macro_rules! impl_grblin_expr {
     };
 }
 
-// Generate the implementations for all standard number types that easily convert to f64
 impl_grblin_expr!(i8, i16, i32, u8, u16, u32, f64);
 
 macro_rules! impl_grbquad_expr {

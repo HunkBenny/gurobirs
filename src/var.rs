@@ -1,15 +1,15 @@
 use std::ffi::CStr;
 
-use crate::{error::check_err, ffi, model::GRBModelPtr, modeling::IsModelingObject};
+use crate::{error::check_err, ffi, model::GRBModelInner, modeling::IsModelingObject};
 
 pub trait VariableSetter {
     type Value;
-    fn set(&self, var: &GRBVar, value: Self::Value) -> i32;
+    fn set(&self, var: &GRBVar<'_>, value: Self::Value) -> i32;
 }
 
 pub trait VariableGetter {
     type Value;
-    fn get(&self, var: &GRBVar) -> Self::Value;
+    fn get(&self, var: &GRBVar<'_>) -> Self::Value;
 }
 
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
@@ -33,17 +33,15 @@ impl From<GRBVarType> for std::ffi::c_char {
     }
 }
 
-// TODO: Should we implement Clone here? The problem is that GRBModelPtr uses an `Rc`. Is that a
-// good decision?
 #[cfg_attr(debug_assertions, derive(Debug))]
-#[derive(Clone)]
-pub struct GRBVar {
+#[derive(Clone, Copy)]
+pub struct GRBVar<'a> {
     index: usize,
-    pub(crate) inner: GRBModelPtr,
+    pub(crate) inner: &'a GRBModelInner,
 }
 
-impl GRBVar {
-    pub fn new(index: usize, inner: GRBModelPtr) -> GRBVar {
+impl<'a> GRBVar<'a> {
+    pub fn new(index: usize, inner: &'a GRBModelInner) -> GRBVar<'a> {
         GRBVar { index, inner }
     }
 
@@ -62,7 +60,7 @@ impl GRBVar {
                 Err(format!(
                     "ERROR CODE {}: {}",
                     e,
-                    CStr::from_ptr(ffi::GRBgetmerrormsg(*self.inner.0) as *mut std::ffi::c_char)
+                    CStr::from_ptr(ffi::GRBgetmerrormsg(self.inner.model) as *mut std::ffi::c_char)
                         .to_string_lossy()
                 ))
             },
@@ -71,10 +69,8 @@ impl GRBVar {
     }
 }
 
-impl IsModelingObject for GRBVar {
+impl IsModelingObject for GRBVar<'_> {
     fn index(&self) -> usize {
         self.index
     }
 }
-
-// TODO: Get int attr

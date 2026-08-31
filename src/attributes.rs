@@ -133,12 +133,12 @@ pub enum GRBIntAttr {
 impl ConstrSetter for GRBIntAttr {
     type Value = i32;
 
-    fn set(&self, constr: &crate::constr::GRBConstr, value: Self::Value) -> i32 {
+    fn set(&self, constr: &crate::constr::GRBConstr<'_>, value: Self::Value) -> i32 {
         let attr_name: &CStr = (*self).into();
         let value = value as std::ffi::c_int;
         unsafe {
             ffi::GRBsetintattrelement(
-                *constr.inner.0,
+                constr.inner.model,
                 attr_name.as_ptr(),
                 constr.index() as std::ffi::c_int,
                 value,
@@ -150,12 +150,12 @@ impl ConstrSetter for GRBIntAttr {
 impl ConstrGetter for GRBIntAttr {
     type Value = i32;
 
-    fn get(&self, constr: &crate::prelude::GRBConstr) -> Self::Value {
+    fn get(&self, constr: &crate::prelude::GRBConstr<'_>) -> Self::Value {
         let attr_name: &CStr = (*self).into();
         let return_ptr = 0;
         let error = unsafe {
             ffi::GRBgetintattrelement(
-                *constr.inner.0,
+                constr.inner.model,
                 attr_name.as_ptr(),
                 constr.index() as std::ffi::c_int,
                 return_ptr as *mut std::ffi::c_int,
@@ -169,12 +169,12 @@ impl ConstrGetter for GRBIntAttr {
 impl VariableGetter for GRBIntAttr {
     type Value = i32;
 
-    fn get(&self, var: &crate::prelude::GRBVar) -> Self::Value {
+    fn get(&self, var: &crate::prelude::GRBVar<'_>) -> Self::Value {
         let attr_name: &CStr = (*self).into();
         let return_ptr = 0;
         let error = unsafe {
             ffi::GRBgetintattrelement(
-                *var.inner.0,
+                var.inner.model,
                 attr_name.as_ptr(),
                 var.index() as std::ffi::c_int,
                 return_ptr as *mut std::ffi::c_int,
@@ -188,11 +188,11 @@ impl VariableGetter for GRBIntAttr {
 impl VariableSetter for GRBIntAttr {
     type Value = i32;
 
-    fn set(&self, var: &crate::prelude::GRBVar, value: Self::Value) -> i32 {
+    fn set(&self, var: &crate::prelude::GRBVar<'_>, value: Self::Value) -> i32 {
         let attr_name: &CStr = (*self).into();
         unsafe {
             ffi::GRBsetintattrelement(
-                *var.inner.0,
+                var.inner.model,
                 attr_name.as_ptr(),
                 var.index() as std::ffi::c_int,
                 value,
@@ -508,12 +508,12 @@ pub enum GRBDblAttr {
 impl ConstrSetter for GRBDblAttr {
     type Value = f64;
 
-    fn set(&self, constr: &crate::constr::GRBConstr, value: Self::Value) -> i32 {
+    fn set(&self, constr: &crate::constr::GRBConstr<'_>, value: Self::Value) -> i32 {
         let attr_name: &CStr = (*self).into();
         let value = value as std::ffi::c_double;
         unsafe {
             ffi::GRBsetdblattrelement(
-                *constr.inner.0,
+                constr.inner.model,
                 attr_name.as_ptr(),
                 constr.index() as std::ffi::c_int,
                 value,
@@ -525,12 +525,12 @@ impl ConstrSetter for GRBDblAttr {
 impl ConstrGetter for GRBDblAttr {
     type Value = f64;
 
-    fn get(&self, constr: &crate::prelude::GRBConstr) -> Self::Value {
+    fn get(&self, constr: &crate::prelude::GRBConstr<'_>) -> Self::Value {
         let attr_name: &CStr = (*self).into();
         let mut return_ptr = 0.0;
         let error = unsafe {
             ffi::GRBgetdblattrelement(
-                *constr.inner.0,
+                constr.inner.model,
                 attr_name.as_ptr(),
                 constr.index() as std::ffi::c_int,
                 &mut return_ptr as *mut std::ffi::c_double,
@@ -544,12 +544,12 @@ impl ConstrGetter for GRBDblAttr {
 impl VariableGetter for GRBDblAttr {
     type Value = f64;
 
-    fn get(&self, var: &crate::prelude::GRBVar) -> Self::Value {
+    fn get(&self, var: &crate::prelude::GRBVar<'_>) -> Self::Value {
         let attr_name: &CStr = (*self).into();
         let mut return_ptr = 0.0;
         let error = unsafe {
             ffi::GRBgetdblattrelement(
-                *var.inner.0,
+                var.inner.model,
                 attr_name.as_ptr(),
                 var.index() as std::ffi::c_int,
                 &mut return_ptr as *mut std::ffi::c_double,
@@ -563,11 +563,11 @@ impl VariableGetter for GRBDblAttr {
 impl VariableSetter for GRBDblAttr {
     type Value = f64;
 
-    fn set(&self, var: &crate::prelude::GRBVar, value: Self::Value) -> i32 {
+    fn set(&self, var: &crate::prelude::GRBVar<'_>, value: Self::Value) -> i32 {
         let attr_name: &CStr = (*self).into();
         unsafe {
             ffi::GRBsetdblattrelement(
-                *var.inner.0,
+                var.inner.model,
                 attr_name.as_ptr(),
                 var.index() as std::ffi::c_int,
                 value,
@@ -768,13 +768,13 @@ pub enum GRBStrAttr {
 impl ConstrSetter for GRBStrAttr {
     type Value = String;
 
-    fn set(&self, constr: &crate::constr::GRBConstr, value: Self::Value) -> i32 {
+    fn set(&self, constr: &crate::constr::GRBConstr<'_>, value: Self::Value) -> i32 {
         let attr_name: &CStr = (*self).into();
         let value =
             CString::new(value).expect("Failed to convert String to CString in `ModelSetter::set`");
         unsafe {
             ffi::GRBsetstrattrelement(
-                *constr.inner.0,
+                constr.inner.model,
                 attr_name.as_ptr(),
                 constr.index() as std::ffi::c_int,
                 value.as_ptr(),
@@ -786,14 +786,12 @@ impl ConstrSetter for GRBStrAttr {
 impl ConstrGetter for GRBStrAttr {
     type Value = String;
 
-    fn get(&self, constr: &crate::prelude::GRBConstr) -> Self::Value {
+    fn get(&self, constr: &crate::prelude::GRBConstr<'_>) -> Self::Value {
         let attr_name: &CStr = (*self).into();
-        // We cannot use null_mut() here directly because we need a pointer to a pointer, the
-        // pointer we point to is allowed to be null, but the pointer itself must be valid
         let return_ptr = (&mut null_mut()) as *mut *mut std::ffi::c_char;
         let error = unsafe {
             ffi::GRBgetstrattrelement(
-                *constr.inner.0,
+                constr.inner.model,
                 attr_name.as_ptr(),
                 constr.index() as std::ffi::c_int,
                 return_ptr,
@@ -807,14 +805,12 @@ impl ConstrGetter for GRBStrAttr {
 impl VariableGetter for GRBStrAttr {
     type Value = String;
 
-    fn get(&self, var: &crate::prelude::GRBVar) -> Self::Value {
+    fn get(&self, var: &crate::prelude::GRBVar<'_>) -> Self::Value {
         let attr_name: &CStr = (*self).into();
-        // We cannot use null_mut() here directly because we need a pointer to a pointer, the
-        // pointer we point to is allowed to be null, but the pointer itself must be valid
         let value_p = (&mut null_mut()) as *mut *mut std::ffi::c_char;
         let error = unsafe {
             ffi::GRBgetstrattrelement(
-                *var.inner.0,
+                var.inner.model,
                 attr_name.as_ptr(),
                 var.index() as std::ffi::c_int,
                 value_p,
@@ -829,13 +825,13 @@ impl VariableGetter for GRBStrAttr {
 impl VariableSetter for GRBStrAttr {
     type Value = String;
 
-    fn set(&self, var: &crate::prelude::GRBVar, value: Self::Value) -> i32 {
+    fn set(&self, var: &crate::prelude::GRBVar<'_>, value: Self::Value) -> i32 {
         let attr_name: &CStr = (*self).into();
         let value =
             CString::new(value).expect("Failed to convert String to CString in `ModelSetter::set`");
         unsafe {
             ffi::GRBsetstrattrelement(
-                *var.inner.0,
+                var.inner.model,
                 attr_name.as_ptr(),
                 var.index() as std::ffi::c_int,
                 value.as_ptr(),
@@ -977,12 +973,12 @@ impl From<GRBCharAttr> for &'static CStr {
 impl ConstrSetter for GRBCharAttr {
     type Value = char;
 
-    fn set(&self, constr: &crate::constr::GRBConstr, value: Self::Value) -> i32 {
+    fn set(&self, constr: &crate::constr::GRBConstr<'_>, value: Self::Value) -> i32 {
         let attr_name: &CStr = (*self).into();
         let value = value as std::ffi::c_char;
         unsafe {
             ffi::GRBsetcharattrelement(
-                *constr.inner.0,
+                constr.inner.model,
                 attr_name.as_ptr(),
                 constr.index() as std::ffi::c_int,
                 value,
@@ -994,12 +990,12 @@ impl ConstrSetter for GRBCharAttr {
 impl ConstrGetter for GRBCharAttr {
     type Value = char;
 
-    fn get(&self, constr: &crate::prelude::GRBConstr) -> Self::Value {
+    fn get(&self, constr: &crate::prelude::GRBConstr<'_>) -> Self::Value {
         let attr_name: &CStr = (*self).into();
         let return_ptr = '\0' as std::ffi::c_char;
         let error = unsafe {
             ffi::GRBgetcharattrelement(
-                *constr.inner.0,
+                constr.inner.model,
                 attr_name.as_ptr(),
                 constr.index() as std::ffi::c_int,
                 return_ptr as *mut std::ffi::c_char,
@@ -1012,12 +1008,12 @@ impl ConstrGetter for GRBCharAttr {
 impl VariableGetter for GRBCharAttr {
     type Value = char;
 
-    fn get(&self, var: &crate::prelude::GRBVar) -> Self::Value {
+    fn get(&self, var: &crate::prelude::GRBVar<'_>) -> Self::Value {
         let attr_name: &CStr = (*self).into();
         let return_ptr = '\0' as std::ffi::c_char;
         let error = unsafe {
             ffi::GRBgetcharattrelement(
-                *var.inner.0,
+                var.inner.model,
                 attr_name.as_ptr(),
                 var.index() as std::ffi::c_int,
                 return_ptr as *mut std::ffi::c_char,
@@ -1058,12 +1054,12 @@ where
 impl VariableSetter for GRBCharAttr {
     type Value = char;
 
-    fn set(&self, var: &crate::prelude::GRBVar, value: Self::Value) -> i32 {
+    fn set(&self, var: &crate::prelude::GRBVar<'_>, value: Self::Value) -> i32 {
         let attr_name: &CStr = (*self).into();
         let value = value as std::ffi::c_char;
         unsafe {
             ffi::GRBsetcharattrelement(
-                *var.inner.0,
+                var.inner.model,
                 attr_name.as_ptr(),
                 var.index() as std::ffi::c_int,
                 value,

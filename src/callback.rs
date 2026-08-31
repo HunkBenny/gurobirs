@@ -8,9 +8,9 @@ use crate::ffi;
 use crate::model::GRBModel;
 use crate::modeling::{CanBeAddedToCallback, IsModelingObject};
 use crate::var::GRBVar;
-use std::ffi::{c_char, CStr};
+use std::ffi::{CStr, c_char};
 use std::fmt::Display;
-use std::panic::{catch_unwind, AssertUnwindSafe};
+use std::panic::{AssertUnwindSafe, catch_unwind};
 
 /// A struct that represents the context of a Gurobi callback. It contains the model, callback data, and the type of callback being executed.
 /// * `model`: pointer to the Gurobi model
@@ -80,7 +80,7 @@ unsafe extern "C" fn c_shim<C: CallbackTrait>(
 
 impl GRBModel {
     pub fn set_callback<C: CallbackTrait>(
-        &mut self,
+        &self,
         callback: &mut GRBCallback<C>,
         wheres: Option<u32>,
     ) {
@@ -88,7 +88,7 @@ impl GRBModel {
             if let Some(wheres) = wheres {
                 // better for performance
                 ffi::GRBsetcallbackfuncadv(
-                    *self.inner.0,
+                    self.inner.model,
                     Some(c_shim::<C>),
                     callback as *mut _ as *mut std::ffi::c_void,
                     wheres as std::ffi::c_uint,
@@ -96,7 +96,7 @@ impl GRBModel {
             } else {
                 // default
                 ffi::GRBsetcallbackfunc(
-                    *self.inner.0,
+                    self.inner.model,
                     Some(c_shim::<C>),
                     callback as *mut _ as *mut std::ffi::c_void,
                 )
@@ -173,7 +173,7 @@ impl GRBCallbackContext {
         self.get_error(error).unwrap();
     }
 
-    pub fn get_info<G: CallbackGet>(
+    pub fn get_info<G: GRBCallbackGet>(
         &mut self,
         what: G,
     ) -> Result<G::Output, Box<dyn std::error::Error>> {
@@ -218,7 +218,7 @@ impl GRBCallbackContext {
         }
     }
 
-    pub fn get_noderels(&mut self, variables: Vec<GRBVar>) -> Vec<f64> {
+    pub fn get_noderels(&mut self, variables: Vec<GRBVar<'_>>) -> Vec<f64> {
         match self.where_.into() {
             GRBCallbackCodes::MIPNODE => {}
             _ => {
@@ -514,14 +514,14 @@ impl From<GRB_WHAT_STRING> for std::ffi::c_int {
         }
     }
 }
-pub trait CallbackGet {
+pub trait GRBCallbackGet {
     type Output;
 
     fn get(&self, context: &GRBCallbackContext)
-        -> Result<Self::Output, Box<dyn std::error::Error>>;
+    -> Result<Self::Output, Box<dyn std::error::Error>>;
 }
 
-impl CallbackGet for GRB_WHAT_DOUBLE {
+impl GRBCallbackGet for GRB_WHAT_DOUBLE {
     type Output = f64;
 
     fn get(
@@ -542,7 +542,7 @@ impl CallbackGet for GRB_WHAT_DOUBLE {
     }
 }
 
-impl CallbackGet for GRB_WHAT_INT {
+impl GRBCallbackGet for GRB_WHAT_INT {
     type Output = i32;
 
     fn get(
@@ -563,7 +563,7 @@ impl CallbackGet for GRB_WHAT_INT {
     }
 }
 
-impl CallbackGet for GRB_WHAT_STRING {
+impl GRBCallbackGet for GRB_WHAT_STRING {
     type Output = String;
 
     fn get(
@@ -592,7 +592,7 @@ pub trait GetSolution {
     fn get_solution(&self, values: &Vec<f64>) -> Self::Output;
 }
 
-impl GetSolution for GRBVar {
+impl GetSolution for GRBVar<'_> {
     type Output = f64;
 
     fn get_solution(&self, values: &Vec<f64>) -> Self::Output {
@@ -620,7 +620,7 @@ pub trait SetSolution {
     fn set_solution(&self, solution: &mut Vec<f64>, val: Self::Value);
 }
 
-impl SetSolution for GRBVar {
+impl SetSolution for GRBVar<'_> {
     type Value = f64;
 
     fn set_solution(&self, solution: &mut Vec<f64>, val: Self::Value) {
@@ -628,7 +628,7 @@ impl SetSolution for GRBVar {
     }
 }
 
-impl SetSolution for &GRBVar {
+impl SetSolution for &GRBVar<'_> {
     type Value = f64;
 
     fn set_solution(&self, solution: &mut Vec<f64>, val: Self::Value) {

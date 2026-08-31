@@ -18,7 +18,7 @@ fn test_tsp() {
     };
 
     let env = GRBEnv::new(false, None).unwrap();
-    let mut model = GRBModel::new(&env);
+    let model = GRBModel::new(&env);
     model.set(GRBIntParam::LAZYCONSTRAINTS, 1);
 
     // add vars
@@ -86,11 +86,11 @@ fn test_tsp() {
 }
 
 struct Callback<'a> {
-    vars: &'a Vec<Vec<GRBVar>>,
+    vars: &'a Vec<Vec<GRBVar<'a>>>,
     n: i32,
 }
 impl CallbackTrait for Callback<'_> {
-    fn callback(&mut self, mut cb_ctx: gurobirs::prelude::GRBCallbackContext) {
+    fn callback(&mut self, cb_ctx: &mut gurobirs::prelude::GRBCallbackContext) {
         if let GRBCallbackCodes::POLLING = cb_ctx.where_ {
             return;
         }

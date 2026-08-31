@@ -38,7 +38,7 @@ impl GRBVarBuilder {
     }
 }
 
-impl GRBVar {
+impl<'a> GRBVar<'a> {
     pub fn builder() -> GRBVarBuilder {
         GRBVarBuilder {
             lb: None,

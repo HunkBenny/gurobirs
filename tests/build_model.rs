@@ -5,7 +5,7 @@ use gurobirs::prelude::{
 
 struct MyCallback;
 impl CallbackTrait for MyCallback {
-    fn callback(&mut self, cb_ctx: GRBCallbackContext) {
+    fn callback(&mut self, cb_ctx: &mut GRBCallbackContext) {
         println!("Callback called from Rust! where = {}", cb_ctx.where_);
     }
 }
@@ -15,7 +15,7 @@ fn test_build_model() {
     // first create env
     let env =
         GRBEnv::new(false, None).expect("err nerrr sth happened when creating the environment");
-    let mut model = GRBModel::new(&env);
+    let model = GRBModel::new(&env);
 
     let x = model.add_var(
         GRBVar::builder()
