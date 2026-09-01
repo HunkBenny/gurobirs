@@ -1,5 +1,8 @@
 pub use crate::attributes::{GRBCharAttr, GRBDblAttr, GRBIntAttr, GRBStrAttr};
-pub use crate::callback::{CallbackTrait, GRBCallback, GRBCallbackCodes, GRBCallbackContext};
+pub use crate::callback::{
+    CallbackTrait, GRBCallback, GRBCallbackCodes, GRBCallbackContext, GRBCallbackGet, GRBWhatDbl,
+    GRBWhatInt, GRBWhatString,
+};
 pub use crate::constr::Expr;
 pub use crate::constr::FormatConstr;
 pub use crate::constr::GRBConstr;
