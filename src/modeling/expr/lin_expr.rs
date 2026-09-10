@@ -1,11 +1,12 @@
 use std::{
     collections::BTreeMap,
-    ffi::CString,
+    ffi::{CStr, CString},
     ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign},
     ptr::null_mut,
 };
 
 use crate::{
+    attributes::GRBStrAttr,
     model::{GRBModel, GRBModelSense},
     modeling::{IsModelingObject, Objective},
     prelude::GRBIntAttr,
@@ -99,7 +100,16 @@ impl Objective for GRBLinExpr {
         abstol: f64,
         reltol: f64,
     ) {
-        let (mut var_idxs, mut coeffs): (Vec<usize>, Vec<f64>) = self.expr.into_iter().unzip();
+        // update model status first. push pending updates (makes variable names etc available)
+        model.update();
+
+        let num_vars = model.get(GRBIntAttr::NUMVARS);
+        let mut var_idxs: Vec<i32> = (0..num_vars).collect();
+        let mut coeffs = vec![0.0; num_vars as usize];
+
+        for (var_idx, coeff) in self.expr {
+            coeffs[var_idx] = coeff;
+        }
 
         // TODO: Check if scalar has correct sign
         let constant = self.scalar;
