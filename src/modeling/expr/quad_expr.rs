@@ -5,7 +5,7 @@ use std::{
 
 use crate::{ffi, modeling::IsModelingObject};
 use crate::{
-    modeling::{expr::lin_expr::GRBLinExpr, Objective},
+    modeling::{Objective, expr::lin_expr::GRBLinExpr},
     var::GRBVar,
 };
 
@@ -53,6 +53,21 @@ impl Objective for GRBQuadExpr {
             )
         };
         model.get_error(error).unwrap();
+    }
+
+    fn set_as_objective_n(
+        self,
+        model: &mut crate::prelude::GRBModel,
+        index: i32,
+        priority: i32,
+        weight: f64,
+        abstol: f64,
+        reltol: f64,
+    ) {
+        // this is not idiomatic, but leaves the option open to implement this in the future if Gurobi adds support for it
+        unimplemented!(
+            "This method is not implemented for GRBQuadExpr. Gurobi does not support setting a quadratic objective in this way."
+        );
     }
 }
 

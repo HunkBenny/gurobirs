@@ -1,5 +1,5 @@
 use std::{
-    ffi::{c_char, CStr, CString},
+    ffi::{CStr, CString, c_char},
     ptr::{null, null_mut},
     rc::Rc,
 };
@@ -10,8 +10,8 @@ use crate::{
     error::check_err,
     ffi,
     modeling::{
-        expr::nonlin_expr::GRBOpCode, AddAsIndicator, CanBeAddedToModel, IsModelingObject,
-        Objective,
+        AddAsIndicator, CanBeAddedToModel, IsModelingObject, Objective,
+        expr::nonlin_expr::GRBOpCode,
     },
     prelude::GRBVarBuilder,
     var::GRBVar,
@@ -434,6 +434,18 @@ impl GRBModel {
 
     pub fn set_objective<O: Objective>(&mut self, obj: O, sense: GRBModelSense) {
         obj.set_as_objective(self, sense);
+    }
+
+    pub fn set_objective_n<O: Objective>(
+        &mut self,
+        obj: O,
+        index: i32,
+        priority: i32,
+        weight: f64,
+        abstol: f64,
+        reltol: f64,
+    ) {
+        obj.set_as_objective_n(self, index, priority, weight, abstol, reltol);
     }
 
     pub fn optimize(&mut self) {

@@ -1,10 +1,12 @@
 use std::{
     collections::BTreeMap,
+    ffi::CString,
     ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign},
+    ptr::null_mut,
 };
 
 use crate::{
-    model::GRBModelSense,
+    model::{GRBModel, GRBModelSense},
     modeling::{IsModelingObject, Objective},
     prelude::GRBIntAttr,
     var::GRBVar,
@@ -86,6 +88,38 @@ impl Objective for GRBLinExpr {
             )
         };
         model.get_error(error).unwrap();
+    }
+
+    fn set_as_objective_n(
+        self,
+        model: &mut GRBModel,
+        index: i32,
+        priority: i32,
+        weight: f64,
+        abstol: f64,
+        reltol: f64,
+    ) {
+        let (mut var_idxs, mut coeffs): (Vec<usize>, Vec<f64>) = self.expr.into_iter().unzip();
+
+        // TODO: Check if scalar has correct sign
+        let constant = self.scalar;
+        let error = unsafe {
+            ffi::GRBsetobjectiven(
+                *model.inner.0,
+                index,
+                priority,
+                weight,
+                abstol,
+                reltol,
+                // TODO: allow for adding names
+                null_mut(),
+                constant,
+                var_idxs.len() as std::ffi::c_int,
+                var_idxs.as_mut_ptr() as *mut std::ffi::c_int,
+                coeffs.as_mut_ptr(),
+            )
+        };
+        model.get_error(error);
     }
 }
 

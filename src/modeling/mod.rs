@@ -34,6 +34,15 @@ pub trait CanBeAddedToCallback {
 
 pub trait Objective {
     fn set_as_objective(self, model: &mut GRBModel, sense: GRBModelSense);
+    fn set_as_objective_n(
+        self,
+        model: &mut GRBModel,
+        index: i32,
+        priority: i32,
+        weight: f64,
+        abstol: f64,
+        reltol: f64,
+    );
 }
 
 pub mod builder;
