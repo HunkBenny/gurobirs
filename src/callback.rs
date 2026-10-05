@@ -8,9 +8,9 @@ use crate::ffi;
 use crate::model::GRBModel;
 use crate::modeling::{CanBeAddedToCallback, IsModelingObject};
 use crate::var::GRBVar;
-use std::ffi::{c_char, CStr};
+use std::ffi::{CStr, c_char};
 use std::fmt::Display;
-use std::panic::{catch_unwind, AssertUnwindSafe};
+use std::panic::{AssertUnwindSafe, catch_unwind};
 
 /// A struct that represents the context of a Gurobi callback. It contains the model, callback data, and the type of callback being executed.
 /// * `model`: pointer to the Gurobi model
@@ -60,17 +60,20 @@ unsafe extern "C" fn c_shim<C: CallbackTrait>(
         (*wrapper).callback.callback(&mut cb_ctx)
     }));
 
-    if let Some(mut solution) = cb_ctx.solution {
-        unsafe {
-            let mut _objval_p = 0.0;
-            let error = ffi::GRBcbsolution(
-                cb_data,
-                solution.as_mut_ptr() as *mut std::ffi::c_double,
-                &mut _objval_p as *mut std::ffi::c_double,
-            );
-            check_err(error).unwrap();
-        }
-    }
+    cb_ctx.use_solution();
+
+    //
+    // if let Some(mut solution) = cb_ctx.solution {
+    //     unsafe {
+    //         let mut _objval_p = 0.0;
+    //         let error = ffi::GRBcbsolution(
+    //             cb_data,
+    //             solution.as_mut_ptr() as *mut std::ffi::c_double,
+    //             &mut _objval_p as *mut std::ffi::c_double,
+    //         );
+    //         check_err(error).unwrap();
+    //     }
+    // }
 
     match result {
         Ok(_) => 0,
@@ -107,6 +110,20 @@ impl GRBModel {
 }
 
 impl GRBCallbackContext {
+    pub fn use_solution(&mut self) {
+        if let Some(mut solution) = self.solution.clone() {
+            unsafe {
+                let mut _objval_p = 0.0;
+                let error = ffi::GRBcbsolution(
+                    self.cb_data,
+                    solution.as_mut_ptr() as *mut std::ffi::c_double,
+                    &mut _objval_p as *mut std::ffi::c_double,
+                );
+                check_err(error).unwrap();
+            }
+        }
+    }
+
     /// Get the raw callback data pointer
     /// # Safety
     /// This function is unsafe because it exposes the raw callback data pointer
@@ -518,7 +535,7 @@ pub trait GRBCallbackGet {
     type Output;
 
     fn get(&self, context: &GRBCallbackContext)
-        -> Result<Self::Output, Box<dyn std::error::Error>>;
+    -> Result<Self::Output, Box<dyn std::error::Error>>;
 }
 
 impl GRBCallbackGet for GRBWhatDbl {
