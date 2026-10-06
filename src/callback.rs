@@ -120,7 +120,6 @@ impl GRBCallbackContext {
                     &mut _objval_p as *mut std::ffi::c_double,
                 );
                 check_err(error).unwrap();
-                // println!("objval: {}", _objval_p);
             }
         }
         self.solution = None;
