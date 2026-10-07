@@ -5,6 +5,7 @@ use std::{
 };
 
 use crate::{
+    attributes::GRBIntAttr,
     constr::{GRBConstr, TempConstr, TempQConstr},
     env::GRBEnv,
     error::check_err,
@@ -49,6 +50,35 @@ pub struct GRBModel {
 }
 
 impl GRBModel {
+    pub fn new_from_file(env: &GRBEnv, filename: &str) -> GRBModel {
+        let filename = CString::new(filename).unwrap();
+
+        let mut model = null_mut();
+
+        let error =
+            unsafe { gurobirs_sys::GRBreadmodel(env.inner(), filename.as_ptr(), &mut model) };
+        env.get_error(error).unwrap();
+
+        let mut model = GRBModel {
+            inner: GRBModelPtr(Rc::new(model)),
+            var_index: 0,
+            rows_index: 0,
+            qconstraints_index: 0,
+            genconstrs_index: 0,
+        };
+        // update attributes
+        let var_index = model.get(GRBIntAttr::NUMVARS);
+        let rows_index = model.get(GRBIntAttr::NUMCONSTRS);
+        let qconstr_index = model.get(GRBIntAttr::NUMQCONSTRS);
+        let genconstr_index = model.get(GRBIntAttr::NUMGENCONSTRS);
+        model.var_index = var_index as usize;
+        model.rows_index = rows_index as usize;
+        model.qconstraints_index = qconstr_index as usize;
+        model.genconstrs_index = genconstr_index as usize;
+
+        model
+    }
+
     pub fn update(&mut self) {
         let error = unsafe { ffi::GRBupdatemodel(*self.inner.0) };
         self.get_error(error).unwrap();
