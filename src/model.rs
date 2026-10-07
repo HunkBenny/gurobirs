@@ -84,6 +84,12 @@ impl GRBModel {
         self.get_error(error).unwrap();
     }
 
+    pub fn read(&mut self, filename: &str) {
+        let c_filename = CString::new(filename).unwrap();
+        let error = unsafe { ffi::GRBread(*self.inner.0, c_filename.as_ptr()) };
+        self.get_error(error).unwrap();
+    }
+
     pub fn write(&self, filename: &str) {
         let c_filename = CString::new(filename).unwrap();
         let error = unsafe { ffi::GRBwrite(*self.inner.0, c_filename.as_ptr()) };
