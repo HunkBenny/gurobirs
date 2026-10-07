@@ -550,27 +550,29 @@ impl GRBModelSense {
     }
 }
 
+#[repr(C)]
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
+#[derive(Clone, Copy)]
 pub enum GRBStatus {
-    LOADED,
-    OPTIMAL,
-    INFEASIBLE,
-    INF_OR_UNBD,
-    UNBOUNDED,
-    CUTOFF,
-    ITERATION_LIMIT,
-    NODE_LIMIT,
-    TIME_LIMIT,
-    SOLUTION_LIMIT,
-    INTERRUPTED,
-    NUMERIC,
-    SUBOPTIMAL,
-    INPROGRESS,
-    USER_OBJ_LIMIT,
-    WORK_LIMIT,
-    MEM_LIMIT,
-    LOCALLY_OPTIMAL,
-    LOCALLY_INFEASIBLE,
+    LOADED = ffi::GRB_LOADED as isize,
+    OPTIMAL = ffi::GRB_OPTIMAL as isize,
+    INFEASIBLE = ffi::GRB_INFEASIBLE as isize,
+    INF_OR_UNBD = ffi::GRB_INF_OR_UNBD as isize,
+    UNBOUNDED = ffi::GRB_UNBOUNDED as isize,
+    CUTOFF = ffi::GRB_CUTOFF as isize,
+    ITERATION_LIMIT = ffi::GRB_ITERATION_LIMIT as isize,
+    NODE_LIMIT = ffi::GRB_NODE_LIMIT as isize,
+    TIME_LIMIT = ffi::GRB_TIME_LIMIT as isize,
+    SOLUTION_LIMIT = ffi::GRB_SOLUTION_LIMIT as isize,
+    INTERRUPTED = ffi::GRB_INTERRUPTED as isize,
+    NUMERIC = ffi::GRB_NUMERIC as isize,
+    SUBOPTIMAL = ffi::GRB_SUBOPTIMAL as isize,
+    INPROGRESS = ffi::GRB_INPROGRESS as isize,
+    USER_OBJ_LIMIT = ffi::GRB_USER_OBJ_LIMIT as isize,
+    WORK_LIMIT = ffi::GRB_WORK_LIMIT as isize,
+    MEM_LIMIT = ffi::GRB_MEM_LIMIT as isize,
+    LOCALLY_OPTIMAL = ffi::GRB_LOCALLY_OPTIMAL as isize,
+    LOCALLY_INFEASIBLE = ffi::GRB_LOCALLY_INFEASIBLE as isize,
 }
 
 impl From<GRBStatus> for std::ffi::c_int {
