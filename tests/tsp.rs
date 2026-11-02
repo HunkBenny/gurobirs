@@ -86,7 +86,7 @@ fn test_tsp() {
 }
 
 struct Callback<'a> {
-    vars: &'a Vec<Vec<GRBVar<'a>>>,
+    vars: &'a Vec<Vec<GRBVar>>,
     n: i32,
 }
 impl CallbackTrait for Callback<'_> {

@@ -4,12 +4,12 @@ use crate::{error::check_err, ffi, model::GRBModelInner, modeling::IsModelingObj
 
 pub trait VariableSetter {
     type Value;
-    fn set(&self, var: &GRBVar<'_>, value: Self::Value) -> i32;
+    fn set(&self, var: &GRBVar, value: Self::Value) -> i32;
 }
 
 pub trait VariableGetter {
     type Value;
-    fn get(&self, var: &GRBVar<'_>) -> Self::Value;
+    fn get(&self, var: &GRBVar) -> Self::Value;
 }
 
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
@@ -35,14 +35,18 @@ impl From<GRBVarType> for std::ffi::c_char {
 
 #[cfg_attr(debug_assertions, derive(Debug))]
 #[derive(Clone, Copy)]
-pub struct GRBVar<'a> {
+pub struct GRBVar {
     index: usize,
-    pub(crate) inner: &'a GRBModelInner,
+    pub(crate) inner: &'static GRBModelInner,
 }
 
-impl<'a> GRBVar<'a> {
-    pub fn new(index: usize, inner: &'a GRBModelInner) -> GRBVar<'a> {
-        GRBVar { index, inner }
+impl GRBVar {
+    pub fn new(index: usize, inner: &GRBModelInner) -> GRBVar {
+        GRBVar {
+            index,
+            // SAFETY: caller guarantees `inner` outlives the returned handle.
+            inner: unsafe { &*(inner as *const GRBModelInner) },
+        }
     }
 
     pub fn set<V: VariableSetter>(&self, setter: V, value: V::Value) {
@@ -69,7 +73,7 @@ impl<'a> GRBVar<'a> {
     }
 }
 
-impl IsModelingObject for GRBVar<'_> {
+impl IsModelingObject for GRBVar {
     fn index(&self) -> usize {
         self.index
     }

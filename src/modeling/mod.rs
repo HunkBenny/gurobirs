@@ -15,7 +15,7 @@ pub(crate) trait AddAsIndicator {
     fn add_as_indicator(
         self,
         model: *mut ffi::GRBmodel,
-        binvar: GRBVar<'_>,
+        binvar: GRBVar,
         binval: i8,
         name: *const std::ffi::c_char,
     ) -> i32;
@@ -34,6 +34,15 @@ pub trait CanBeAddedToCallback {
 
 pub trait Objective {
     fn set_as_objective(self, model: &GRBModel, sense: GRBModelSense);
+    fn set_as_objective_n(
+        self,
+        model: &GRBModel,
+        index: i32,
+        priority: i32,
+        weight: f64,
+        abstol: f64,
+        reltol: f64,
+    );
 }
 
 pub mod builder;

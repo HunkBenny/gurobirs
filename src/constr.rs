@@ -16,12 +16,12 @@ use crate::{
 
 pub trait ConstrGetter {
     type Value;
-    fn get(&self, constr: &GRBConstr<'_>) -> Self::Value;
+    fn get(&self, constr: &GRBConstr) -> Self::Value;
 }
 
 pub trait ConstrSetter {
     type Value;
-    fn set(&self, constr: &GRBConstr<'_>, value: Self::Value) -> i32;
+    fn set(&self, constr: &GRBConstr, value: Self::Value) -> i32;
 }
 
 #[cfg_attr(debug_assertions, derive(Debug))]
@@ -284,34 +284,34 @@ impl Expr<GRBQuadExpr> for GRBLinExpr {
     }
 }
 
-impl Expr<&GRBVar<'_>> for GRBLinExpr {
+impl Expr<&GRBVar> for GRBLinExpr {
     type Output = TempConstr;
 
-    fn eq(self, rhs: &GRBVar<'_>) -> Self::Output {
+    fn eq(self, rhs: &GRBVar) -> Self::Output {
         self.eq(GRBLinExpr::from(rhs))
     }
 
-    fn ge(self, rhs: &GRBVar<'_>) -> Self::Output {
+    fn ge(self, rhs: &GRBVar) -> Self::Output {
         self.ge(GRBLinExpr::from(rhs))
     }
 
-    fn le(self, rhs: &GRBVar<'_>) -> Self::Output {
+    fn le(self, rhs: &GRBVar) -> Self::Output {
         self.le(GRBLinExpr::from(rhs))
     }
 }
 
-impl Expr<GRBVar<'_>> for GRBLinExpr {
+impl Expr<GRBVar> for GRBLinExpr {
     type Output = TempConstr;
 
-    fn eq(self, rhs: GRBVar<'_>) -> Self::Output {
+    fn eq(self, rhs: GRBVar) -> Self::Output {
         self.eq(GRBLinExpr::from(rhs))
     }
 
-    fn ge(self, rhs: GRBVar<'_>) -> Self::Output {
+    fn ge(self, rhs: GRBVar) -> Self::Output {
         self.ge(GRBLinExpr::from(rhs))
     }
 
-    fn le(self, rhs: GRBVar<'_>) -> Self::Output {
+    fn le(self, rhs: GRBVar) -> Self::Output {
         self.le(GRBLinExpr::from(rhs))
     }
 }
@@ -378,39 +378,39 @@ impl Expr<GRBQuadExpr> for GRBQuadExpr {
     }
 }
 
-impl Expr<&GRBVar<'_>> for GRBQuadExpr {
+impl Expr<&GRBVar> for GRBQuadExpr {
     type Output = TempQConstr;
 
-    fn eq(self, rhs: &GRBVar<'_>) -> Self::Output {
+    fn eq(self, rhs: &GRBVar) -> Self::Output {
         let rhs = GRBLinExpr::from(rhs);
         self.eq(rhs)
     }
 
-    fn ge(self, rhs: &GRBVar<'_>) -> Self::Output {
+    fn ge(self, rhs: &GRBVar) -> Self::Output {
         let rhs = GRBLinExpr::from(rhs);
         self.ge(rhs)
     }
 
-    fn le(self, rhs: &GRBVar<'_>) -> Self::Output {
+    fn le(self, rhs: &GRBVar) -> Self::Output {
         let rhs = GRBLinExpr::from(rhs);
         self.le(rhs)
     }
 }
 
-impl Expr<GRBVar<'_>> for GRBQuadExpr {
+impl Expr<GRBVar> for GRBQuadExpr {
     type Output = TempQConstr;
 
-    fn eq(self, rhs: GRBVar<'_>) -> Self::Output {
+    fn eq(self, rhs: GRBVar) -> Self::Output {
         let rhs = GRBLinExpr::from(rhs);
         self.eq(rhs)
     }
 
-    fn ge(self, rhs: GRBVar<'_>) -> Self::Output {
+    fn ge(self, rhs: GRBVar) -> Self::Output {
         let rhs = GRBLinExpr::from(rhs);
         self.ge(rhs)
     }
 
-    fn le(self, rhs: GRBVar<'_>) -> Self::Output {
+    fn le(self, rhs: GRBVar) -> Self::Output {
         let rhs = GRBLinExpr::from(rhs);
         self.le(rhs)
     }
@@ -512,12 +512,12 @@ impl CanBeAddedToCallback for TempConstr {
     }
 }
 
-pub struct GRBConstr<'a> {
+pub struct GRBConstr {
     pub index: usize,
-    pub(crate) inner: &'a GRBModelInner,
+    pub(crate) inner: &'static GRBModelInner,
 }
 
-impl<'a> GRBConstr<'a> {
+impl GRBConstr {
     /// Get raw pointer
     ///
     /// # Safety
@@ -550,7 +550,7 @@ impl<'a> GRBConstr<'a> {
     }
 }
 
-impl IsModelingObject for GRBConstr<'_> {
+impl IsModelingObject for GRBConstr {
     fn index(&self) -> usize {
         self.index
     }
@@ -560,7 +560,7 @@ impl AddAsIndicator for TempConstr {
     fn add_as_indicator(
         self,
         model: *mut ffi::GRBmodel,
-        binvar: crate::prelude::GRBVar<'_>,
+        binvar: crate::prelude::GRBVar,
         binval: i8,
         name: *const std::ffi::c_char,
     ) -> i32 {

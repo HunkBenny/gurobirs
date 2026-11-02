@@ -54,6 +54,21 @@ impl Objective for GRBQuadExpr {
         };
         model.get_error(error).unwrap();
     }
+
+    fn set_as_objective_n(
+        self,
+        model: &crate::prelude::GRBModel,
+        index: i32,
+        priority: i32,
+        weight: f64,
+        abstol: f64,
+        reltol: f64,
+    ) {
+        // this is not idiomatic, but leaves the option open to implement this in the future if Gurobi adds support for it
+        unimplemented!(
+            "This method is not implemented for GRBQuadExpr. Gurobi does not support setting a quadratic objective in this way."
+        );
+    }
 }
 
 // OVERLOAD ADDITION
@@ -87,25 +102,25 @@ impl Add<GRBQuadExpr> for GRBQuadExpr {
     }
 }
 
-impl Add<&GRBVar<'_>> for GRBQuadExpr {
+impl Add<&GRBVar> for GRBQuadExpr {
     type Output = GRBQuadExpr;
 
-    fn add(mut self, var: &GRBVar<'_>) -> Self::Output {
+    fn add(mut self, var: &GRBVar) -> Self::Output {
         self.linear_expr += var;
         self
     }
 }
 
-impl Add<GRBVar<'_>> for GRBQuadExpr {
+impl Add<GRBVar> for GRBQuadExpr {
     type Output = GRBQuadExpr;
 
-    fn add(mut self, var: GRBVar<'_>) -> Self::Output {
+    fn add(mut self, var: GRBVar) -> Self::Output {
         self.linear_expr += var;
         self
     }
 }
 
-impl Add<GRBQuadExpr> for &GRBVar<'_> {
+impl Add<GRBQuadExpr> for &GRBVar {
     type Output = GRBQuadExpr;
 
     fn add(self, mut rhs: GRBQuadExpr) -> Self::Output {
@@ -114,7 +129,7 @@ impl Add<GRBQuadExpr> for &GRBVar<'_> {
     }
 }
 
-impl Add<GRBQuadExpr> for GRBVar<'_> {
+impl Add<GRBQuadExpr> for GRBVar {
     type Output = GRBQuadExpr;
 
     fn add(self, mut rhs: GRBQuadExpr) -> Self::Output {
@@ -123,14 +138,14 @@ impl Add<GRBQuadExpr> for GRBVar<'_> {
     }
 }
 
-impl AddAssign<&GRBVar<'_>> for GRBQuadExpr {
-    fn add_assign(&mut self, rhs: &GRBVar<'_>) {
+impl AddAssign<&GRBVar> for GRBQuadExpr {
+    fn add_assign(&mut self, rhs: &GRBVar) {
         self.linear_expr += rhs;
     }
 }
 
-impl AddAssign<GRBVar<'_>> for GRBQuadExpr {
-    fn add_assign(&mut self, rhs: GRBVar<'_>) {
+impl AddAssign<GRBVar> for GRBQuadExpr {
+    fn add_assign(&mut self, rhs: GRBVar) {
         self.linear_expr += rhs;
     }
 }
@@ -173,25 +188,25 @@ impl Sub<GRBQuadExpr> for GRBQuadExpr {
     }
 }
 
-impl Sub<&GRBVar<'_>> for GRBQuadExpr {
+impl Sub<&GRBVar> for GRBQuadExpr {
     type Output = GRBQuadExpr;
 
-    fn sub(mut self, var: &GRBVar<'_>) -> Self::Output {
+    fn sub(mut self, var: &GRBVar) -> Self::Output {
         self.linear_expr -= var;
         self
     }
 }
 
-impl Sub<GRBVar<'_>> for GRBQuadExpr {
+impl Sub<GRBVar> for GRBQuadExpr {
     type Output = GRBQuadExpr;
 
-    fn sub(mut self, var: GRBVar<'_>) -> Self::Output {
+    fn sub(mut self, var: GRBVar) -> Self::Output {
         self.linear_expr -= var;
         self
     }
 }
 
-impl Sub<GRBQuadExpr> for &GRBVar<'_> {
+impl Sub<GRBQuadExpr> for &GRBVar {
     type Output = GRBQuadExpr;
 
     fn sub(self, mut rhs: GRBQuadExpr) -> Self::Output {
@@ -200,7 +215,7 @@ impl Sub<GRBQuadExpr> for &GRBVar<'_> {
     }
 }
 
-impl Sub<GRBQuadExpr> for GRBVar<'_> {
+impl Sub<GRBQuadExpr> for GRBVar {
     type Output = GRBQuadExpr;
 
     fn sub(self, mut rhs: GRBQuadExpr) -> Self::Output {
@@ -209,14 +224,14 @@ impl Sub<GRBQuadExpr> for GRBVar<'_> {
     }
 }
 
-impl SubAssign<&GRBVar<'_>> for GRBQuadExpr {
-    fn sub_assign(&mut self, rhs: &GRBVar<'_>) {
+impl SubAssign<&GRBVar> for GRBQuadExpr {
+    fn sub_assign(&mut self, rhs: &GRBVar) {
         self.linear_expr -= rhs;
     }
 }
 
-impl SubAssign<GRBVar<'_>> for GRBQuadExpr {
-    fn sub_assign(&mut self, rhs: GRBVar<'_>) {
+impl SubAssign<GRBVar> for GRBQuadExpr {
+    fn sub_assign(&mut self, rhs: GRBVar) {
         self.linear_expr -= rhs;
     }
 }
@@ -251,34 +266,34 @@ impl Mul<GRBLinExpr> for GRBLinExpr {
     }
 }
 
-impl Mul<&GRBVar<'_>> for GRBLinExpr {
+impl Mul<&GRBVar> for GRBLinExpr {
     type Output = GRBQuadExpr;
 
-    fn mul(self, var: &GRBVar<'_>) -> Self::Output {
+    fn mul(self, var: &GRBVar) -> Self::Output {
         GRBLinExpr::from(var) * self
     }
 }
 
-impl Mul<GRBVar<'_>> for GRBLinExpr {
+impl Mul<GRBVar> for GRBLinExpr {
     type Output = GRBQuadExpr;
 
-    fn mul(self, var: GRBVar<'_>) -> Self::Output {
+    fn mul(self, var: GRBVar) -> Self::Output {
         GRBLinExpr::from(var) * self
     }
 }
 
-impl Mul<&GRBVar<'_>> for &GRBVar<'_> {
+impl Mul<&GRBVar> for &GRBVar {
     type Output = GRBQuadExpr;
 
-    fn mul(self, rhs: &GRBVar<'_>) -> Self::Output {
+    fn mul(self, rhs: &GRBVar) -> Self::Output {
         GRBLinExpr::from(self) * GRBLinExpr::from(rhs)
     }
 }
 
-impl Mul<GRBVar<'_>> for GRBVar<'_> {
+impl Mul<GRBVar> for GRBVar {
     type Output = GRBQuadExpr;
 
-    fn mul(self, rhs: GRBVar<'_>) -> Self::Output {
+    fn mul(self, rhs: GRBVar) -> Self::Output {
         GRBLinExpr::from(self) * GRBLinExpr::from(rhs)
     }
 }

@@ -17,7 +17,7 @@ struct MyCallback<'a> {
     last_iter: f64,
     last_node: f64,
     num_vars: i32,
-    vars: &'a Vec<GRBVar<'a>>,
+    vars: &'a Vec<GRBVar>,
 }
 
 impl CallbackTrait for MyCallback<'_> {
@@ -144,6 +144,7 @@ impl CallbackTrait for MyCallback<'_> {
 
 #[test]
 fn test_callback() {
+    panic!("This example deviates from the C++ original");
     // Build a knapsack MILP inline (substituted for model.read of the C++
     // example)
     let ground_set_size = 20;

@@ -12,6 +12,7 @@ impl CallbackTrait for MyCallback {
 
 #[test]
 fn test_build_model() {
+    panic!("This example deviates from the C++ original");
     // first create env
     let env =
         GRBEnv::new(false, None).expect("err nerrr sth happened when creating the environment");

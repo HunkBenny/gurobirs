@@ -87,6 +87,47 @@ impl Objective for GRBLinExpr {
         };
         model.get_error(error).unwrap();
     }
+
+    fn set_as_objective_n(
+        self,
+        model: &crate::prelude::GRBModel,
+        index: i32,
+        priority: i32,
+        weight: f64,
+        abstol: f64,
+        reltol: f64,
+    ) {
+        // update model status first. push pending updates (makes variable names etc available)
+        model.update();
+
+        let num_vars = model.get(GRBIntAttr::NUMVARS);
+        let mut var_idxs: Vec<i32> = (0..num_vars).collect();
+        let mut coeffs = vec![0.0; num_vars as usize];
+
+        for (var_idx, coeff) in self.expr {
+            coeffs[var_idx] = coeff;
+        }
+
+        // TODO: Check if scalar has correct sign
+        let constant = self.scalar;
+        let error = unsafe {
+            ffi::GRBsetobjectiven(
+                model.inner.model,
+                index,
+                priority,
+                weight,
+                abstol,
+                reltol,
+                // TODO: allow for adding names
+                std::ptr::null_mut(),
+                constant,
+                var_idxs.len() as std::ffi::c_int,
+                var_idxs.as_mut_ptr() as *mut std::ffi::c_int,
+                coeffs.as_mut_ptr(),
+            )
+        };
+        model.get_error(error).unwrap();
+    }
 }
 
 // impl add, mult, sub etc
@@ -180,16 +221,16 @@ impl SubAssign<GRBLinExpr> for GRBLinExpr {
 // NOTE: OPERATOR OVERLOADING FOR GRBVar:
 // Create possibility to make LinExpr from GRBvar;
 
-impl From<&GRBVar<'_>> for GRBLinExpr {
-    fn from(value: &GRBVar<'_>) -> Self {
+impl From<&GRBVar> for GRBLinExpr {
+    fn from(value: &GRBVar) -> Self {
         let mut expr = BTreeMap::new();
         expr.insert(value.index(), 1.0);
         GRBLinExpr { expr, scalar: 0.0 }
     }
 }
 
-impl From<GRBVar<'_>> for GRBLinExpr {
-    fn from(value: GRBVar<'_>) -> Self {
+impl From<GRBVar> for GRBLinExpr {
+    fn from(value: GRBVar) -> Self {
         let mut expr = BTreeMap::new();
         expr.insert(value.index(), 1.0);
         GRBLinExpr { expr, scalar: 0.0 }
@@ -197,23 +238,23 @@ impl From<GRBVar<'_>> for GRBLinExpr {
 }
 
 // OVERLOAD ADDITION
-impl Add<&GRBVar<'_>> for GRBLinExpr {
+impl Add<&GRBVar> for GRBLinExpr {
     type Output = GRBLinExpr;
 
-    fn add(self, var: &GRBVar<'_>) -> Self::Output {
+    fn add(self, var: &GRBVar) -> Self::Output {
         self + GRBLinExpr::from(var)
     }
 }
 
-impl Add<GRBVar<'_>> for GRBLinExpr {
+impl Add<GRBVar> for GRBLinExpr {
     type Output = GRBLinExpr;
 
-    fn add(self, var: GRBVar<'_>) -> Self::Output {
+    fn add(self, var: GRBVar) -> Self::Output {
         self + GRBLinExpr::from(var)
     }
 }
 
-impl Add<GRBLinExpr> for &GRBVar<'_> {
+impl Add<GRBLinExpr> for &GRBVar {
     type Output = GRBLinExpr;
 
     fn add(self, expr: GRBLinExpr) -> Self::Output {
@@ -221,7 +262,7 @@ impl Add<GRBLinExpr> for &GRBVar<'_> {
     }
 }
 
-impl Add<GRBLinExpr> for GRBVar<'_> {
+impl Add<GRBLinExpr> for GRBVar {
     type Output = GRBLinExpr;
 
     fn add(self, expr: GRBLinExpr) -> Self::Output {
@@ -229,52 +270,52 @@ impl Add<GRBLinExpr> for GRBVar<'_> {
     }
 }
 
-impl AddAssign<&GRBVar<'_>> for GRBLinExpr {
-    fn add_assign(&mut self, var: &GRBVar<'_>) {
+impl AddAssign<&GRBVar> for GRBLinExpr {
+    fn add_assign(&mut self, var: &GRBVar) {
         *self += GRBLinExpr::from(var);
     }
 }
 
-impl AddAssign<GRBVar<'_>> for GRBLinExpr {
-    fn add_assign(&mut self, var: GRBVar<'_>) {
+impl AddAssign<GRBVar> for GRBLinExpr {
+    fn add_assign(&mut self, var: GRBVar) {
         *self += GRBLinExpr::from(var);
     }
 }
 
-impl Add<&GRBVar<'_>> for &GRBVar<'_> {
+impl Add<&GRBVar> for &GRBVar {
     type Output = GRBLinExpr;
 
-    fn add(self, rhs: &GRBVar<'_>) -> Self::Output {
+    fn add(self, rhs: &GRBVar) -> Self::Output {
         rhs + GRBLinExpr::from(self)
     }
 }
 
-impl Add<GRBVar<'_>> for GRBVar<'_> {
+impl Add<GRBVar> for GRBVar {
     type Output = GRBLinExpr;
 
-    fn add(self, rhs: GRBVar<'_>) -> Self::Output {
+    fn add(self, rhs: GRBVar) -> Self::Output {
         GRBLinExpr::from(self) + GRBLinExpr::from(rhs)
     }
 }
 
 // OVERLOAD SUBTRACTION
-impl Sub<&GRBVar<'_>> for GRBLinExpr {
+impl Sub<&GRBVar> for GRBLinExpr {
     type Output = GRBLinExpr;
 
-    fn sub(self, var: &GRBVar<'_>) -> Self::Output {
+    fn sub(self, var: &GRBVar) -> Self::Output {
         self - GRBLinExpr::from(var)
     }
 }
 
-impl Sub<GRBVar<'_>> for GRBLinExpr {
+impl Sub<GRBVar> for GRBLinExpr {
     type Output = GRBLinExpr;
 
-    fn sub(self, var: GRBVar<'_>) -> Self::Output {
+    fn sub(self, var: GRBVar) -> Self::Output {
         self - GRBLinExpr::from(var)
     }
 }
 
-impl Sub<GRBLinExpr> for &GRBVar<'_> {
+impl Sub<GRBLinExpr> for &GRBVar {
     type Output = GRBLinExpr;
 
     fn sub(self, expr: GRBLinExpr) -> Self::Output {
@@ -282,7 +323,7 @@ impl Sub<GRBLinExpr> for &GRBVar<'_> {
     }
 }
 
-impl Sub<GRBLinExpr> for GRBVar<'_> {
+impl Sub<GRBLinExpr> for GRBVar {
     type Output = GRBLinExpr;
 
     fn sub(self, expr: GRBLinExpr) -> Self::Output {
@@ -290,30 +331,30 @@ impl Sub<GRBLinExpr> for GRBVar<'_> {
     }
 }
 
-impl SubAssign<&GRBVar<'_>> for GRBLinExpr {
-    fn sub_assign(&mut self, var: &GRBVar<'_>) {
+impl SubAssign<&GRBVar> for GRBLinExpr {
+    fn sub_assign(&mut self, var: &GRBVar) {
         *self -= GRBLinExpr::from(var);
     }
 }
 
-impl SubAssign<GRBVar<'_>> for GRBLinExpr {
-    fn sub_assign(&mut self, var: GRBVar<'_>) {
+impl SubAssign<GRBVar> for GRBLinExpr {
+    fn sub_assign(&mut self, var: GRBVar) {
         *self -= GRBLinExpr::from(var);
     }
 }
 
-impl Sub<&GRBVar<'_>> for f64 {
+impl Sub<&GRBVar> for f64 {
     type Output = GRBLinExpr;
 
-    fn sub(self, var: &GRBVar<'_>) -> Self::Output {
+    fn sub(self, var: &GRBVar) -> Self::Output {
         self - GRBLinExpr::from(var)
     }
 }
 
-impl Sub<GRBVar<'_>> for f64 {
+impl Sub<GRBVar> for f64 {
     type Output = GRBLinExpr;
 
-    fn sub(self, var: GRBVar<'_>) -> Self::Output {
+    fn sub(self, var: GRBVar) -> Self::Output {
         self - GRBLinExpr::from(var)
     }
 }
@@ -547,7 +588,7 @@ macro_rules! impl_grbvar_math_ops {
         $(
             // 1. &GRBVar + &$t -> GRBLinExpr
             // This specifically satisfies your failing trait bound!
-            impl std::ops::Add<&$t> for &GRBVar<'_> {
+            impl std::ops::Add<&$t> for &GRBVar {
                 type Output = GRBLinExpr;
 
                 fn add(self, scalar: &$t) -> Self::Output {
@@ -558,7 +599,7 @@ macro_rules! impl_grbvar_math_ops {
             }
 
             // Owned: GRBVar + &$t -> GRBLinExpr
-            impl std::ops::Add<&$t> for GRBVar<'_> {
+            impl std::ops::Add<&$t> for GRBVar {
                 type Output = GRBLinExpr;
 
                 fn add(self, scalar: &$t) -> Self::Output {
@@ -566,26 +607,26 @@ macro_rules! impl_grbvar_math_ops {
                 }
             }
 
-            impl std::ops::Add<&GRBVar<'_>> for $t {
+            impl std::ops::Add<&GRBVar> for $t {
                 type Output = GRBLinExpr;
 
-                fn add(self, var: &GRBVar<'_>) -> Self::Output {
+                fn add(self, var: &GRBVar) -> Self::Output {
                     var + self
                 }
             }
 
             // Owned: $t + GRBVar -> GRBLinExpr
-            impl std::ops::Add<GRBVar<'_>> for $t {
+            impl std::ops::Add<GRBVar> for $t {
                 type Output = GRBLinExpr;
 
-                fn add(self, var: GRBVar<'_>) -> Self::Output {
+                fn add(self, var: GRBVar) -> Self::Output {
                     GRBLinExpr::from(var) + self
                 }
             }
 
             // 2. &GRBVar + $t -> GRBLinExpr
             // For good measure, so you can do `&my_var + 42` directly
-            impl std::ops::Add<$t> for &GRBVar<'_> {
+            impl std::ops::Add<$t> for &GRBVar {
                 type Output = GRBLinExpr;
 
                 fn add(self, scalar: $t) -> Self::Output {
@@ -594,7 +635,7 @@ macro_rules! impl_grbvar_math_ops {
             }
 
             // Owned: GRBVar + $t -> GRBLinExpr
-            impl std::ops::Add<$t> for GRBVar<'_> {
+            impl std::ops::Add<$t> for GRBVar {
                 type Output = GRBLinExpr;
 
                 fn add(self, scalar: $t) -> Self::Output {
@@ -602,25 +643,25 @@ macro_rules! impl_grbvar_math_ops {
                 }
             }
 
-            impl std::ops::Add<&GRBVar<'_>> for &$t {
+            impl std::ops::Add<&GRBVar> for &$t {
                 type Output = GRBLinExpr;
 
-                fn add(self, var: &GRBVar<'_>) -> Self::Output {
+                fn add(self, var: &GRBVar) -> Self::Output {
                     var + *self
                 }
             }
 
             // Owned: &$t + GRBVar -> GRBLinExpr
-            impl std::ops::Add<GRBVar<'_>> for &$t {
+            impl std::ops::Add<GRBVar> for &$t {
                 type Output = GRBLinExpr;
 
-                fn add(self, var: GRBVar<'_>) -> Self::Output {
+                fn add(self, var: GRBVar) -> Self::Output {
                     GRBLinExpr::from(var) + *self
                 }
             }
 
             // 3. &GRBVar * $t -> GRBLinExpr
-            impl std::ops::Mul<$t> for &GRBVar<'_>
+            impl std::ops::Mul<$t> for &GRBVar
             {
                 type Output = GRBLinExpr;
 
@@ -634,7 +675,7 @@ macro_rules! impl_grbvar_math_ops {
             }
 
             // Owned: GRBVar * $t -> GRBLinExpr
-            impl std::ops::Mul<$t> for GRBVar<'_>
+            impl std::ops::Mul<$t> for GRBVar
             {
                 type Output = GRBLinExpr;
 
@@ -647,27 +688,27 @@ macro_rules! impl_grbvar_math_ops {
                 }
             }
 
-            impl std::ops::Mul<&GRBVar<'_>> for $t
+            impl std::ops::Mul<&GRBVar> for $t
             {
                 type Output = GRBLinExpr;
 
-                fn mul(self, var: &GRBVar<'_>) -> Self::Output {
+                fn mul(self, var: &GRBVar) -> Self::Output {
                     var * self
                 }
             }
 
             // Owned: $t * GRBVar -> GRBLinExpr
-            impl std::ops::Mul<GRBVar<'_>> for $t
+            impl std::ops::Mul<GRBVar> for $t
             {
                 type Output = GRBLinExpr;
 
-                fn mul(self, var: GRBVar<'_>) -> Self::Output {
+                fn mul(self, var: GRBVar) -> Self::Output {
                     GRBLinExpr::from(var) * self
                 }
             }
 
             // 4. &GRBVar * $t -> GRBLinExpr
-            impl std::ops::Mul<&$t> for &GRBVar<'_>
+            impl std::ops::Mul<&$t> for &GRBVar
             {
                 type Output = GRBLinExpr;
 
@@ -681,7 +722,7 @@ macro_rules! impl_grbvar_math_ops {
             }
 
             // Owned: GRBVar * &$t -> GRBLinExpr
-            impl std::ops::Mul<&$t> for GRBVar<'_>
+            impl std::ops::Mul<&$t> for GRBVar
             {
                 type Output = GRBLinExpr;
 
@@ -694,21 +735,21 @@ macro_rules! impl_grbvar_math_ops {
                 }
             }
 
-            impl std::ops::Mul<&GRBVar<'_>> for &$t
+            impl std::ops::Mul<&GRBVar> for &$t
             {
                 type Output = GRBLinExpr;
 
-                fn mul(self, var: &GRBVar<'_>) -> Self::Output {
+                fn mul(self, var: &GRBVar) -> Self::Output {
                     var * *self
                 }
             }
 
             // Owned: &$t * GRBVar -> GRBLinExpr
-            impl std::ops::Mul<GRBVar<'_>> for &$t
+            impl std::ops::Mul<GRBVar> for &$t
             {
                 type Output = GRBLinExpr;
 
-                fn mul(self, var: GRBVar<'_>) -> Self::Output {
+                fn mul(self, var: GRBVar) -> Self::Output {
                     GRBLinExpr::from(var) * *self
                 }
             }

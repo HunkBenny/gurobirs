@@ -5,6 +5,7 @@ use std::{
 };
 
 use crate::{
+    attributes::GRBIntAttr,
     constr::{GRBConstr, TempConstr, TempQConstr},
     env::GRBEnv,
     error::check_err,
@@ -39,9 +40,64 @@ pub struct GRBModel {
 }
 
 impl GRBModel {
+    pub fn new_from_file(env: &GRBEnv, filename: &str) -> GRBModel {
+        let filename = CString::new(filename).unwrap();
+
+        let mut model = null_mut();
+
+        let error =
+            unsafe { ffi::GRBreadmodel(env.inner(), filename.as_ptr(), &mut model) };
+        env.get_error(error).unwrap();
+
+        let mut model = GRBModel {
+            inner: Box::new(GRBModelInner { model }),
+            var_index: Cell::new(0),
+            rows_index: Cell::new(0),
+            qconstraints_index: Cell::new(0),
+            genconstrs_index: Cell::new(0),
+        };
+        // update attributes
+        let var_index = model.get(GRBIntAttr::NUMVARS);
+        let rows_index = model.get(GRBIntAttr::NUMCONSTRS);
+        let qconstr_index = model.get(GRBIntAttr::NUMQCONSTRS);
+        let genconstr_index = model.get(GRBIntAttr::NUMGENCONSTRS);
+        model.var_index.set(var_index as usize);
+        model.rows_index.set(rows_index as usize);
+        model.qconstraints_index.set(qconstr_index as usize);
+        model.genconstrs_index.set(genconstr_index as usize);
+
+        model
+    }
+
     pub fn update(&self) {
         let error = unsafe { ffi::GRBupdatemodel(self.inner.model) };
         self.get_error(error).unwrap();
+    }
+
+    pub fn read(&mut self, filename: &str) {
+        let c_filename = CString::new(filename).unwrap();
+        let error = unsafe { ffi::GRBread(self.inner.model, c_filename.as_ptr()) };
+        self.get_error(error).unwrap();
+    }
+
+    pub fn fixed_model(&self) -> GRBModel {
+        let model_ptr = unsafe { ffi::GRBfixedmodel(self.inner.model) };
+        let mut model = GRBModel {
+            inner: Box::new(GRBModelInner { model: model_ptr }),
+            var_index: Cell::new(0),
+            rows_index: Cell::new(0),
+            qconstraints_index: Cell::new(0),
+            genconstrs_index: Cell::new(0),
+        };
+        let var_index = model.get(GRBIntAttr::NUMVARS);
+        let rows_index = model.get(GRBIntAttr::NUMCONSTRS);
+        let qconstr_index = model.get(GRBIntAttr::NUMQCONSTRS);
+        let genconstr_index = model.get(GRBIntAttr::NUMGENCONSTRS);
+        model.var_index.set(var_index as usize);
+        model.rows_index.set(rows_index as usize);
+        model.qconstraints_index.set(qconstr_index as usize);
+        model.genconstrs_index.set(genconstr_index as usize);
+        model
     }
 
     pub fn write(&self, filename: &str) {
@@ -79,7 +135,7 @@ impl GRBModel {
         unsafe { ffi::GRBgetenv(self.inner.model) }
     }
 
-    pub fn add_var(&self, mut var: GRBVarBuilder) -> GRBVar<'_> {
+    pub fn add_var(&self, mut var: GRBVarBuilder) -> GRBVar {
         let name = var.get_name();
         let name_ptr = match name {
             Some(ref s) => s.as_ptr(),
@@ -87,13 +143,13 @@ impl GRBModel {
         };
         let error = var.add_to_model(self.inner.model, name_ptr);
         self.get_error(error).unwrap();
-        let inner: &GRBModelInner = self.inner.as_ref();
+        let inner: &'static GRBModelInner = unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let var = GRBVar::new(self.var_index.get(), inner);
         self.var_index.set(self.var_index.get() + 1);
         var
     }
 
-    pub fn add_constr(&self, mut expr: TempConstr) -> GRBConstr<'_> {
+    pub fn add_constr(&self, mut expr: TempConstr) -> GRBConstr {
         let name = expr.get_name();
         let name_ptr = match name {
             Some(ref s) => s.as_ptr(),
@@ -101,7 +157,7 @@ impl GRBModel {
         };
         let error = expr.add_to_model(self.inner.model, name_ptr);
         self.get_error(error).unwrap();
-        let inner: &GRBModelInner = self.inner.as_ref();
+        let inner: &'static GRBModelInner = unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let constr = GRBConstr {
             index: self.rows_index.get(),
             inner,
@@ -110,7 +166,7 @@ impl GRBModel {
         constr
     }
 
-    pub fn add_qconstr(&self, mut expr: TempQConstr) -> GRBConstr<'_> {
+    pub fn add_qconstr(&self, mut expr: TempQConstr) -> GRBConstr {
         let name = expr.get_name();
         let name_ptr = match name {
             Some(ref s) => s.as_ptr(),
@@ -118,7 +174,7 @@ impl GRBModel {
         };
         let error = expr.add_to_model(self.inner.model, name_ptr);
         self.get_error(error).unwrap();
-        let inner: &GRBModelInner = self.inner.as_ref();
+        let inner: &'static GRBModelInner = unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let constr = GRBConstr {
             index: self.qconstraints_index.get(),
             inner,
@@ -129,11 +185,11 @@ impl GRBModel {
 
     pub fn add_genconstr_max(
         &self,
-        res_var: GRBVar<'_>,
-        xvars: Vec<GRBVar<'_>>,
+        res_var: GRBVar,
+        xvars: Vec<GRBVar>,
         constant: f64,
         name: &str,
-    ) -> GRBConstr<'_> {
+    ) -> GRBConstr {
         let name = CString::new(name).unwrap();
         let name = name.as_ptr() as *const std::ffi::c_char;
         let len = xvars.len();
@@ -153,7 +209,7 @@ impl GRBModel {
         };
         self.get_error(error).unwrap();
 
-        let inner: &GRBModelInner = self.inner.as_ref();
+        let inner: &'static GRBModelInner = unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
             index: self.genconstrs_index.get(),
             inner,
@@ -164,11 +220,11 @@ impl GRBModel {
 
     pub fn add_genconstr_min(
         &self,
-        res_var: GRBVar<'_>,
-        xvars: Vec<GRBVar<'_>>,
+        res_var: GRBVar,
+        xvars: Vec<GRBVar>,
         constant: f64,
         name: &str,
-    ) -> GRBConstr<'_> {
+    ) -> GRBConstr {
         let name = CString::new(name).unwrap();
         let name = name.as_ptr() as *const std::ffi::c_char;
         let len = xvars.len();
@@ -188,7 +244,7 @@ impl GRBModel {
         };
         self.get_error(error).unwrap();
 
-        let inner: &GRBModelInner = self.inner.as_ref();
+        let inner: &'static GRBModelInner = unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
             index: self.genconstrs_index.get(),
             inner,
@@ -199,10 +255,10 @@ impl GRBModel {
 
     pub fn add_genconstr_abs(
         &self,
-        res_var: GRBVar<'_>,
-        arg_var: GRBVar<'_>,
+        res_var: GRBVar,
+        arg_var: GRBVar,
         name: &str,
-    ) -> GRBConstr<'_> {
+    ) -> GRBConstr {
         let name = CString::new(name).unwrap();
         let name = name.as_ptr();
         let error = unsafe {
@@ -214,7 +270,7 @@ impl GRBModel {
             )
         };
         self.get_error(error).unwrap();
-        let inner: &GRBModelInner = self.inner.as_ref();
+        let inner: &'static GRBModelInner = unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
             index: self.genconstrs_index.get(),
             inner,
@@ -225,10 +281,10 @@ impl GRBModel {
 
     pub fn add_genconstr_and(
         &self,
-        res_var: GRBVar<'_>,
-        xvars: Vec<GRBVar<'_>>,
+        res_var: GRBVar,
+        xvars: Vec<GRBVar>,
         name: &str,
-    ) -> GRBConstr<'_> {
+    ) -> GRBConstr {
         let name = CString::new(name).unwrap();
         let name = name.as_ptr();
         let xvars = xvars
@@ -246,7 +302,7 @@ impl GRBModel {
             )
         };
         self.get_error(error).unwrap();
-        let inner: &GRBModelInner = self.inner.as_ref();
+        let inner: &'static GRBModelInner = unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
             index: self.genconstrs_index.get(),
             inner,
@@ -257,10 +313,10 @@ impl GRBModel {
 
     pub fn add_genconstr_or(
         &self,
-        res_var: GRBVar<'_>,
-        xvars: Vec<GRBVar<'_>>,
+        res_var: GRBVar,
+        xvars: Vec<GRBVar>,
         name: &str,
-    ) -> GRBConstr<'_> {
+    ) -> GRBConstr {
         let name = CString::new(name).unwrap();
         let name = name.as_ptr();
         let xvars = xvars
@@ -278,7 +334,7 @@ impl GRBModel {
             )
         };
         self.get_error(error).unwrap();
-        let inner: &GRBModelInner = self.inner.as_ref();
+        let inner: &'static GRBModelInner = unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
             index: self.genconstrs_index.get(),
             inner,
@@ -289,11 +345,11 @@ impl GRBModel {
 
     pub fn add_genconstr_norm(
         &self,
-        res_var: GRBVar<'_>,
-        xvars: Vec<GRBVar<'_>>,
+        res_var: GRBVar,
+        xvars: Vec<GRBVar>,
         which: f64,
         name: &str,
-    ) -> GRBConstr<'_> {
+    ) -> GRBConstr {
         let name = CString::new(name).unwrap();
         let name = name.as_ptr();
         let xvars = xvars
@@ -312,7 +368,7 @@ impl GRBModel {
             )
         };
         self.get_error(error).unwrap();
-        let inner: &GRBModelInner = self.inner.as_ref();
+        let inner: &'static GRBModelInner = unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
             index: self.genconstrs_index.get(),
             inner,
@@ -323,10 +379,10 @@ impl GRBModel {
 
     pub fn add_genconstr_indicator(
         &self,
-        binvar: GRBVar<'_>,
+        binvar: GRBVar,
         binval: i8,
         mut constr: TempConstr,
-    ) -> GRBConstr<'_> {
+    ) -> GRBConstr {
         let name = constr.get_name();
         let name_ptr = match name {
             Some(ref s) => s.as_ptr(),
@@ -334,7 +390,7 @@ impl GRBModel {
         };
         let error = constr.add_as_indicator(self.inner.model, binvar, binval, name_ptr);
         self.get_error(error).unwrap();
-        let inner: &GRBModelInner = self.inner.as_ref();
+        let inner: &'static GRBModelInner = unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
             index: self.genconstrs_index.get(),
             inner,
@@ -345,13 +401,13 @@ impl GRBModel {
 
     pub fn add_genconstr_pwl(
         &self,
-        xvar: GRBVar<'_>,
-        yvar: GRBVar<'_>,
+        xvar: GRBVar,
+        yvar: GRBVar,
         npts: i32,
         xpts: Vec<f64>,
         ypts: Vec<f64>,
         name: &str,
-    ) -> GRBConstr<'_> {
+    ) -> GRBConstr {
         let name = CString::new(name).unwrap();
         let name = name.as_ptr();
         let xpts = xpts
@@ -374,7 +430,7 @@ impl GRBModel {
             )
         };
         self.get_error(error).unwrap();
-        let inner: &GRBModelInner = self.inner.as_ref();
+        let inner: &'static GRBModelInner = unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
             index: self.genconstrs_index.get(),
             inner,
@@ -385,12 +441,12 @@ impl GRBModel {
 
     pub fn add_genconstr_nl(
         &self,
-        res_var: GRBVar<'_>,
+        res_var: GRBVar,
         opcodes: Vec<GRBOpCode>,
         data: Vec<f64>,
         parent: Vec<i32>,
         name: &str,
-    ) -> GRBConstr<'_> {
+    ) -> GRBConstr {
         let name = CString::new(name).unwrap();
         let name = name.as_ptr();
         let len = opcodes.len();
@@ -419,7 +475,7 @@ impl GRBModel {
             )
         };
         self.get_error(error).unwrap();
-        let inner: &GRBModelInner = self.inner.as_ref();
+        let inner: &'static GRBModelInner = unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
             index: self.genconstrs_index.get(),
             inner,
@@ -432,6 +488,18 @@ impl GRBModel {
         obj.set_as_objective(self, sense);
     }
 
+    pub fn set_objective_n<O: Objective>(
+        &self,
+        obj: O,
+        index: i32,
+        priority: i32,
+        weight: f64,
+        abstol: f64,
+        reltol: f64,
+    ) {
+        obj.set_as_objective_n(self, index, priority, weight, abstol, reltol);
+    }
+
     pub fn optimize(&self) {
         let error = unsafe { ffi::GRBoptimize(self.inner.model) };
         match self.get_error(error) {
@@ -440,6 +508,11 @@ impl GRBModel {
                 panic!("{}", e);
             }
         }
+    }
+
+    pub fn reset(&self) {
+        let error = unsafe { ffi::GRBreset(self.inner.model, 0) };
+        self.get_error(error).unwrap();
     }
 
     pub fn get_error(&self, error_code: i32) -> Result<(), String> {
@@ -498,27 +571,29 @@ impl GRBModelSense {
     }
 }
 
+#[repr(C)]
 #[allow(clippy::upper_case_acronyms, non_camel_case_types)]
+#[derive(Clone, Copy)]
 pub enum GRBStatus {
-    LOADED,
-    OPTIMAL,
-    INFEASIBLE,
-    INF_OR_UNBD,
-    UNBOUNDED,
-    CUTOFF,
-    ITERATION_LIMIT,
-    NODE_LIMIT,
-    TIME_LIMIT,
-    SOLUTION_LIMIT,
-    INTERRUPTED,
-    NUMERIC,
-    SUBOPTIMAL,
-    INPROGRESS,
-    USER_OBJ_LIMIT,
-    WORK_LIMIT,
-    MEM_LIMIT,
-    LOCALLY_OPTIMAL,
-    LOCALLY_INFEASIBLE,
+    LOADED = ffi::GRB_LOADED as isize,
+    OPTIMAL = ffi::GRB_OPTIMAL as isize,
+    INFEASIBLE = ffi::GRB_INFEASIBLE as isize,
+    INF_OR_UNBD = ffi::GRB_INF_OR_UNBD as isize,
+    UNBOUNDED = ffi::GRB_UNBOUNDED as isize,
+    CUTOFF = ffi::GRB_CUTOFF as isize,
+    ITERATION_LIMIT = ffi::GRB_ITERATION_LIMIT as isize,
+    NODE_LIMIT = ffi::GRB_NODE_LIMIT as isize,
+    TIME_LIMIT = ffi::GRB_TIME_LIMIT as isize,
+    SOLUTION_LIMIT = ffi::GRB_SOLUTION_LIMIT as isize,
+    INTERRUPTED = ffi::GRB_INTERRUPTED as isize,
+    NUMERIC = ffi::GRB_NUMERIC as isize,
+    SUBOPTIMAL = ffi::GRB_SUBOPTIMAL as isize,
+    INPROGRESS = ffi::GRB_INPROGRESS as isize,
+    USER_OBJ_LIMIT = ffi::GRB_USER_OBJ_LIMIT as isize,
+    WORK_LIMIT = ffi::GRB_WORK_LIMIT as isize,
+    MEM_LIMIT = ffi::GRB_MEM_LIMIT as isize,
+    LOCALLY_OPTIMAL = ffi::GRB_LOCALLY_OPTIMAL as isize,
+    LOCALLY_INFEASIBLE = ffi::GRB_LOCALLY_INFEASIBLE as isize,
 }
 
 impl From<GRBStatus> for std::ffi::c_int {

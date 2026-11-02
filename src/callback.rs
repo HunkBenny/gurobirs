@@ -60,17 +60,7 @@ unsafe extern "C" fn c_shim<C: CallbackTrait>(
         (*wrapper).callback.callback(&mut cb_ctx)
     }));
 
-    if let Some(mut solution) = cb_ctx.solution {
-        unsafe {
-            let mut _objval_p = 0.0;
-            let error = ffi::GRBcbsolution(
-                cb_data,
-                solution.as_mut_ptr() as *mut std::ffi::c_double,
-                &mut _objval_p as *mut std::ffi::c_double,
-            );
-            check_err(error).unwrap();
-        }
-    }
+    cb_ctx.use_solution();
 
     match result {
         Ok(_) => 0,
@@ -107,6 +97,21 @@ impl GRBModel {
 }
 
 impl GRBCallbackContext {
+    pub fn use_solution(&mut self) {
+        if let Some(mut solution) = self.solution.clone() {
+            unsafe {
+                let mut _objval_p = 0.0;
+                let error = ffi::GRBcbsolution(
+                    self.cb_data,
+                    solution.as_mut_ptr() as *mut std::ffi::c_double,
+                    &mut _objval_p as *mut std::ffi::c_double,
+                );
+                check_err(error).unwrap();
+            }
+        }
+        self.solution = None;
+    }
+
     /// Get the raw callback data pointer
     /// # Safety
     /// This function is unsafe because it exposes the raw callback data pointer
@@ -218,7 +223,7 @@ impl GRBCallbackContext {
         }
     }
 
-    pub fn get_noderels(&mut self, variables: Vec<GRBVar<'_>>) -> Vec<f64> {
+    pub fn get_noderels(&mut self, variables: Vec<GRBVar>) -> Vec<f64> {
         match self.where_.into() {
             GRBCallbackCodes::MIPNODE => {}
             _ => {
@@ -592,7 +597,7 @@ pub trait GetSolution {
     fn get_solution(&self, values: &Vec<f64>) -> Self::Output;
 }
 
-impl GetSolution for GRBVar<'_> {
+impl GetSolution for GRBVar {
     type Output = f64;
 
     fn get_solution(&self, values: &Vec<f64>) -> Self::Output {
@@ -620,7 +625,7 @@ pub trait SetSolution {
     fn set_solution(&self, solution: &mut Vec<f64>, val: Self::Value);
 }
 
-impl SetSolution for GRBVar<'_> {
+impl SetSolution for GRBVar {
     type Value = f64;
 
     fn set_solution(&self, solution: &mut Vec<f64>, val: Self::Value) {
@@ -628,7 +633,7 @@ impl SetSolution for GRBVar<'_> {
     }
 }
 
-impl SetSolution for &GRBVar<'_> {
+impl SetSolution for &GRBVar {
     type Value = f64;
 
     fn set_solution(&self, solution: &mut Vec<f64>, val: Self::Value) {
