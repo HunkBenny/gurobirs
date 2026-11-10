@@ -5,11 +5,11 @@ pub use crate::callback::{
 };
 pub use crate::constr::Expr;
 pub use crate::constr::FormatConstr;
-pub use crate::constr::GRBConstr;
+pub use crate::constr::{GRBConstr, GRBConstrType};
 pub use crate::constr::{TempConstr, TempQConstr};
 pub use crate::env::GRBEnv;
 pub use crate::model::{GRBModel, GRBModelSense, GRBStatus};
 pub use crate::modeling::builder::var::GRBVarBuilder;
-pub use crate::modeling::expr::{lin_expr::GRBLinExpr, quad_expr::GRBQuadExpr, GRBSense};
+pub use crate::modeling::expr::{GRBSense, lin_expr::GRBLinExpr, quad_expr::GRBQuadExpr};
 pub use crate::parameters::{GRBDblParam, GRBIntParam, GRBStrParam};
 pub use crate::var::{GRBVar, GRBVarType};

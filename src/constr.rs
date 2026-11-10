@@ -7,8 +7,8 @@ use crate::{
     ffi,
     model::GRBModelInner,
     modeling::{
-        expr::{lin_expr::GRBLinExpr, quad_expr::GRBQuadExpr, GRBSense},
         AddAsIndicator, CanBeAddedToCallback, CanBeAddedToModel, IsModelingObject,
+        expr::{GRBSense, lin_expr::GRBLinExpr, quad_expr::GRBQuadExpr},
     },
     prelude::GRBCallbackContext,
     var::GRBVar,
@@ -512,8 +512,16 @@ impl CanBeAddedToCallback for TempConstr {
     }
 }
 
+pub enum GRBConstrType {
+    Constr,
+    QConstr,
+    GenContr,
+    SosConstr,
+}
+
 pub struct GRBConstr {
     pub index: usize,
+    pub constr_type: GRBConstrType,
     pub(crate) inner: &'static GRBModelInner,
 }
 

@@ -6,7 +6,7 @@ use std::{
 
 use crate::{
     attributes::GRBIntAttr,
-    constr::{GRBConstr, TempConstr, TempQConstr},
+    constr::{GRBConstr, GRBConstrType, TempConstr, TempQConstr},
     env::GRBEnv,
     error::check_err,
     ffi,
@@ -75,6 +75,7 @@ impl GRBModel {
             unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
 
         GRBConstr {
+            constr_type: GRBConstrType::SosConstr,
             index: self.sosconstrs_index.get(),
             inner,
         }
@@ -302,6 +303,7 @@ impl GRBModel {
         let inner: &'static GRBModelInner =
             unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let constr = GRBConstr {
+            constr_type: GRBConstrType::Constr,
             index: self.rows_index.get(),
             inner,
         };
@@ -320,6 +322,7 @@ impl GRBModel {
         let inner: &'static GRBModelInner =
             unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let constr = GRBConstr {
+            constr_type: GRBConstrType::QConstr,
             index: self.qconstraints_index.get(),
             inner,
         };
@@ -357,6 +360,7 @@ impl GRBModel {
         let inner: &'static GRBModelInner =
             unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
+            constr_type: GRBConstrType::GenContr,
             index: self.genconstrs_index.get(),
             inner,
         };
@@ -393,6 +397,7 @@ impl GRBModel {
         let inner: &'static GRBModelInner =
             unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
+            constr_type: GRBConstrType::GenContr,
             index: self.genconstrs_index.get(),
             inner,
         };
@@ -415,6 +420,7 @@ impl GRBModel {
         let inner: &'static GRBModelInner =
             unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
+            constr_type: GRBConstrType::GenContr,
             index: self.genconstrs_index.get(),
             inner,
         };
@@ -443,6 +449,7 @@ impl GRBModel {
         let inner: &'static GRBModelInner =
             unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
+            constr_type: GRBConstrType::GenContr,
             index: self.genconstrs_index.get(),
             inner,
         };
@@ -471,6 +478,7 @@ impl GRBModel {
         let inner: &'static GRBModelInner =
             unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
+            constr_type: GRBConstrType::GenContr,
             index: self.genconstrs_index.get(),
             inner,
         };
@@ -506,6 +514,7 @@ impl GRBModel {
         let inner: &'static GRBModelInner =
             unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
+            constr_type: GRBConstrType::GenContr,
             index: self.genconstrs_index.get(),
             inner,
         };
@@ -529,6 +538,7 @@ impl GRBModel {
         let inner: &'static GRBModelInner =
             unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
+            constr_type: GRBConstrType::GenContr,
             index: self.genconstrs_index.get(),
             inner,
         };
@@ -570,6 +580,7 @@ impl GRBModel {
         let inner: &'static GRBModelInner =
             unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
+            constr_type: GRBConstrType::GenContr,
             index: self.genconstrs_index.get(),
             inner,
         };
@@ -616,6 +627,7 @@ impl GRBModel {
         let inner: &'static GRBModelInner =
             unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
         let cons = GRBConstr {
+            constr_type: GRBConstrType::GenContr,
             index: self.genconstrs_index.get(),
             inner,
         };
