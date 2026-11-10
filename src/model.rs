@@ -37,9 +37,144 @@ pub struct GRBModel {
     rows_index: Cell<usize>,
     qconstraints_index: Cell<usize>,
     genconstrs_index: Cell<usize>,
+    sosconstrs_index: Cell<usize>,
 }
 
 impl GRBModel {
+    pub fn add_sos(
+        &mut self,
+        vars: &Vec<GRBVar>,
+        weights: &Vec<f64>,
+        len: usize,
+        sostype: i32,
+    ) -> GRBConstr {
+        if weights.len() != vars.len() {
+            panic!("Weights and vars should have the same length.");
+        }
+        let nummembers = vars.len() as i32;
+        let mut sostype = sostype;
+        let mut beg = 0;
+        let mut ind = vec![0; nummembers as usize];
+        for (iter, var) in vars.iter().enumerate() {
+            ind[iter] = var.index() as i32;
+        }
+        let mut weights = weights.clone();
+        let error = unsafe {
+            ffi::GRBaddsos(
+                self.inner.model,
+                1,
+                nummembers,
+                &mut sostype as *mut i32,
+                &mut beg as *mut i32,
+                ind.as_mut_ptr(),
+                weights.as_mut_ptr(),
+            )
+        };
+        self.get_error(error).unwrap();
+        let inner: &'static GRBModelInner =
+            unsafe { &*(self.inner.as_ref() as *const GRBModelInner) };
+
+        GRBConstr {
+            index: self.sosconstrs_index.get(),
+            inner,
+        }
+    }
+
+    pub fn feas_relax_bool(
+        &mut self,
+        relaxobjtype: i32,
+        minrelax: bool,
+        vrelax: bool,
+        crelax: bool,
+    ) -> f64 {
+        let model = self.inner.model;
+
+        let mut feasobj_p: f64 = 0.0;
+
+        let nvars = self.get(GRBIntAttr::NUMVARS) as usize;
+        let mut lbpen_unpacked = vec![1.0; nvars];
+        let mut ubpen_unpacked = vec![1.0; nvars];
+
+        let ncons = self.get(GRBIntAttr::NUMCONSTRS) as usize;
+        let mut rhspen_unpacked = vec![1.0; ncons];
+
+        let error = unsafe {
+            ffi::GRBfeasrelax(
+                model,
+                relaxobjtype,
+                minrelax as i32,
+                if vrelax {
+                    lbpen_unpacked.as_mut_ptr()
+                } else {
+                    null_mut()
+                },
+                if vrelax {
+                    ubpen_unpacked.as_mut_ptr()
+                } else {
+                    null_mut()
+                },
+                if crelax {
+                    rhspen_unpacked.as_mut_ptr()
+                } else {
+                    null_mut()
+                },
+                &mut feasobj_p,
+            )
+        };
+
+        self.get_error(error).unwrap();
+
+        // return value
+        if minrelax { feasobj_p } else { 0.0 }
+    }
+
+    /// lbpen, ubpen, vars need to be the same length
+    /// rhspen, constrs need to be the same length
+    pub fn feas_relax(
+        &mut self,
+        relaxobjtype: i32,
+        minrelax: bool,
+        vars: &Vec<GRBVar>,
+        lbpen: &Vec<f64>,
+        ubpen: &Vec<f64>,
+        constrs: &Vec<GRBConstr>,
+        rhspen: &mut Vec<f64>,
+    ) -> f64 {
+        let model = self.inner.model;
+
+        let mut feasobj_p: f64 = 0.0;
+
+        let nvars = self.get(GRBIntAttr::NUMVARS) as usize;
+        let mut lbpen_unpacked = vec![ffi::GRB_INFINITY; nvars];
+        let mut ubpen_unpacked = vec![ffi::GRB_INFINITY; nvars];
+        for (iter, var) in vars.iter().enumerate() {
+            lbpen_unpacked[var.index()] = lbpen[iter];
+            ubpen_unpacked[var.index()] = ubpen[iter];
+        }
+        let ncons = self.get(GRBIntAttr::NUMCONSTRS) as usize;
+        let mut rhspen_unpacked = vec![ffi::GRB_INFINITY; ncons];
+        for (iter, cons) in constrs.iter().enumerate() {
+            rhspen_unpacked[cons.index()] = rhspen[iter];
+        }
+
+        let error = unsafe {
+            ffi::GRBfeasrelax(
+                model,
+                relaxobjtype,
+                minrelax as i32,
+                lbpen_unpacked.as_mut_ptr(),
+                ubpen_unpacked.as_mut_ptr(),
+                rhspen_unpacked.as_mut_ptr(),
+                &mut feasobj_p,
+            )
+        };
+
+        self.get_error(error).unwrap();
+
+        // return value
+        if minrelax { feasobj_p } else { 0.0 }
+    }
+
     pub fn new_from_file(env: &GRBEnv, filename: &str) -> GRBModel {
         let filename = CString::new(filename).unwrap();
 
@@ -54,6 +189,7 @@ impl GRBModel {
             rows_index: Cell::new(0),
             qconstraints_index: Cell::new(0),
             genconstrs_index: Cell::new(0),
+            sosconstrs_index: Cell::new(0),
         };
         // update attributes
         let var_index = model.get(GRBIntAttr::NUMVARS);
@@ -79,6 +215,10 @@ impl GRBModel {
         self.get_error(error).unwrap();
     }
 
+    pub fn get_var(&self, index: usize) -> crate::var::GRBVar {
+        crate::var::GRBVar::new(index, self.inner.as_ref())
+    }
+
     pub fn fixed_model(&self) -> GRBModel {
         let model_ptr = unsafe { ffi::GRBfixedmodel(self.inner.model) };
         let mut model = GRBModel {
@@ -87,6 +227,7 @@ impl GRBModel {
             rows_index: Cell::new(0),
             qconstraints_index: Cell::new(0),
             genconstrs_index: Cell::new(0),
+            sosconstrs_index: Cell::new(0),
         };
         let var_index = model.get(GRBIntAttr::NUMVARS);
         let rows_index = model.get(GRBIntAttr::NUMCONSTRS);
@@ -127,6 +268,7 @@ impl GRBModel {
             rows_index: Cell::new(0),
             qconstraints_index: Cell::new(0),
             genconstrs_index: Cell::new(0),
+            sosconstrs_index: Cell::new(0),
         }
     }
 
@@ -563,6 +705,7 @@ impl Clone for GRBModel {
             rows_index: Cell::new(self.rows_index.get()),
             qconstraints_index: Cell::new(self.qconstraints_index.get()),
             genconstrs_index: Cell::new(self.genconstrs_index.get()),
+            sosconstrs_index: Cell::new(self.sosconstrs_index.get()),
         }
     }
 }
